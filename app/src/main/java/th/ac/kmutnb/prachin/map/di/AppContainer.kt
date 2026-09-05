@@ -9,8 +9,10 @@ import th.ac.kmutnb.prachin.map.data.assets.AssetReader
 import th.ac.kmutnb.prachin.map.data.local.AppDatabase
 import th.ac.kmutnb.prachin.map.data.prefs.AppPreferences
 import th.ac.kmutnb.prachin.map.data.repository.CampusRepository
+import th.ac.kmutnb.prachin.map.data.repository.OfflineMapRepository
 import th.ac.kmutnb.prachin.map.data.repository.PoiRepository
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetworkRepository
+import th.ac.kmutnb.prachin.map.map.MapStyleProvider
 
 /**
  * Manual dependency container.
@@ -45,4 +47,12 @@ class AppContainer(context: Context) {
         poiRepository = poiRepository,
         scope = applicationScope,
     )
+
+    val offlineMapRepository = OfflineMapRepository(
+        context = appContext,
+        campusRepository = campusRepository,
+        preferences = preferences,
+    )
+
+    val mapStyleProvider = MapStyleProvider(campusRepository)
 }
