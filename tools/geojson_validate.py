@@ -69,9 +69,12 @@ def distance_to_segment_m(
 
     Accurate to well under a metre over the sub-kilometre segments used here.
     """
+    # Spherical metres-per-degree, matching GeoUtils so the planar and great-circle
+    # models agree with each other rather than drifting apart by ~0.6%.
+    deg_m = math.pi * 6371008.8 / 180.0
     lat0 = math.radians((alat + blat) / 2.0)
-    mx = 111320.0 * math.cos(lat0)  # metres per degree of longitude at this latitude
-    my = 110540.0                   # metres per degree of latitude
+    mx = deg_m * math.cos(lat0)  # metres per degree of longitude at this latitude
+    my = deg_m                   # metres per degree of latitude
     ax, ay = alon * mx, alat * my
     bx, by = blon * mx, blat * my
     px, py = plon * mx, plat * my
