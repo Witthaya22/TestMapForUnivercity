@@ -1,5 +1,258 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">นำทาง มจพ. ปราจีนบุรี</string>
+
+    <!-- ทั่วไป -->
+    <string name="action_ok">ตกลง</string>
+    <string name="action_cancel">ยกเลิก</string>
+    <string name="action_close">ปิด</string>
+    <string name="action_retry">ลองใหม่</string>
+    <string name="action_save">บันทึก</string>
+    <string name="action_delete">ลบ</string>
+    <string name="action_edit">แก้ไข</string>
+    <string name="action_back">ย้อนกลับ</string>
+    <string name="action_continue">ถัดไป</string>
+    <string name="action_open_app_settings">ไปที่ตั้งค่าแอป</string>
+    <string name="loading">กำลังโหลด…</string>
+
+    <!-- หน่วยระยะทาง / เวลา -->
+    <string name="distance_meters">%1$d ม.</string>
+    <string name="distance_kilometers">%1$s กม.</string>
+    <string name="duration_minutes">~%1$d นาที</string>
+    <string name="duration_less_than_a_minute">ไม่ถึง 1 นาที</string>
+    <string name="duration_hours_minutes">~%1$d ชม. %2$d นาที</string>
+
+    <!-- ตั้งค่าไม่ครบ -->
     <string name="setup_pending_message">กำลังเตรียมระบบแผนที่ออฟไลน์…</string>
+    <string name="setup_required_title">ยังตั้งค่าไม่ครบ</string>
+    <string name="setup_how_to">ดูขั้นตอนทั้งหมดได้ในไฟล์ SETUP.md ของโปรเจกต์</string>
+
+    <!-- ข้อผิดพลาดของ campus_config.json -->
+    <string name="config_error_placeholder">ยังไม่ได้กรอกพิกัดพื้นที่วิทยาเขต\n\nไฟล์ assets/config/campus_config.json ยังเป็นค่า 0.0 อยู่ กรุณากรอก bbox และ center ให้เป็นพิกัดจริงก่อน (ดู SETUP.md ข้อ 1)</string>
+    <string name="config_error_bbox_inverted">ขอบเขตพื้นที่กลับด้าน\n\nค่า minLon ต้องน้อยกว่า maxLon และ minLat ต้องน้อยกว่า maxLat</string>
+    <string name="config_error_out_of_range">พิกัดไม่ใช่ค่าองศา\n\nค่าที่กรอกเกินช่วง ±180 / ±90 องศา น่าจะเป็นพิกัด UTM Zone 47N ต้องแปลงเป็น WGS84 (องศา) ก่อน — ดู docs/ACCURACY.md ข้อ A6</string>
+    <string name="config_error_center_outside">จุดกึ่งกลางอยู่นอกขอบเขตพื้นที่\n\nค่า center ต้องอยู่ภายใน bbox</string>
+    <string name="config_error_zoom_range">ช่วง zoom ไม่ถูกต้อง\n\nminZoom ต้องน้อยกว่า maxZoom</string>
+    <string name="config_error_max_zoom">maxZoom สูงเกินไป\n\nรองรับได้สูงสุด 18 เพราะระดับที่ลึกกว่านี้ทำให้ไฟล์ใหญ่ขึ้นมากโดยไม่ได้รายละเอียดเพิ่ม</string>
+    <string name="config_error_api_key">styleUrl ต้องไม่ใช้ API key\n\nแอปนี้ออกแบบให้ใช้แผนที่ฟรีที่ไม่ต้องสมัครและไม่ต้องผูกบัตร</string>
+    <string name="config_error_malformed">อ่านไฟล์ตั้งค่าไม่ได้\n\nassets/config/campus_config.json ไม่ใช่ JSON ที่ถูกต้อง หรือขาดฟิลด์ที่จำเป็น</string>
+
+    <!-- ข้อผิดพลาดของไฟล์ GeoJSON -->
+    <string name="geojson_error_missing_id">ไม่มี id</string>
+    <string name="geojson_error_duplicate_id">id ซ้ำกับรายการอื่น</string>
+    <string name="geojson_error_missing_name">ไม่มีชื่อ</string>
+    <string name="geojson_error_wrong_geometry">ชนิดของรูปทรงไม่ถูกต้อง</string>
+    <string name="geojson_error_bad_coordinates">พิกัดไม่ถูกต้อง</string>
+    <string name="geojson_error_out_of_range">พิกัดเกินช่วงองศา (น่าจะเป็น UTM)</string>
+    <string name="geojson_error_unknown_path_type">ประเภทเส้นทางไม่รองรับ</string>
+    <string name="geojson_issue_summary">ข้ามข้อมูลที่อ่านไม่ได้ %1$d รายการ</string>
+
+    <!-- Onboarding: สิทธิ์ -->
+    <string name="onboarding_welcome_title">ยินดีต้อนรับ</string>
+    <string name="onboarding_welcome_body">แอปนี้ช่วยนำทางเดินเท้าภายใน มจพ. วิทยาเขตปราจีนบุรี\n\nดาวน์โหลดแผนที่ครั้งเดียว แล้วใช้ได้ตลอดโดยไม่ต้องต่อเน็ต</string>
+    <string name="permission_title">ขอสิทธิ์เข้าถึงตำแหน่ง</string>
+    <string name="permission_rationale">แอปต้องใช้ตำแหน่งจาก GPS เพื่อแสดงว่าคุณอยู่ตรงไหนและบอกระยะทางที่เหลือระหว่างเดิน\n\nตำแหน่งของคุณถูกใช้ในเครื่องเท่านั้น ไม่ถูกส่งออกไปที่ไหน</string>
+    <string name="permission_grant">อนุญาต</string>
+    <string name="permission_denied_title">ยังไม่ได้รับสิทธิ์ตำแหน่ง</string>
+    <string name="permission_denied_body">ถ้าไม่อนุญาต แอปจะแสดงแผนที่ได้แต่จะบอกไม่ได้ว่าคุณอยู่ตรงไหน และนำทางไม่ได้\n\nเปิดสิทธิ์ได้ที่ ตั้งค่าแอป → สิทธิ์ → ตำแหน่ง</string>
+    <string name="permission_coarse_only_title">ความแม่นยำไม่พอ</string>
+    <string name="permission_coarse_only_body">ตอนนี้ให้สิทธิ์แบบ \"ตำแหน่งโดยประมาณ\" ซึ่งคลาดเคลื่อนหลายร้อยเมตร ใช้นำทางในมหาวิทยาลัยไม่ได้\n\nกรุณาเปลี่ยนเป็น \"ตำแหน่งที่แม่นยำ\" ในตั้งค่าแอป</string>
+    <string name="permission_notification_rationale">ขออนุญาตแจ้งเตือน เพื่อบอกเมื่อถึงจุดหมายขณะที่คุณไม่ได้เปิดหน้าจอแอปอยู่</string>
+
+    <!-- Onboarding: ดาวน์โหลดแผนที่ -->
+    <string name="download_title">ดาวน์โหลดแผนที่ออฟไลน์</string>
+    <string name="download_body">แอปจะดาวน์โหลดแผนที่เฉพาะพื้นที่ %1$s เก็บไว้ในเครื่อง หลังจากนี้จะใช้งานได้โดยไม่ต้องต่อเน็ต</string>
+    <string name="download_start">เริ่มดาวน์โหลด</string>
+    <string name="download_progress">กำลังดาวน์โหลด… %1$d%%</string>
+    <string name="download_progress_size">ดาวน์โหลดแล้ว %1$s</string>
+    <string name="download_tiles_counted">แผนที่ %1$d ชิ้น</string>
+    <string name="download_success_title">ดาวน์โหลดแผนที่เสร็จแล้ว</string>
+    <string name="download_success_body">ตอนนี้คุณใช้แผนที่และนำทางในพื้นที่ มจพ. ปราจีนบุรี ได้แบบไม่ต้องต่อเน็ตแล้ว\n\n(ขนาดไฟล์ %1$s)</string>
+    <string name="download_error_network">ดาวน์โหลดไม่สำเร็จ\n\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่ (การดาวน์โหลดจะทำต่อจากที่ค้างไว้)</string>
+    <string name="download_error_tile_limit">พื้นที่ที่ตั้งไว้กว้างเกินไป\n\nจำนวนชิ้นแผนที่เกินขีดจำกัด กรุณาลดขนาด bbox หรือลด maxZoom ใน campus_config.json</string>
+    <string name="download_error_generic">ดาวน์โหลดไม่สำเร็จ: %1$s</string>
+    <string name="download_skip">ข้ามไปก่อน</string>
+    <string name="download_offline_warning">ตอนนี้ไม่ได้เชื่อมต่ออินเทอร์เน็ต ต้องต่อเน็ตเพื่อดาวน์โหลดแผนที่ครั้งแรกเท่านั้น</string>
+
+    <!-- จัดการแผนที่ออฟไลน์ -->
+    <string name="offline_manager_title">จัดการแผนที่ออฟไลน์</string>
+    <string name="offline_manager_ready">พร้อมใช้งานออฟไลน์</string>
+    <string name="offline_manager_not_ready">ยังไม่ได้ดาวน์โหลด</string>
+    <string name="offline_manager_size">ขนาดที่ใช้ในเครื่อง: %1$s</string>
+    <string name="offline_manager_downloaded_at">ดาวน์โหลดล่าสุด: %1$s</string>
+    <string name="offline_manager_redownload">ดาวน์โหลดใหม่ / อัปเดต</string>
+    <string name="offline_manager_delete">ลบแผนที่ออฟไลน์</string>
+    <string name="offline_manager_delete_confirm">ลบแผนที่ออฟไลน์ทั้งหมด? หลังจากลบแล้วจะต้องต่อเน็ตเพื่อดาวน์โหลดใหม่</string>
+    <string name="offline_manager_deleted">ลบแผนที่ออฟไลน์แล้ว</string>
+
+    <!-- แผนที่ -->
+    <string name="map_title">แผนที่</string>
+    <string name="map_recenter">กลับไปตำแหน่งฉัน</string>
+    <string name="map_layers">ชั้นข้อมูล</string>
+    <string name="map_searching_gps">กำลังหาสัญญาณดาวเทียม…</string>
+    <string name="map_searching_gps_accuracy">กำลังหาสัญญาณดาวเทียม… (ความแม่นยำ %1$d ม.)</string>
+    <string name="map_gps_disabled">GPS ปิดอยู่ กรุณาเปิดการเข้าถึงตำแหน่งในตั้งค่าเครื่อง</string>
+    <string name="map_gps_weak">สัญญาณ GPS อ่อน ตำแหน่งอาจคลาดเคลื่อน</string>
+    <string name="map_gps_indoor_hint">ถ้าอยู่ในอาคาร GPS จะใช้ไม่ได้ กรุณาออกมากลางแจ้ง</string>
+    <string name="map_no_offline_data">ยังไม่มีแผนที่ออฟไลน์ในเครื่อง</string>
+
+    <!-- รายการจุด -->
+    <string name="poi_list_title">เลือกจุดหมาย</string>
+    <string name="poi_list_empty">ยังไม่มีจุดในระบบ\n\nใช้โหมดสำรวจพิกัดเก็บพิกัดจริงก่อน (ตั้งค่า → โหมดสำรวจพิกัด)</string>
+    <string name="poi_list_search">ค้นหาสถานที่</string>
+    <string name="poi_unroutable_badge">นำทางไม่ได้</string>
+    <string name="poi_unroutable_explain">จุดนี้อยู่ห่างจากเส้นทางเดินที่บันทึกไว้เกิน 30 เมตร จึงยังนำทางไปไม่ได้ ให้บันทึกเส้นทางเพิ่มในโหมดสำรวจ</string>
+    <string name="poi_distance_away">ห่าง %1$s</string>
+
+    <!-- หมวดหมู่ -->
+    <string name="category_gate">ประตูทางเข้า</string>
+    <string name="category_dorm">หอพัก</string>
+    <string name="category_academic">อาคารเรียน</string>
+    <string name="category_canteen">โรงอาหาร</string>
+    <string name="category_sport">สนามกีฬา</string>
+    <string name="category_parking">ที่จอดรถ</string>
+    <string name="category_service">สำนักงาน / บริการ</string>
+    <string name="category_custom">จุดที่เพิ่มเอง</string>
+
+    <!-- รายละเอียดจุด -->
+    <string name="poi_detail_description">รายละเอียด</string>
+    <string name="poi_detail_note">โน้ตของฉัน</string>
+    <string name="poi_detail_no_description">ยังไม่มีรายละเอียด</string>
+    <string name="poi_detail_edit">แก้ไขรายละเอียด</string>
+    <string name="poi_detail_navigate_here">นำทางมาที่นี่</string>
+    <string name="poi_detail_add_waypoint">เพิ่มเป็นจุดแวะ</string>
+    <string name="poi_detail_next_waypoint">ไปจุดถัดไป</string>
+    <string name="poi_detail_finish">จบการนำทาง</string>
+    <string name="poi_detail_surveyed_accuracy">พิกัดจากการสำรวจ (ความแม่นยำ %1$.1f ม.)</string>
+    <string name="poi_edit_title">แก้ไขรายละเอียดจุด</string>
+    <string name="poi_edit_name">ชื่อสถานที่</string>
+    <string name="poi_edit_category">หมวดหมู่</string>
+    <string name="poi_edit_description">รายละเอียด (จุดนี้มีอะไรบ้าง)</string>
+    <string name="poi_edit_note">โน้ตส่วนตัว</string>
+    <string name="poi_edit_name_required">กรุณากรอกชื่อสถานที่</string>
+    <string name="poi_edit_saved">บันทึกแล้ว</string>
+    <string name="poi_delete_confirm">ลบจุด \"%1$s\" ออกจากเครื่อง?</string>
+
+    <!-- เพิ่มจุดจากการแตะแผนที่ (F9) -->
+    <string name="add_point_title">เพิ่มจุดตรงนี้</string>
+    <string name="add_point_off_path_warning_title">จุดอยู่ห่างจากทางเดิน</string>
+    <string name="add_point_off_path_warning_body">จุดที่เลือกอยู่ห่างจากทางเดิน %1$d เมตร\n\nกรุณาปักจุดบนเส้นทางเดินเพื่อให้นำทางได้ถูกต้อง</string>
+    <string name="add_point_move_to_path">ย้ายไปจุดใกล้สุดบนทาง</string>
+    <string name="add_point_keep_anyway">ยืนยันตำแหน่งนี้</string>
+    <string name="add_point_blocked_title">ปักจุดตรงนี้ไม่ได้</string>
+    <string name="add_point_blocked_body">จุดนี้ไม่อยู่บนเส้นทางเดินในมหาวิทยาลัย ไม่สามารถใช้นำทางได้\n\nกรุณาเลือกจุดใหม่บนถนนหรือทางเดิน</string>
+    <string name="add_point_no_network_title">ยังไม่มีข้อมูลเส้นทางเดิน</string>
+    <string name="add_point_no_network_body">ยังไม่ได้บันทึกเส้นทางเดินในมหาวิทยาลัย จึงตรวจไม่ได้ว่าจุดนี้อยู่บนทางหรือไม่\n\nใช้โหมดบันทึกเส้นทางก่อน (ตั้งค่า → โหมดสำรวจพิกัด)</string>
+
+    <!-- นำทาง -->
+    <string name="nav_start">เริ่มนำทาง</string>
+    <string name="nav_stop">หยุดนำทาง</string>
+    <string name="nav_stop_confirm">หยุดการนำทางตอนนี้?</string>
+    <string name="nav_next_waypoint">จุดถัดไป: %1$s</string>
+    <string name="nav_remaining_to_next">อีก %1$s (%2$s)</string>
+    <string name="nav_total_and_remaining">รวมทั้งหมด %1$s · เหลือ %2$s</string>
+    <string name="nav_progress_percent">%1$d%%</string>
+    <string name="nav_waypoints_title">จุดแวะ</string>
+    <string name="nav_add_waypoint">เพิ่มจุดแวะ</string>
+    <string name="nav_remove_waypoint">เอาออก</string>
+    <string name="nav_clear_all">ล้างทั้งหมด</string>
+    <string name="nav_route_summary">%1$s · %2$s</string>
+    <string name="nav_no_path_title">ไม่พบเส้นทาง</string>
+    <string name="nav_no_path_body">ไม่พบเส้นทางเดินไปยังจุดนี้\n\nลองเลือกจุดอื่น หรือเพิ่มเส้นทางในโหมดสำรวจ</string>
+    <string name="nav_need_location">ต้องรอสัญญาณ GPS ก่อนจึงจะเริ่มนำทางได้</string>
+    <string name="nav_need_two_points">ต้องเลือกอย่างน้อย 1 จุดหมาย</string>
+    <string name="nav_arrived_title">ถึง %1$s แล้ว</string>
+    <string name="nav_arrived_final">ถึงจุดหมายสุดท้ายแล้ว</string>
+    <string name="nav_off_route">คุณออกนอกเส้นทาง</string>
+    <string name="nav_recalculate">คำนวณใหม่</string>
+    <string name="nav_recalculated">คำนวณเส้นทางใหม่แล้ว</string>
+    <string name="nav_recalculate_failed">คำนวณเส้นทางใหม่ไม่สำเร็จ กรุณากลับเข้าเส้นทางเดิม</string>
+
+    <!-- การแจ้งเตือน / foreground service -->
+    <string name="notification_channel_navigation">การนำทาง</string>
+    <string name="notification_channel_navigation_description">แสดงความคืบหน้าขณะนำทาง และแจ้งเมื่อถึงจุดหมาย</string>
+    <string name="notification_navigating_title">กำลังนำทาง</string>
+    <string name="notification_navigating_body">จุดถัดไป: %1$s · อีก %2$s</string>
+    <string name="notification_arrived_title">ถึง %1$s แล้ว</string>
+    <string name="notification_arrived_body">แตะเพื่อดูรายละเอียดจุดนี้</string>
+
+    <!-- ตั้งค่า -->
+    <string name="settings_title">ตั้งค่า</string>
+    <string name="settings_section_map">แผนที่</string>
+    <string name="settings_section_navigation">การนำทาง</string>
+    <string name="settings_section_admin">สำหรับผู้ดูแล</string>
+    <string name="settings_section_about">เกี่ยวกับ</string>
+    <string name="settings_tile_source">แหล่งแผนที่</string>
+    <string name="settings_tile_source_offline_pack">ดาวน์โหลดครั้งแรกครั้งเดียว (แนะนำ)</string>
+    <string name="settings_tile_source_bundled">ใช้แผนที่ที่ฝังมากับแอป</string>
+    <string name="settings_tile_source_bundled_unavailable">ยังไม่มีไฟล์แผนที่ฝังในแอป (ดู SETUP.md ข้อ 4)</string>
+    <string name="settings_auto_recalculate">คำนวณเส้นทางใหม่อัตโนมัติเมื่อออกนอกทาง</string>
+    <string name="settings_keep_screen_on">เปิดหน้าจอค้างไว้ขณะนำทาง</string>
+    <string name="settings_surveyor">โหมดสำรวจพิกัด (สำหรับผู้ดูแล)</string>
+    <string name="settings_export_pois">ส่งออกจุดเป็นไฟล์ GeoJSON</string>
+    <string name="settings_import_pois">นำเข้าจุดจากไฟล์ GeoJSON</string>
+    <string name="settings_gps_debug">ข้อมูล GPS (Debug)</string>
+    <string name="settings_version">เวอร์ชัน %1$s</string>
+    <string name="settings_map_attribution">ข้อมูลแผนที่ © OpenStreetMap contributors (ODbL)</string>
+    <string name="settings_debug_unlocked">เปิดโหมด Debug แล้ว</string>
+
+    <!-- นำเข้า / ส่งออก -->
+    <string name="export_success">บันทึกไฟล์ที่ Documents/%1$s แล้ว</string>
+    <string name="export_failed">บันทึกไฟล์ไม่สำเร็จ: %1$s</string>
+    <string name="import_replace_title">มีจุดที่ id ซ้ำอยู่แล้ว</string>
+    <string name="import_replace_body">ต้องการเขียนทับข้อมูลเดิมหรือไม่?</string>
+    <string name="import_replace_yes">เขียนทับ</string>
+    <string name="import_replace_no">ข้ามรายการที่ซ้ำ</string>
+    <string name="import_result">นำเข้า %1$d จุด (ข้าม %2$d)</string>
+    <string name="import_failed">นำเข้าไม่สำเร็จ: %1$s</string>
+
+    <!-- โหมดสำรวจพิกัด -->
+    <string name="survey_title">โหมดสำรวจพิกัด</string>
+    <string name="survey_intro">เดินไปยืนที่จุดจริงกลางแจ้ง รอให้ความแม่นยำต่ำกว่า 10 ม. แล้วกดเริ่มเก็บพิกัด</string>
+    <string name="survey_tab_point">เก็บพิกัดจุด</string>
+    <string name="survey_tab_track">บันทึกเส้นทาง</string>
+    <string name="survey_start">เริ่มเก็บพิกัด</string>
+    <string name="survey_stop">หยุด</string>
+    <string name="survey_collecting">กำลังเก็บพิกัด %1$d / %2$d</string>
+    <string name="survey_accuracy_current">ความแม่นยำตอนนี้: %1$.1f ม.</string>
+    <string name="survey_accuracy_average">ความแม่นยำเฉลี่ย: %1$.1f ม.</string>
+    <string name="survey_spread">ค่ากระจาย: %1$.1f ม.</string>
+    <string name="survey_rejected">ทิ้งไป %1$d ครั้ง (แม่นยำไม่พอ)</string>
+    <string name="survey_waiting_for_fix">รอสัญญาณที่แม่นพอ (ต้องต่ำกว่า %1$d ม.)</string>
+    <string name="survey_done_title">เก็บพิกัดเสร็จแล้ว</string>
+    <string name="survey_result_point">พิกัดที่ได้: %1$s</string>
+    <string name="survey_save_point">บันทึกจุดนี้</string>
+    <string name="survey_discard">ทิ้ง</string>
+    <string name="survey_export_pois">ส่งออกจุดที่สำรวจ</string>
+    <string name="survey_export_paths">ส่งออกเส้นทางที่บันทึก</string>
+
+    <!-- บันทึกเส้นทาง -->
+    <string name="track_start">เริ่มบันทึก</string>
+    <string name="track_stop">หยุดบันทึก</string>
+    <string name="track_recording">กำลังบันทึก… %1$d จุด · %2$s</string>
+    <string name="track_simplified">ลดจุดจาก %1$d เหลือ %2$d จุด</string>
+    <string name="track_name">ชื่อเส้นทาง</string>
+    <string name="track_type">ประเภทเส้นทาง</string>
+    <string name="track_type_footway">ทางเดินเท้า</string>
+    <string name="track_type_road">ถนน</string>
+    <string name="track_type_crossing">ทางข้าม</string>
+    <string name="track_type_stairs">บันได</string>
+    <string name="track_too_short">เส้นทางสั้นเกินไป ต้องเดินอย่างน้อย 10 เมตร</string>
+    <string name="track_saved">บันทึกเส้นทางแล้ว</string>
+
+    <!-- หน้า Debug GPS -->
+    <string name="gps_debug_title">ข้อมูล GPS</string>
+    <string name="gps_debug_provider">Provider</string>
+    <string name="gps_debug_position">ตำแหน่ง</string>
+    <string name="gps_debug_accuracy">ความแม่นยำ</string>
+    <string name="gps_debug_satellites">ดาวเทียม (ใช้/เห็น)</string>
+    <string name="gps_debug_speed">ความเร็ว</string>
+    <string name="gps_debug_bearing">ทิศทาง</string>
+    <string name="gps_debug_age">อายุของ fix ล่าสุด</string>
+    <string name="gps_debug_distance_to_path">ระยะถึงเส้นทางใกล้สุด</string>
+    <string name="gps_debug_raw_vs_filtered">ดิบ / หลังกรอง</string>
+    <string name="gps_debug_rejected">fix ที่ถูกทิ้ง</string>
+    <string name="gps_debug_no_fix">ยังไม่มีสัญญาณ</string>
+    <string name="gps_debug_hint">ถ้าความแม่นยำดีแต่ระยะถึงเส้นทางไกลมาก แปลว่าข้อมูลแผนที่ผิด ไม่ใช่ GPS</string>
+    <string name="gps_debug_seconds_ago">%1$d วินาทีที่แล้ว</string>
 </resources>

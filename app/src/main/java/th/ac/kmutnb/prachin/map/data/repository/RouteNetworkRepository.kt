@@ -1,0 +1,98 @@
+package th.ac.kmutnb.prachin.map.data.repository
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
+import th.ac.kmutnb.prachin.map.data.model.Poi
+import th.ac.kmutnb.prachin.map.navigation.RouteGraph
+import th.ac.kmutnb.prachin.map.navigation.RouteGraphBuilder
+import th.ac.kmutnb.prachin.map.navigation.model.RouteWaypoint
+import th.ac.kmutnb.prachin.map.navigation.model.WalkPath
+
+/** The routable walking network plus where each POI sits on it. */
+data class RouteNetwork(
+    val graph: RouteGraph,
+    val paths: List<WalkPath>,
+    /** POI id -> graph node. Missing entries are in [unroutablePoiIds]. */
+    val poiNodes: Map<String, Int>,
+    /** POI id -> metres from the nearest path. */
+    val poiSnapDistances: Map<String, Double>,
+    /** POIs further than the snap limit from any path, so no route can reach them. */
+    val unroutablePoiIds: List<String>,
+) {
+    val isReady: Boolean get() = !graph.isEmpty
+
+    fun waypointFor(poi: Poi): RouteWaypoint? {
+        val node = poiNodes[poi.id] ?: return null
+        return RouteWaypoint(id = poi.id, name = poi.label, point = poi.point, nodeId = node)
+    }
+
+    /**
+     * A waypoint for a position that is not a stored POI - the user's current location, or a
+     * point they tapped. Snaps to the nearest node within [maxSnapMeters].
+     */
+    fun waypointFor(
+        id: String,
+        name: String,
+        point: GeoPoint,
+        maxSnapMeters: Double = MAX_DYNAMIC_SNAP_METERS,
+    ): RouteWaypoint? {
+        val node = graph.nearestNode(point, maxSnapMeters) ?: return null
+        return RouteWaypoint(id = id, name = name, point = point, nodeId = node)
+    }
+
+    companion object {
+        /**
+         * How far a live position may sit from the network and still be routed from. Larger
+         * than the 30 m POI limit because GPS under tree cover drifts and refusing to route
+         * at all is worse than starting from a node a few metres away.
+         */
+        const val MAX_DYNAMIC_SNAP_METERS = 60.0
+
+        val EMPTY = RouteNetwork(RouteGraph.EMPTY, emptyList(), emptyMap(), emptyMap(), emptyList())
+    }
+}
+
+/**
+ * Keeps a [RouteNetwork] in sync with the stored POIs.
+ *
+ * The graph has to be rebuilt whenever a POI moves or is added, because each POI owns a node
+ * spliced into the path it sits beside. A rebuild is a linear pass over a few thousand
+ * vertices, so doing it on every POI change is cheaper than tracking incremental edits.
+ */
+class RouteNetworkRepository(
+    private val campusRepository: CampusRepository,
+    poiRepository: PoiRepository,
+    scope: CoroutineScope,
+) {
+
+    val network: Flow<RouteNetwork> = poiRepository.pois
+        .map { pois -> build(pois) }
+        .flowOn(Dispatchers.Default)
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), RouteNetwork.EMPTY)
+
+    suspend fun current(): RouteNetwork = network.first()
+
+    private suspend fun build(pois: List<Poi>): RouteNetwork {
+        val paths = campusRepository.paths().items
+        if (paths.isEmpty()) return RouteNetwork.EMPTY
+
+        val built = RouteGraphBuilder().build(
+            paths = paths,
+            snapTargets = pois.associate { it.id to it.point },
+        )
+        return RouteNetwork(
+            graph = built.graph,
+            paths = paths,
+            poiNodes = built.snappedNodes,
+            poiSnapDistances = built.snapDistances,
+            unroutablePoiIds = built.unsnappedIds,
+        )
+    }
+}
