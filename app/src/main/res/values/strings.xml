@@ -197,7 +197,7 @@
     <string name="settings_debug_unlocked">เปิดโหมด Debug แล้ว</string>
 
     <!-- นำเข้า / ส่งออก -->
-    <string name="export_success">บันทึกไฟล์ที่ Documents/%1$s แล้ว</string>
+    <string name="export_success">บันทึกไฟล์เรียบร้อยแล้ว</string>
     <string name="export_failed">บันทึกไฟล์ไม่สำเร็จ: %1$s</string>
     <string name="import_replace_title">มีจุดที่ id ซ้ำอยู่แล้ว</string>
     <string name="import_replace_body">ต้องการเขียนทับข้อมูลเดิมหรือไม่?</string>
@@ -239,6 +239,7 @@
     <string name="track_type_stairs">บันได</string>
     <string name="track_too_short">เส้นทางสั้นเกินไป ต้องเดินอย่างน้อย 10 เมตร</string>
     <string name="track_saved">บันทึกเส้นทางแล้ว</string>
+    <string name="track_saved_count">บันทึกไว้แล้ว %1$d เส้น (ยังไม่ได้ส่งออก)</string>
 
     <!-- หน้า Debug GPS -->
     <string name="gps_debug_title">ข้อมูล GPS</string>

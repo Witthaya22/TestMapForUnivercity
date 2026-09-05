@@ -12,6 +12,7 @@ import th.ac.kmutnb.prachin.map.data.repository.CampusRepository
 import th.ac.kmutnb.prachin.map.data.repository.OfflineMapRepository
 import th.ac.kmutnb.prachin.map.data.repository.PoiRepository
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetworkRepository
+import th.ac.kmutnb.prachin.map.location.GpsLocationSource
 import th.ac.kmutnb.prachin.map.map.MapStyleProvider
 
 /**
@@ -55,4 +56,6 @@ class AppContainer(context: Context) {
     )
 
     val mapStyleProvider = MapStyleProvider(campusRepository)
+
+    val locationSource = GpsLocationSource(appContext)
 }

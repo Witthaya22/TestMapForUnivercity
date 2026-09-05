@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Single pin shape for every POI. Uploaded to the style as an SDF image so one drawable can
+  be tinted per category at render time, instead of shipping eight bitmaps.
+  The tip sits at the bottom edge, which is why the symbol layer anchors to ICON_ANCHOR_BOTTOM.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="32dp"
+    android:viewportWidth="24"
+    android:viewportHeight="32">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,0C5.37,0 0,5.37 0,12c0,8.4 12,20 12,20s12,-11.6 12,-20C24,5.37 18.63,0 12,0zM12,16.5c-2.49,0 -4.5,-2.01 -4.5,-4.5S9.51,7.5 12,7.5s4.5,2.01 4.5,4.5S14.49,16.5 12,16.5z" />
+</vector>
