@@ -1,21 +1,30 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Keep line numbers so release crash reports stay readable.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+-keepattributes Signature,*Annotation*,EnclosingMethod,InnerClasses
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# --- MapLibre Native -------------------------------------------------------------------
+# The renderer calls back into Java from C++ by exact class/member name, so anything the
+# JNI layer touches must survive shrinking and obfuscation.
+-keep class org.maplibre.android.** { *; }
+-keep interface org.maplibre.android.** { *; }
+-keep class org.maplibre.geojson.** { *; }
+-keep class org.maplibre.turf.** { *; }
+-dontwarn org.maplibre.**
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# --- Gson ------------------------------------------------------------------------------
+# Model classes are populated reflectively from field names.
+-keep class com.google.gson.** { *; }
+-keep class th.ac.kmutnb.prachin.map.data.geojson.model.** { *; }
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-dontwarn sun.misc.Unsafe
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# --- Room ------------------------------------------------------------------------------
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
+-dontwarn androidx.room.paging.**
+
+# --- NanoHTTPD -------------------------------------------------------------------------
+-dontwarn org.nanohttpd.**
+-keep class org.nanohttpd.** { *; }

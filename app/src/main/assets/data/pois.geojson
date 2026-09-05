@@ -1,0 +1,5 @@
+{
+  "type": "FeatureCollection",
+  "_comment_th": "ยังไม่มีข้อมูลจริง ให้ใช้โหมดสำรวจพิกัดในแอปเก็บพิกัดด้วย GPS แล้ว export มาทับไฟล์นี้ (ดู SETUP.md ข้อ 2) ห้ามก็อปพิกัดจาก Google Maps มาใส่ - เหตุผลอยู่ใน docs/ACCURACY.md",
+  "features": []
+}

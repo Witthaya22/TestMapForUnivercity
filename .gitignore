@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Intermediate OSM extracts for tools/build_tiles.sh (hundreds of MB, regenerable)
+/tools/.tilebuild/

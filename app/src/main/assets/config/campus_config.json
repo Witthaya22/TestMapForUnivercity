@@ -1,0 +1,18 @@
+{
+  "_comment_th": "ต้องกรอก bbox และ center ให้เป็นค่าจริงก่อนใช้งาน ดูวิธีหาค่าใน SETUP.md ข้อ 1",
+  "campusName": "มจพ. วิทยาเขตปราจีนบุรี",
+  "bbox": {
+    "minLon": 0.0,
+    "minLat": 0.0,
+    "maxLon": 0.0,
+    "maxLat": 0.0
+  },
+  "center": {
+    "lon": 0.0,
+    "lat": 0.0
+  },
+  "defaultZoom": 16.5,
+  "minZoom": 13,
+  "maxZoom": 18,
+  "styleUrl": "https://tiles.openfreemap.org/styles/liberty"
+}
