@@ -59,6 +59,9 @@ data class MapUiState(
     val isNavigating: Boolean = false,
     val isOffRoute: Boolean = false,
 
+    /** Set while the user is choosing a new position for this POI. */
+    val relocatingPoi: Poi? = null,
+
     /** POI whose detail sheet is open, either tapped or just reached. */
     val detailPoi: Poi? = null,
     val detailIsArrival: Boolean = false,
@@ -370,10 +373,56 @@ class MapViewModel(
 
     /** Long press on empty map: validate the spot before letting the user name it (F9). */
     fun onMapLongPressed(point: GeoPoint) {
+        // While a POI is being moved the same gesture places it, so the user is not asked to
+        // learn a second one.
+        val relocating = _uiState.value.relocatingPoi
+        if (relocating != null) {
+            relocatePoi(relocating.id, point, gpsAccuracy = null)
+            return
+        }
         val verdict = TapValidator.validate(point, _uiState.value.network.graph)
         when (verdict) {
             is TapVerdict.OnPath -> _uiState.update { it.copy(namingPoint = verdict.point) }
             else -> _uiState.update { it.copy(pendingPlacement = PendingPlacement(verdict)) }
+        }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Moving a POI
+    // ----------------------------------------------------------------------------------
+
+    fun beginRelocate(poi: Poi) =
+        _uiState.update { it.copy(relocatingPoi = poi, detailPoi = null) }
+
+    fun cancelRelocate() = _uiState.update { it.copy(relocatingPoi = null) }
+
+    /**
+     * Puts the POI where the user is standing.
+     *
+     * This is the accurate way to correct a point and the one docs/ACCURACY.md argues for:
+     * the position comes from the same receiver that will navigate to it, so whatever offset
+     * the imported data had disappears by construction. The accuracy of the fix is stored
+     * with it so the detail sheet can show how much to trust it.
+     */
+    fun movePoiToCurrentLocation() {
+        val poi = _uiState.value.relocatingPoi ?: return
+        val fix = (_uiState.value.locationState as? LocationState.Available)?.fix
+        if (fix == null) {
+            viewModelScope.launch { effectChannel.send(MapEffect.Message(R.string.nav_need_location)) }
+            return
+        }
+        relocatePoi(poi.id, fix.point, fix.accuracyMeters)
+    }
+
+    private fun relocatePoi(poiId: String, point: GeoPoint, gpsAccuracy: Float?) {
+        viewModelScope.launch {
+            container.poiRepository.updateLocation(poiId, point, gpsAccuracy)
+            _uiState.update { it.copy(relocatingPoi = null) }
+            effectChannel.send(MapEffect.Message(R.string.poi_moved))
+            effectChannel.send(MapEffect.CameraTo(point))
+            // A moved POI owns a node spliced into the network, so any route through it is
+            // stale until the graph is rebuilt; planRoute picks up the new one.
+            if (_uiState.value.selectedWaypoints.any { it.id == poiId }) planRoute()
         }
     }
 

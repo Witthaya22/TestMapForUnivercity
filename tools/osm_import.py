@@ -177,10 +177,53 @@ def category_for(tags: dict) -> str:
     return "custom"
 
 
-# Gates are what F4 calls "หน้ามอ 1-5", but OSM has them tagged without a name. Numbering
-# them here at least puts them in the destination list; the real names have to come from a
-# survey, which is why every generated gate carries needsSurvey.
+# Gates are what F4 calls "หน้ามอ 1-5". OSM has exactly one barrier=gate node inside this
+# campus and it carries no name, so the gates are found geometrically instead: a gate is
+# where a road crosses the campus outline. Numbering follows how many ways meet there, so
+# gate 1 is the busiest entrance. The names and the exact positions still have to come from
+# a survey, which is why every generated gate carries needsSurvey.
 GATE_NAME_TH = "ประตูทางเข้า"
+
+# Crossings closer together than this are one gate: a divided entrance road, or a gate with
+# a footway beside it, produces several crossings a few metres apart.
+GATE_CLUSTER_RADIUS_M = 45.0
+
+# A barrier=gate node this close to a crossing describes the same gate, and its coordinate is
+# better than the crossing point because a mapper placed it deliberately.
+GATE_NODE_MATCH_M = 60.0
+
+
+# Starter text for the arrival sheet (F7), which pops up with a vibration when a walker
+# reaches a waypoint. An empty description makes that sheet say "ยังไม่มีรายละเอียด", which
+# is a worse first impression than a plain sentence saying what kind of place this is. Every
+# one of these is editable in the app, and that is the point: the seed is a placeholder the
+# person who actually knows the campus replaces.
+CATEGORY_DESCRIPTION_TH = {
+    "gate": "ประตูทางเข้า-ออกวิทยาเขต",
+    "academic": "อาคารเรียน / สำนักงานคณะ",
+    "canteen": "จุดขายอาหารและเครื่องดื่ม",
+    "dorm": "ที่พักอาศัย",
+    "sport": "สนามกีฬา / อาคารกีฬา",
+    "service": "อาคารบริการ",
+    "parking": "ที่จอดรถ",
+    "custom": "",
+}
+
+# Where the generic line is not good enough to be worth shipping.
+TAG_DESCRIPTION_TH = {
+    ("amenity", "place_of_worship"): "จุดสักการะประจำวิทยาเขต คนมักแวะมาขอพรก่อนเข้าเรียนหรือก่อนสอบ",
+    ("amenity", "library"): "ห้องสมุด มีที่นั่งอ่านหนังสือและยืม-คืนหนังสือ",
+    ("amenity", "restaurant"): "โรงอาหาร",
+    ("shop", "convenience"): "ร้านสะดวกซื้อ",
+    ("amenity", "parking"): "ลานจอดรถ",
+}
+
+
+def starter_description(tags: dict, category: str) -> str:
+    for (key, value), text in TAG_DESCRIPTION_TH.items():
+        if tags.get(key) == value:
+            return text
+    return CATEGORY_DESCRIPTION_TH.get(category, "")
 
 
 # Order the POI list is presented in: gates first, then the places people head for.
@@ -514,6 +557,41 @@ def stitch_network(features: list[dict], lat0: float, max_gap_m: float = MAX_STI
     return len(connectors)
 
 
+# How far apart consecutive vertices may sit. OSM draws a straight road as two points
+# hundreds of metres apart, which is correct geometry but useless as a graph: a route can
+# only start, end or deviate at a vertex, so a walker standing halfway along one has no
+# nearby node to be attached to. GPS traces from the in-app recorder are already denser
+# than this, so densifying only ever affects imported ways.
+MAX_VERTEX_SPACING_M = 20.0
+
+
+def densify(features: list[dict], lat0: float, max_spacing_m: float = MAX_VERTEX_SPACING_M) -> int:
+    """Insert intermediate vertices so no segment is longer than `max_spacing_m`.
+
+    Endpoints are never moved and no existing vertex is dropped, so ways that share an OSM
+    node still share an identical coordinate and RouteGraphBuilder still welds them.
+
+    Returns the number of vertices added.
+    """
+    added = 0
+    for feature in features:
+        coordinates = feature["geometry"]["coordinates"]
+        dense: list[list[float]] = [coordinates[0]]
+        for (lon1, lat1), (lon2, lat2) in zip(coordinates, coordinates[1:]):
+            length = haversine_m(lat1, lon1, lat2, lon2)
+            steps = int(math.ceil(length / max_spacing_m))
+            for step in range(1, steps):
+                t = step / steps
+                dense.append([
+                    round(lon1 + (lon2 - lon1) * t, 7),
+                    round(lat1 + (lat2 - lat1) * t, 7),
+                ])
+                added += 1
+            dense.append([lon2, lat2])
+        feature["geometry"]["coordinates"] = dense
+    return added
+
+
 def largest_component_only(features: list[dict], lat0: float, merge_m: float = 1.5) -> int:
     """Drop lines that are not reachable from the main network.
 
@@ -574,6 +652,100 @@ def largest_component_only(features: list[dict], lat0: float, merge_m: float = 1
     return dropped
 
 
+def segment_intersection(p1, p2, p3, p4):
+    """Intersection of segments p1-p2 and p3-p4 in projected metres, or None."""
+    denominator = (p2[0] - p1[0]) * (p4[1] - p3[1]) - (p2[1] - p1[1]) * (p4[0] - p3[0])
+    if abs(denominator) < 1e-12:
+        return None
+    t = ((p3[0] - p1[0]) * (p4[1] - p3[1]) - (p3[1] - p1[1]) * (p4[0] - p3[0])) / denominator
+    u = ((p3[0] - p1[0]) * (p2[1] - p1[1]) - (p3[1] - p1[1]) * (p2[0] - p1[0])) / denominator
+    if 0.0 <= t <= 1.0 and 0.0 <= u <= 1.0:
+        return p1[0] + t * (p2[0] - p1[0]), p1[1] + t * (p2[1] - p1[1])
+    return None
+
+
+def find_gates(highways: list[dict], places: list[dict], area: CampusArea) -> list[dict]:
+    """Locate the campus entrances: the points where a road crosses the outline.
+
+    Far more reliable than looking for barrier=gate, which almost nobody tags. Crossings are
+    clustered because one entrance usually produces several - the road in, the road out, and
+    the footway alongside. Where a mapped gate node sits next to a cluster, its coordinate
+    wins, because someone put it there on purpose.
+
+    Each gate is returned as a POI feature. The positions are approximate by construction:
+    the outline itself is tagged `note=Outline completly estimated.`, so a gate can only be
+    as accurate as the fence line it was derived from. That is what needsSurvey is for, and
+    the app can move any POI onto a real GPS reading.
+    """
+    crossings: list[tuple[tuple[float, float], str]] = []
+    for way in highways:
+        tags = way.get("tags", {})
+        geometry = way.get("geometry")
+        if not geometry or len(geometry) < 2 or path_type_for(tags) is None:
+            continue
+        points = [project(q["lat"], q["lon"], area.lat0) for q in geometry]
+        for i in range(len(points) - 1):
+            for j in range(len(area.ring)):
+                hit = segment_intersection(
+                    points[i], points[i + 1],
+                    area.ring[j], area.ring[(j + 1) % len(area.ring)],
+                )
+                if hit is not None:
+                    crossings.append((hit, tags.get("highway", "?")))
+
+    clusters: list[dict] = []
+    for point, highway in crossings:
+        for cluster in clusters:
+            if math.hypot(point[0] - cluster["point"][0],
+                          point[1] - cluster["point"][1]) <= GATE_CLUSTER_RADIUS_M:
+                cluster["ways"].append(highway)
+                break
+        else:
+            clusters.append({"point": point, "ways": [highway], "node": None})
+
+    # A mapped gate node beats a computed crossing.
+    for element in places:
+        if element.get("tags", {}).get("barrier") != "gate":
+            continue
+        center = element_center(element)
+        if center is None:
+            continue
+        node_point = project(center[0], center[1], area.lat0)
+        for cluster in clusters:
+            if math.hypot(node_point[0] - cluster["point"][0],
+                          node_point[1] - cluster["point"][1]) <= GATE_NODE_MATCH_M:
+                cluster["point"] = node_point
+                cluster["node"] = element
+                break
+
+    # Busiest entrance first, so "ประตูทางเข้า 1" is the main gate.
+    clusters.sort(key=lambda c: (-len(c["ways"]), c["point"][0]))
+
+    features = []
+    for number, cluster in enumerate(clusters, start=1):
+        lat = cluster["point"][1] / DEG_M
+        lon = cluster["point"][0] / (DEG_M * math.cos(math.radians(area.lat0)))
+        node = cluster["node"]
+        kinds = ", ".join(sorted(set(cluster["ways"])))
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [round(lon, 7), round(lat, 7)]},
+            "properties": {
+                "id": f"gate_{number}",
+                "name": f"{GATE_NAME_TH} {number}",
+                "category": "gate",
+                "order": number,
+                "description": f"ทางเข้า-ออกวิทยาเขต ({kinds}) มีถนนตัดผ่านรั้ว {len(cluster['ways'])} เส้น",
+                "note": "",
+                "isUserCreated": False,
+                "source": (f"osm:node/{node['id']}" if node
+                           else "osm_import.py:boundary-crossing"),
+                "needsSurvey": True,
+            },
+        })
+    return features
+
+
 def element_center(element: dict) -> tuple[float, float] | None:
     center = element.get("center")
     if center:
@@ -583,19 +755,22 @@ def element_center(element: dict) -> tuple[float, float] | None:
     return None
 
 
-def build_pois(places: list[dict], area: CampusArea, campus_way_id: int) -> tuple[list[dict], dict]:
+def build_pois(
+    places: list[dict],
+    area: CampusArea,
+    campus_way_id: int,
+    gate_count: int = 0,
+) -> tuple[list[dict], dict]:
     candidates = []
-    gate_index = 0
     for element in places:
         if element["type"] == "way" and element["id"] == campus_way_id:
             continue  # the campus outline itself is not a destination
         tags = element.get("tags", {})
         if is_indoor(tags):
             continue  # a storey inside a building cannot be reached by GPS navigation
+        if tags.get("barrier") == "gate":
+            continue  # gates are located by find_gates, from where roads cross the outline
         name = tags.get("name:th") or tags.get("name")
-        if not name and tags.get("barrier") == "gate":
-            gate_index += 1
-            name = f"{GATE_NAME_TH} {gate_index}"
         if not name:
             continue  # an unnamed footprint is not something a user can pick from a list
         center = element_center(element)
@@ -618,10 +793,13 @@ def build_pois(places: list[dict], area: CampusArea, campus_way_id: int) -> tupl
         by_name.values(),
         key=lambda e: (CATEGORY_ORDER.get(category_for(e[1]), 9), e[2]),
     )
-    for order, (element, tags, name, (lat, lon)) in enumerate(ordered, start=1):
+    for order, (element, tags, name, (lat, lon)) in enumerate(ordered, start=gate_count + 1):
         category = category_for(tags)
         prefix = {"node": "n", "way": "w", "relation": "r"}[element["type"]]
         description_bits = []
+        starter = starter_description(tags, category)
+        if starter:
+            description_bits.append(starter)
         if tags.get("name:en"):
             description_bits.append(tags["name:en"])
         if tags.get("website"):
@@ -722,13 +900,22 @@ def main() -> int:
 
     stitched = stitch_network(path_features, area.lat0)
     orphaned = largest_component_only(path_features, area.lat0)
+    inserted = densify(path_features, area.lat0)
     print(f"    stitched gaps: {stitched}, dropped unreachable: {orphaned}"
-          f", final: {len(path_features)} lines")
+          f", vertices inserted: {inserted}")
+    print(f"    final: {len(path_features)} lines")
 
     print("3/4 places")
     places = fetch_places(area, args.refresh)
-    poi_features, poi_stats = build_pois(places, area, CAMPUS_WAY_ID)
-    print(f"  {len(places)} elements in the query box -> {len(poi_features)} named POIs")
+    gate_features = find_gates(highways, places, area)
+    poi_features, poi_stats = build_pois(places, area, CAMPUS_WAY_ID, len(gate_features))
+    poi_features = gate_features + poi_features
+    poi_stats["gate"] = len(gate_features)
+    print(f"  {len(places)} elements in the query box -> {len(poi_features)} POIs")
+    for gate in gate_features:
+        lon, lat = gate["geometry"]["coordinates"]
+        print(f"    {gate['properties']['name']}: {lat:.6f}, {lon:.6f}"
+              f"  ({gate['properties']['source']})")
     for key in sorted(poi_stats, key=lambda k: CATEGORY_ORDER.get(k, 9)):
         print(f"    {key:<10} {poi_stats[key]}")
 

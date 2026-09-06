@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -161,6 +162,7 @@ fun PoiDetailSheet(
     onAddWaypoint: () -> Unit,
     onSaveDetails: (name: String, description: String, note: String, category: PoiCategory) -> Unit,
     onDelete: () -> Unit,
+    onRelocate: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var editing by rememberSaveable(poi.id) { mutableStateOf(false) }
@@ -184,6 +186,7 @@ fun PoiDetailSheet(
                         editing = false
                     },
                     onDelete = onDelete,
+                    onRelocate = onRelocate,
                 )
                 return@Column
             }
@@ -249,6 +252,7 @@ private fun PoiEditForm(
     onCancel: () -> Unit,
     onSave: (String, String, String, PoiCategory) -> Unit,
     onDelete: () -> Unit,
+    onRelocate: () -> Unit,
 ) {
     var name by rememberSaveable(poi.id) { mutableStateOf(poi.name) }
     var description by rememberSaveable(poi.id) { mutableStateOf(poi.description) }
@@ -305,16 +309,29 @@ private fun PoiEditForm(
         }
     }
 
-    if (poi.isUserCreated) {
-        TextButton(onClick = { confirmingDelete = true }, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
-        }
+    OutlinedButton(onClick = onRelocate, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.poi_edit_move))
+    }
+
+    // Deleting a seeded POI is allowed too. The table is the source of truth once seeded,
+    // and a place that has been demolished or was never really there is exactly the kind of
+    // thing the person walking the campus should be able to remove.
+    TextButton(onClick = { confirmingDelete = true }, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
     }
 
     if (confirmingDelete) {
         AlertDialog(
             onDismissRequest = { confirmingDelete = false },
-            text = { Text(stringResource(R.string.poi_delete_confirm, poi.name)) },
+            text = {
+                Text(
+                    if (poi.isUserCreated) {
+                        stringResource(R.string.poi_delete_confirm, poi.name)
+                    } else {
+                        stringResource(R.string.poi_delete_confirm_seeded, poi.name)
+                    },
+                )
+            },
             confirmButton = {
                 TextButton(onClick = { confirmingDelete = false; onDelete() }) {
                     Text(stringResource(R.string.action_delete))
@@ -326,6 +343,57 @@ private fun PoiEditForm(
                 }
             },
         )
+    }
+}
+
+/**
+ * Shown while a POI is being moved.
+ *
+ * Two ways to finish, because the two situations are different: standing at the place, use
+ * the GPS reading and the point becomes survey-grade; looking at the map from elsewhere,
+ * long-press where it should be. Correcting a point that way is the whole reason the
+ * imported OSM data is safe to ship - a wrong gate is a five-second fix rather than a
+ * rebuild.
+ */
+@Composable
+fun RelocateBanner(
+    poi: Poi,
+    hasLocation: Boolean,
+    onUseCurrentLocation: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 3.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.poi_move_title, poi.name),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = stringResource(R.string.poi_move_hint),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = onUseCurrentLocation,
+                    enabled = hasLocation,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stringResource(R.string.poi_move_use_gps))
+                }
+                OutlinedButton(onClick = onCancel) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        }
     }
 }
 

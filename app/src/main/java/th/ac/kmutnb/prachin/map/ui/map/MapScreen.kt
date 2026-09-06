@@ -153,6 +153,14 @@ fun MapScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 GpsStatusBanner(state.locationState)
+                state.relocatingPoi?.let { poi ->
+                    RelocateBanner(
+                        poi = poi,
+                        hasLocation = state.hasLocation,
+                        onUseCurrentLocation = viewModel::movePoiToCurrentLocation,
+                        onCancel = viewModel::cancelRelocate,
+                    )
+                }
             }
 
             Column(
@@ -211,6 +219,7 @@ fun MapScreen(
                 viewModel.saveDetails(poi.id, name, description, note, category)
             },
             onDelete = { viewModel.deletePoi(poi.id) },
+            onRelocate = { viewModel.beginRelocate(poi) },
         )
     }
 

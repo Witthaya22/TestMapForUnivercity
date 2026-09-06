@@ -46,6 +46,21 @@ interface PoiDao {
 
     @Query("DELETE FROM poi WHERE isUserCreated = 0")
     suspend fun deleteSeeded()
+
+    /**
+     * Removes seeded POIs that a newer asset file no longer contains.
+     *
+     * `updatedAt = createdAt` is the untouched test: a row the user has renamed, annotated or
+     * moved is kept even when its id disappears from the asset, because their work is worth
+     * more than a tidy table. Everything else would otherwise linger as a duplicate when an
+     * id changes - which is exactly what happened when gates moved from `osm_n<id>` to
+     * `gate_<n>`.
+     */
+    @Query(
+        "DELETE FROM poi WHERE isUserCreated = 0 AND updatedAt = createdAt" +
+            " AND id NOT IN (:keepIds)"
+    )
+    suspend fun deleteUntouchedSeededExcept(keepIds: List<String>): Int
 }
 
 @Dao

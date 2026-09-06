@@ -56,6 +56,19 @@ class AppPreferences(context: Context) {
         store.edit { it[KEY_POIS_SEEDED] = seeded }
     }
 
+    /**
+     * Digest of the `pois.geojson` the database was last seeded from.
+     *
+     * Stored rather than a plain flag so that an app update shipping corrected coordinates
+     * or new places actually reaches an existing install. Without it, everything improved
+     * after the user's first launch would be invisible to them forever.
+     */
+    val seededPoisDigest: Flow<String?> = store.data.map { it[KEY_POIS_DIGEST] }
+
+    suspend fun setSeededPoisDigest(digest: String) {
+        store.edit { it[KEY_POIS_DIGEST] = digest }
+    }
+
     suspend fun setAutoRecalculate(enabled: Boolean) {
         store.edit { it[KEY_AUTO_RECALCULATE] = enabled }
     }
@@ -73,6 +86,7 @@ class AppPreferences(context: Context) {
         val KEY_OFFLINE_DOWNLOADED_AT = longPreferencesKey("offline_map_downloaded_at")
         val KEY_TILE_SOURCE_MODE = stringPreferencesKey("tile_source_mode")
         val KEY_POIS_SEEDED = booleanPreferencesKey("pois_seeded")
+        val KEY_POIS_DIGEST = stringPreferencesKey("pois_seed_digest")
         val KEY_AUTO_RECALCULATE = booleanPreferencesKey("auto_recalculate")
         val KEY_DEBUG_UNLOCKED = booleanPreferencesKey("debug_unlocked")
         val KEY_KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")

@@ -56,11 +56,15 @@ class CampusRepository(private val assets: AssetReader) {
         }.also { cachedPaths = it }
     }
 
-    /** POIs shipped in assets, used only to seed the database on first launch. */
-    suspend fun seedPois(): GeoJsonParseResult<Poi> = withContext(Dispatchers.IO) {
-        val json = runCatching { assets.readText(AssetPaths.POIS) }.getOrNull()
-            ?: return@withContext GeoJsonParseResult(emptyList(), emptyList())
-        GeoJsonParser.parsePois(json)
+    /** Raw text of the shipped POI file, or null when it is missing or unreadable. */
+    suspend fun poisAssetJson(): String? = withContext(Dispatchers.IO) {
+        runCatching { assets.readText(AssetPaths.POIS) }.getOrNull()
+    }
+
+    /** POIs shipped in assets, used to seed the database. */
+    suspend fun seedPois(): GeoJsonParseResult<Poi> {
+        val json = poisAssetJson() ?: return GeoJsonParseResult(emptyList(), emptyList())
+        return GeoJsonParser.parsePois(json)
     }
 
     /** True when an MBTiles pack is present, i.e. TileSourceMode.BUNDLED can be offered. */

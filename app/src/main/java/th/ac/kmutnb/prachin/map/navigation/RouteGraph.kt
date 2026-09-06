@@ -82,9 +82,10 @@ class RouteGraph(
     /**
      * Nearest graph node within [maxDistanceMeters], or `null`.
      *
-     * Used to anchor the live GPS position onto the graph. Nodes recorded by the in-app track
-     * recorder sit roughly 3 m apart, so snapping to a node rather than to an exact point on
-     * an edge costs at most ~1.5 m - well inside GPS noise.
+     * Only meaningful when the caller genuinely wants a vertex. To anchor a real-world
+     * position onto the network use [project] instead: vertex spacing says nothing about how
+     * far away the road is, and on imported OSM ways two vertices can be hundreds of metres
+     * apart along a perfectly straight road.
      */
     fun nearestNode(point: GeoPoint, maxDistanceMeters: Double = Double.MAX_VALUE): Int? {
         var bestIndex: Int? = null

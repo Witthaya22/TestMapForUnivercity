@@ -131,6 +131,12 @@
     <string name="poi_edit_note">โน้ตส่วนตัว</string>
     <string name="poi_edit_name_required">กรุณากรอกชื่อสถานที่</string>
     <string name="poi_edit_saved">บันทึกแล้ว</string>
+    <string name="poi_edit_move">ย้ายตำแหน่งจุดนี้</string>
+    <string name="poi_move_title">กำลังย้าย \"%1$s\"</string>
+    <string name="poi_move_hint">แตะค้างบนแผนที่ตรงตำแหน่งที่ถูกต้อง หรือถ้ายืนอยู่ตรงจุดนั้นแล้วให้กดใช้ตำแหน่งปัจจุบัน (แม่นกว่า)</string>
+    <string name="poi_move_use_gps">ใช้ตำแหน่งที่ฉันยืนอยู่</string>
+    <string name="poi_moved">ย้ายตำแหน่งแล้ว</string>
+    <string name="poi_delete_confirm_seeded">ลบจุด \"%1$s\" ออกจากเครื่อง?\n\nจุดนี้มาจากข้อมูลตั้งต้น ถ้าลบแล้วจะกลับมาต่อเมื่อ import ไฟล์ใหม่</string>
     <string name="poi_delete_confirm">ลบจุด \"%1$s\" ออกจากเครื่อง?</string>
 
     <!-- เพิ่มจุดจากการแตะแผนที่ (F9) -->

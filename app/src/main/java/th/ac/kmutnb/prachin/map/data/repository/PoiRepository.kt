@@ -14,6 +14,7 @@ import th.ac.kmutnb.prachin.map.data.local.toPoi
 import th.ac.kmutnb.prachin.map.data.model.Poi
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.data.prefs.AppPreferences
+import java.security.MessageDigest
 import java.util.UUID
 
 /** Outcome of importing a POI GeoJSON file. */
@@ -45,20 +46,42 @@ class PoiRepository(
     suspend fun all(): List<Poi> = poiDao.getAll().map { it.toPoi() }
 
     /**
-     * Copies the shipped POIs into the database the first time the app runs.
+     * Copies the shipped POIs into the database, and does it again whenever a new build
+     * ships a different `pois.geojson`.
      *
-     * Uses insert-if-absent rather than upsert so that re-running it after an asset update
-     * adds new places without overwriting anything the user has edited.
+     * Keyed on a digest of the asset rather than a one-shot flag: a corrected gate or a
+     * newly added building is worth nothing if it only reaches people who install the app
+     * for the first time. Insert-if-absent means an existing row always wins, so re-seeding
+     * can add places but can never undo an edit, a move or a note the user made.
+     *
+     * @return how many rows were actually inserted.
      */
     suspend fun seedIfNeeded(): Int {
-        if (preferences.poisSeeded.first() && poiDao.count() > 0) return 0
-        val seed = campusRepository.seedPois()
-        if (seed.items.isNotEmpty()) {
-            poiDao.insertIfAbsent(seed.items.map { it.toEntity() })
+        val json = campusRepository.poisAssetJson() ?: return 0
+        val digest = digestOf(json)
+        val alreadySeeded = preferences.seededPoisDigest.first() == digest && poiDao.count() > 0
+        if (alreadySeeded) return 0
+
+        val seed = GeoJsonParser.parsePois(json)
+        val inserted = if (seed.items.isEmpty()) {
+            0
+        } else {
+            val rows = poiDao.insertIfAbsent(seed.items.map { it.toEntity() })
+                .count { it != -1L }
+            // Drop stale seeds the new file no longer has, so a renumbered id leaves a
+            // corrected place rather than two of them on the map.
+            poiDao.deleteUntouchedSeededExcept(seed.items.map { it.id })
+            rows
         }
         preferences.setPoisSeeded(true)
-        return seed.items.size
+        preferences.setSeededPoisDigest(digest)
+        return inserted
     }
+
+    private fun digestOf(json: String): String =
+        MessageDigest.getInstance("SHA-256")
+            .digest(json.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
 
     suspend fun upsert(poi: Poi) = poiDao.upsert(poi.toEntity())
 
@@ -83,6 +106,27 @@ class PoiRepository(
             ),
         )
     }
+
+    /**
+      * Moves a POI to a new position.
+      *
+      * The whole point of shipping OSM data as a starting point is that it can be corrected
+      * without a rebuild: a building centroid traced from imagery is not where the entrance
+      * is, and a gate derived from an estimated fence line is only as good as that fence.
+      * Passing [gpsAccuracy] marks the position as surveyed, which is what the detail sheet
+      * shows as evidence the point is now trustworthy.
+      */
+     suspend fun updateLocation(id: String, point: GeoPoint, gpsAccuracy: Float? = null) {
+         val existing = poiDao.findById(id) ?: return
+         poiDao.upsert(
+             existing.copy(
+                 lat = point.lat,
+                 lon = point.lon,
+                 gpsAccuracy = gpsAccuracy ?: existing.gpsAccuracy,
+                 updatedAt = System.currentTimeMillis(),
+             ),
+         )
+     }
 
     suspend fun delete(id: String) = poiDao.deleteById(id)
 

@@ -22,3 +22,6 @@ local.properties
 
 # Python bytecode from the scripts in tools/
 __pycache__/
+
+# Kotlin compiler daemon session files
+/.kotlin/

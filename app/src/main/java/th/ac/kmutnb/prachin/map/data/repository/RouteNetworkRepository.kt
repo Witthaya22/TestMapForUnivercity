@@ -35,7 +35,13 @@ data class RouteNetwork(
 
     /**
      * A waypoint for a position that is not a stored POI - the user's current location, or a
-     * point they tapped. Snaps to the nearest node within [maxSnapMeters].
+     * point they tapped.
+     *
+     * Projects onto the nearest *segment* and takes the closer end of it. Measuring against
+     * nodes instead would ask "how far is the nearest corner of the road", which is a very
+     * different question from "how far is the road": over half of this network's length sits
+     * on segments longer than 60 m, so standing in the middle of one and being refused a
+     * route was the common case rather than an edge case.
      */
     fun waypointFor(
         id: String,
@@ -43,15 +49,22 @@ data class RouteNetwork(
         point: GeoPoint,
         maxSnapMeters: Double = MAX_DYNAMIC_SNAP_METERS,
     ): RouteWaypoint? {
-        val node = graph.nearestNode(point, maxSnapMeters) ?: return null
-        return RouteWaypoint(id = id, name = name, point = point, nodeId = node)
+        val projection = graph.project(point) ?: return null
+        if (projection.distanceMeters > maxSnapMeters) return null
+        return RouteWaypoint(
+            id = id,
+            name = name,
+            point = point,
+            nodeId = projection.nearestNode,
+        )
     }
 
     companion object {
         /**
-         * How far a live position may sit from the network and still be routed from. Larger
-         * than the 30 m POI limit because GPS under tree cover drifts and refusing to route
-         * at all is worse than starting from a node a few metres away.
+         * How far a live position may sit from a road or path and still be routed from.
+         * Generous because GPS under tree cover drifts, and refusing to route at all is worse
+         * than starting from a point a few metres off. Measured perpendicular to the network,
+         * so this really is "how far from the road am I".
          */
         const val MAX_DYNAMIC_SNAP_METERS = 60.0
 
