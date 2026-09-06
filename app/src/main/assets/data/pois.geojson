@@ -1,5 +1,537 @@
 {
-  "type": "FeatureCollection",
-  "_comment_th": "ยังไม่มีข้อมูลจริง ให้ใช้โหมดสำรวจพิกัดในแอปเก็บพิกัดด้วย GPS แล้ว export มาทับไฟล์นี้ (ดู SETUP.md ข้อ 2) ห้ามก็อปพิกัดจาก Google Maps มาใส่ - เหตุผลอยู่ใน docs/ACCURACY.md",
-  "features": []
+ "type": "FeatureCollection",
+ "_comment_th": "สร้างจาก OpenStreetMap (ODbL) ด้วย tools/osm_import.py — เป็นข้อมูลตั้งต้น ยังไม่ได้สำรวจด้วย GPS จุดที่มี needsSurvey=true ควรเดินเก็บพิกัดจริงด้วย Surveyor Mode ทับ (ดู SETUP.md ข้อ 2)",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3659447,
+     14.1646451
+    ]
+   },
+   "properties": {
+    "id": "osm_n12280021032",
+    "name": "ประตูทางเข้า 1",
+    "category": "gate",
+    "order": 1,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:node/12280021032",
+    "needsSurvey": true,
+    "distanceToPathM": 0.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3613805,
+     14.1610422
+    ]
+   },
+   "properties": {
+    "id": "osm_w1156848815",
+    "name": "คณะบริหารธุรกิจและอุตสาหกรรมบริการ",
+    "category": "academic",
+    "order": 2,
+    "description": "https://bas.kmutnb.ac.th/",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1156848815",
+    "needsSurvey": true,
+    "distanceToPathM": 21.4
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3428077,
+     14.1562476
+    ]
+   },
+   "properties": {
+    "id": "osm_w1156848832",
+    "name": "คณะวิศวกรรมศาสตร์",
+    "category": "academic",
+    "order": 3,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1156848832",
+    "needsSurvey": true,
+    "distanceToPathM": 26.4
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3490882,
+     14.1572442
+    ]
+   },
+   "properties": {
+    "id": "osm_r18181488",
+    "name": "คณะอุตสาหกรรมการเกษตร",
+    "category": "academic",
+    "order": 4,
+    "description": "https://agro.kmutnb.ac.th/",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:relation/18181488",
+    "needsSurvey": true,
+    "shortName": "กอ",
+    "distanceToPathM": 27.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.345827,
+     14.1589919
+    ]
+   },
+   "properties": {
+    "id": "osm_w518187191",
+    "name": "คณะเทคโนโลยีและการจัดการอุตสาหกรรม",
+    "category": "academic",
+    "order": 5,
+    "description": "https://www.fitm.kmutnb.ac.th/",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518187191",
+    "needsSurvey": true,
+    "shortName": "ตึกเทคโน",
+    "distanceToPathM": 24.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3444196,
+     14.1586139
+    ]
+   },
+   "properties": {
+    "id": "osm_w1156848830",
+    "name": "คณะเทคโนโลยีและการจัดการอุตสาหกรรม lab",
+    "category": "academic",
+    "order": 6,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1156848830",
+    "needsSurvey": true,
+    "distanceToPathM": 32.3
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.356442,
+     14.1608286
+    ]
+   },
+   "properties": {
+    "id": "osm_w1326072547",
+    "name": "หอประชุมและกิจการนักศึกษา",
+    "category": "academic",
+    "order": 7,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1326072547",
+    "needsSurvey": true,
+    "distanceToPathM": 66.8
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3480452,
+     14.1580272
+    ]
+   },
+   "properties": {
+    "id": "osm_w518187209",
+    "name": "อาคารบริหาร",
+    "category": "academic",
+    "order": 8,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518187209",
+    "needsSurvey": true,
+    "distanceToPathM": 24.5
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3436476,
+     14.1579494
+    ]
+   },
+   "properties": {
+    "id": "osm_w1315369173",
+    "name": "อาคารปฏิบัติการ เทคโนโลยีเครื่องจักรกลเกษร",
+    "category": "academic",
+    "order": 9,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1315369173",
+    "needsSurvey": true,
+    "distanceToPathM": 23.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3424975,
+     14.1563474
+    ]
+   },
+   "properties": {
+    "id": "osm_w1156848831",
+    "name": "อาคารปฏิบัติการวิศวกรรม เครื่องมือวัดและบริการวิจัย",
+    "category": "academic",
+    "order": 10,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1156848831",
+    "needsSurvey": true,
+    "distanceToPathM": 19.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3605922,
+     14.160729
+    ]
+   },
+   "properties": {
+    "id": "osm_w1156848817",
+    "name": "อาคารศูนย์วิจัยเกษตรแปรรูป",
+    "category": "academic",
+    "order": 11,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1156848817",
+    "needsSurvey": true,
+    "distanceToPathM": 9.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3462192,
+     14.1588789
+    ]
+   },
+   "properties": {
+    "id": "osm_n12273238370",
+    "name": "ร้านสะดวกซื้อ",
+    "category": "canteen",
+    "order": 12,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:node/12273238370",
+    "needsSurvey": true,
+    "distanceToPathM": 19.9
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3452317,
+     14.1598677
+    ]
+   },
+   "properties": {
+    "id": "osm_w518190355",
+    "name": "อาคารโรงอาหาร 1",
+    "category": "canteen",
+    "order": 13,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518190355",
+    "needsSurvey": true,
+    "distanceToPathM": 17.3
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3453349,
+     14.1602046
+    ]
+   },
+   "properties": {
+    "id": "osm_w518190348",
+    "name": "อาคารโรงอาหาร 2",
+    "category": "canteen",
+    "order": 14,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518190348",
+    "needsSurvey": true,
+    "distanceToPathM": 15.5
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3455073,
+     14.1654519
+    ]
+   },
+   "properties": {
+    "id": "osm_r18181510",
+    "name": "หอพักชาย",
+    "category": "dorm",
+    "order": 15,
+    "description": "Male dormitory",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:relation/18181510",
+    "needsSurvey": true,
+    "distanceToPathM": 35.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3442906,
+     14.1644769
+    ]
+   },
+   "properties": {
+    "id": "osm_w1156848811",
+    "name": "หอพักหญิง 1",
+    "category": "dorm",
+    "order": 16,
+    "description": "Female dormitory 1",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1156848811",
+    "needsSurvey": true,
+    "distanceToPathM": 11.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3431863,
+     14.1649703
+    ]
+   },
+   "properties": {
+    "id": "osm_w1326070841",
+    "name": "หอพักหญิง 2",
+    "category": "dorm",
+    "order": 17,
+    "description": "Female dormitory 2",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1326070841",
+    "needsSurvey": true,
+    "distanceToPathM": 15.7
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3643016,
+     14.1612628
+    ]
+   },
+   "properties": {
+    "id": "osm_w518190463",
+    "name": "เต็งสิริอพาร์ทเมนท์",
+    "category": "dorm",
+    "order": 18,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518190463",
+    "needsSurvey": true,
+    "distanceToPathM": 14.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3622206,
+     14.1614954
+    ]
+   },
+   "properties": {
+    "id": "osm_w518194288",
+    "name": "โรงแรมวิลลาวิชาลัย",
+    "category": "dorm",
+    "order": 19,
+    "description": "Villa Vichalai Hotel / https://line.me/ti/p/ie3SGmnmDD",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518194288",
+    "needsSurvey": true,
+    "distanceToPathM": 20.2
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3452219,
+     14.1640787
+    ]
+   },
+   "properties": {
+    "id": "osm_w1156848812",
+    "name": "อาคารศูนย์กีฬาเฉลิมพระเกียรติ",
+    "category": "sport",
+    "order": 20,
+    "description": "Chalermprakiat Sports Center Building",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/1156848812",
+    "needsSurvey": true,
+    "distanceToPathM": 26.3
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3472077,
+     14.1633601
+    ]
+   },
+   "properties": {
+    "id": "osm_w518190345",
+    "name": "โรงยิมอเนกประสงค์",
+    "category": "sport",
+    "order": 21,
+    "description": "Multipurpose Gym",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518190345",
+    "needsSurvey": true,
+    "distanceToPathM": 26.6
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.345984,
+     14.1590484
+    ]
+   },
+   "properties": {
+    "id": "osm_n12273238371",
+    "name": "ร้านถ่ายเอกสาร",
+    "category": "service",
+    "order": 22,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:node/12273238371",
+    "needsSurvey": true,
+    "distanceToPathM": 19.9
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3472801,
+     14.1605492
+    ]
+   },
+   "properties": {
+    "id": "osm_w518190349",
+    "name": "หลวงพ่อสิงห์",
+    "category": "service",
+    "order": 23,
+    "description": "",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518190349",
+    "needsSurvey": true,
+    "distanceToPathM": 6.8
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     101.3458533,
+     14.1574258
+    ]
+   },
+   "properties": {
+    "id": "osm_w518187207",
+    "name": "อาคารสิรินธร (สำนักหอสมุดกลาง)",
+    "category": "service",
+    "order": 24,
+    "description": "https://library.kmutnb.ac.th/th/",
+    "note": "",
+    "isUserCreated": false,
+    "source": "osm:way/518187207",
+    "needsSurvey": true,
+    "shortName": "หอสมุด",
+    "distanceToPathM": 34.6
+   }
+  }
+ ]
 }

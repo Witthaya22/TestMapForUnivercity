@@ -36,7 +36,15 @@ VALID_PATH_TYPES = {"footway", "road", "crossing", "stairs"}
 THAILAND_LAT = (5.0, 21.0)
 THAILAND_LON = (97.0, 106.0)
 
+# A surveyed point that sits far from every recorded path means a path is missing: the
+# surveyor stood there, so a way to walk there exists.
 MAX_POI_DISTANCE_TO_PATH_M = 30.0
+
+# A POI seeded from OSM (tools/osm_import.py) is the centroid of a building footprint, not
+# a spot someone stood on. A large building can legitimately have its centre this far from
+# the nearest road, and RouteGraphBuilder still snaps it onto the network. Past this it is
+# no longer a plausible centroid offset but a genuinely unreachable point.
+MAX_SEEDED_POI_DISTANCE_TO_PATH_M = 120.0
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -231,9 +239,12 @@ def validate_pois(config: dict | None) -> list[tuple[str, float, float]]:
         ):
             error(f"{label}: อยู่นอก bbox ของ campus_config.json — แผนที่ออฟไลน์จะไม่ครอบคลุมจุดนี้")
 
-        result.append((str(poi_id), lat, lon))
+        # Seeded points are held to a looser reachability limit; see the constants above.
+        seeded = str(props.get("source", "")).startswith("osm:")
+        result.append((str(poi_id), lat, lon, seeded))
 
-    print(f"  pois.geojson: {len(result)} จุด")
+    seeded_count = sum(1 for r in result if r[3])
+    print(f"  pois.geojson: {len(result)} จุด (จาก OSM {seeded_count} / สำรวจเอง {len(result) - seeded_count})")
     return result
 
 
@@ -309,26 +320,33 @@ def validate_paths(config: dict | None) -> list[list[tuple[float, float]]]:
 # 4. cross-check: every POI must be reachable from the path network
 # --------------------------------------------------------------------------------------
 def validate_poi_reachability(
-    pois: list[tuple[str, float, float]],
+    pois: list[tuple[str, float, float, bool]],
     lines: list[list[tuple[float, float]]],
 ) -> None:
     if not pois or not lines:
         return
     worst = 0.0
-    for poi_id, lat, lon in pois:
+    for poi_id, lat, lon, seeded in pois:
         nearest = min(
             distance_to_segment_m(lat, lon, a[0], a[1], b[0], b[1])
             for line in lines
             for a, b in zip(line, line[1:])
         )
         worst = max(worst, nearest)
-        if nearest > MAX_POI_DISTANCE_TO_PATH_M:
+        limit = MAX_SEEDED_POI_DISTANCE_TO_PATH_M if seeded else MAX_POI_DISTANCE_TO_PATH_M
+        if nearest > limit:
             error(
-                f"pois.geojson '{poi_id}': ห่างจากเส้นทางเดินที่ใกล้ที่สุด {nearest:.1f} ม. "
-                f"(เกิน {MAX_POI_DISTANCE_TO_PATH_M:.0f} ม.) — นำทางไปจุดนี้ไม่ได้ "
-                f"ต้องบันทึกเส้นทางเพิ่มหรือย้ายจุดให้ใกล้ทางเดิน"
+                f"pois.geojson '{poi_id}': ห่างจากเส้นทางที่ใกล้ที่สุด {nearest:.1f} ม. "
+                f"(เกิน {limit:.0f} ม.) — นำทางไปจุดนี้ไม่ได้ "
+                f"ต้องบันทึกเส้นทางเพิ่มหรือย้ายจุดให้ใกล้เส้นทาง"
             )
-    print(f"  ระยะจาก POI ถึงทางเดินที่ไกลที่สุด: {worst:.1f} ม.")
+        elif seeded and nearest > MAX_POI_DISTANCE_TO_PATH_M:
+            warn(
+                f"pois.geojson '{poi_id}': ห่างจากเส้นทาง {nearest:.1f} ม. "
+                f"— เป็นจุดกึ่งกลางอาคารจาก OSM แอปจะ snap ลงถนนที่ใกล้ที่สุดให้ "
+                f"แต่ถ้าอยากให้แม่นควรสำรวจจุดหน้าอาคารด้วย Surveyor Mode"
+            )
+    print(f"  ระยะจาก POI ถึงเส้นทางที่ไกลที่สุด: {worst:.1f} ม.")
 
 
 def main() -> int:

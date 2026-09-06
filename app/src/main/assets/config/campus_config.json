@@ -1,17 +1,17 @@
 {
-  "_comment_th": "ต้องกรอก bbox และ center ให้เป็นค่าจริงก่อนใช้งาน ดูวิธีหาค่าใน SETUP.md ข้อ 1",
+  "_comment_th": "ค่าพิกัดมาจาก OpenStreetMap way/518190351 (ODbL) ผ่าน tools/osm_import.py เผื่อขอบนอกรั้ว 200 ม. — bbox นี้คือพื้นที่เดียวที่แอปจะดาวน์โหลดตอนออฟไลน์",
   "campusName": "มจพ. วิทยาเขตปราจีนบุรี",
   "bbox": {
-    "minLon": 0.0,
-    "minLat": 0.0,
-    "maxLon": 0.0,
-    "maxLat": 0.0
+    "minLon": 101.338353,
+    "minLat": 14.151786,
+    "maxLon": 101.367897,
+    "maxLat": 14.170261
   },
   "center": {
-    "lon": 0.0,
-    "lat": 0.0
+    "lon": 101.352962,
+    "lat": 14.161024
   },
-  "defaultZoom": 16.5,
+  "defaultZoom": 15.5,
   "minZoom": 13,
   "maxZoom": 18,
   "styleUrl": "https://tiles.openfreemap.org/styles/liberty"

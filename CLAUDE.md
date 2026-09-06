@@ -1,8 +1,12 @@
 # CLAUDE.md — บริบทโปรเจกต์สำหรับ AI Agent
 
 ## โปรเจกต์นี้คืออะไร
-แอป Android (Kotlin) แผนที่นำทางเดินเท้าภายใน **มจพ. วิทยาเขตปราจีนบุรี**
+แอป Android (Kotlin) แผนที่นำทางในพื้นที่ **มจพ. วิทยาเขตปราจีนบุรี**
 ทำงาน **ออฟไลน์ 100%** หลังดาวน์โหลดแผนที่ครั้งแรก
+
+**ขอบเขตการนำทาง:** นำทางกลางแจ้งด้วย GPS บน **โครงข่ายเส้นทางจริงในมอ = ถนน + ทางเดิน**
+เช่น จากประตูมอไปหน้าอาคารคณะ ไม่ใช่แค่ทางเท้า และ **ไม่รวมทางเดินภายในอาคาร**
+เพราะ GPS ใช้ในร่มไม่ได้ (ดู `docs/ACCURACY.md` หัวข้อ "ข้อจำกัดที่แก้ไม่ได้")
 
 - Gradle root: `TestMapForUnivercity/` (module เดียวคือ `:app`)
 - Package / applicationId: `th.ac.kmutnb.prachin.map`
@@ -23,6 +27,9 @@
 7. vector tile ใน MBTiles ถูก gzip ไว้ → ต้องตั้ง header `Content-Encoding: gzip` ไม่งั้นจอขาว
 8. String ที่ผู้ใช้เห็นต้องอยู่ใน `res/values/strings.xml` เป็นภาษาไทยทั้งหมด
    โค้ดและคอมเมนต์เป็นภาษาอังกฤษ
+9. ห้าม import `androidx.compose.material.icons.*` — `material-icons-core` หยุดที่ 1.7.8
+   และไม่อยู่ใน Compose BOM ที่โปรเจกต์นี้ใช้แล้ว ให้ใช้ vector drawable ใน `res/drawable/`
+   ผ่าน `painterResource(R.drawable.ic_*)` แทน
 
 ## Stack
 | ส่วน | ของที่ใช้ | เวอร์ชัน | License |
@@ -42,26 +49,34 @@
 ## ไฟล์สำคัญ
 | ไฟล์ | หน้าที่ |
 |---|---|
-| `app/src/main/assets/config/campus_config.json` | bbox / center / zoom / styleUrl — **ต้องกรอกก่อนใช้** |
-| `app/src/main/assets/data/pois.geojson` | จุดต่าง ๆ ในมอ |
-| `app/src/main/assets/data/paths.geojson` | โครงข่ายทางเดิน (กราฟ routing + ตรวจปักจุดผิดทาง) |
+| `app/src/main/assets/config/campus_config.json` | bbox / center / zoom / styleUrl — กรอกแล้วจากข้อมูล OSM |
+| `app/src/main/assets/data/pois.geojson` | จุดต่าง ๆ ในมอ (ตั้งต้นจาก OSM) |
+| `app/src/main/assets/data/paths.geojson` | โครงข่ายเส้นทาง **ถนน + ทางเดิน** (กราฟ routing + ตรวจปักจุดผิดทาง) |
+| `tools/osm_import.py` | ดึง bbox / POI / เส้นทาง จาก OpenStreetMap มาเขียนไฟล์ 3 ตัวข้างบน |
 | `core/geo/GeoUtils.kt` | สูตรระยะทางทั้งหมด — แก้ที่นี่ที่เดียว |
 | `navigation/AStarRouter.kt` | หาเส้นทาง |
+| `navigation/RouteGraphBuilder.kt` | สร้างกราฟ + merge node 1.5 ม. + snap POI ลงถนน |
 | `data/repository/OfflineMapRepository.kt` | ดาวน์โหลด/จัดการแผนที่ออฟไลน์ |
-| `map/LocalTileServer.kt` | เสิร์ฟ MBTiles โหมด BUNDLED |
+| `map/LocalTileServer.kt` | เสิร์ฟ MBTiles โหมด BUNDLED (NanoHTTPD บน 127.0.0.1) |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
 ./gradlew assembleDebug            # build (Windows: gradlew.bat)
 ./gradlew test                     # unit test
 ./gradlew installDebug             # ติดตั้งลงเครื่อง
+python3 tools/osm_import.py        # ดึงข้อมูลจาก OSM มาเขียน config + pois + paths ใหม่
 python3 tools/geojson_validate.py  # ตรวจไฟล์พิกัดก่อน commit
 bash tools/build_tiles.sh          # สร้าง MBTiles ใหม่ (โหมด BUNDLED)
 ```
 
 ## เรื่องพิกัดไม่ตรง (อ่าน `docs/ACCURACY.md` ก่อนแก้)
-ห้ามก็อปพิกัดจาก Google Maps มาใส่ ภาพดาวเทียม Google มี offset กับข้อมูล OSM ได้ 3–15 ม.
-ให้ใช้ **Surveyor Mode** ในแอปเก็บพิกัดจริงจาก GPS แล้ว export ทับ `pois.geojson` เท่านั้น
+**ห้ามก็อปพิกัดจาก Google Maps มาใส่** ภาพดาวเทียม Google มี offset กับข้อมูล OSM ได้ 3–15 ม.
+
+แหล่งพิกัดที่ใช้ได้มี 2 ทางเท่านั้น เรียงตามความแม่น:
+1. **Surveyor Mode** ในแอป — เก็บพิกัดจริงด้วย GPS เครื่องเดียวกับที่ใช้นำทาง offset เป็นศูนย์โดยนิยาม
+2. **OpenStreetMap** ผ่าน `tools/osm_import.py` — เป็นชุดข้อมูลเดียวกับที่ basemap วาดมา
+   จึงไม่มีปัญหา offset แบบ Google แต่เป็นแค่ข้อมูลตั้งต้น (จุด POI = centroid ของอาคาร
+   คลาดได้หลายเมตร) จุดที่มี `needsSurvey: true` ควรเดินสำรวจทับ
 
 ## Definition of Done ของทุกฟีเจอร์
 - `./gradlew assembleDebug` ผ่าน + `./gradlew test` เขียว

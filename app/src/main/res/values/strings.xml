@@ -49,7 +49,7 @@
 
     <!-- Onboarding: สิทธิ์ -->
     <string name="onboarding_welcome_title">ยินดีต้อนรับ</string>
-    <string name="onboarding_welcome_body">แอปนี้ช่วยนำทางเดินเท้าภายใน มจพ. วิทยาเขตปราจีนบุรี\n\nดาวน์โหลดแผนที่ครั้งเดียว แล้วใช้ได้ตลอดโดยไม่ต้องต่อเน็ต</string>
+    <string name="onboarding_welcome_body">แอปนี้ช่วยนำทางเดินภายใน มจพ. วิทยาเขตปราจีนบุรี ตามถนนและทางเดินจริงในมหาวิทยาลัย\n\nดาวน์โหลดแผนที่ครั้งเดียว แล้วใช้ได้ตลอดโดยไม่ต้องต่อเน็ต</string>
     <string name="permission_title">ขอสิทธิ์เข้าถึงตำแหน่ง</string>
     <string name="permission_rationale">แอปต้องใช้ตำแหน่งจาก GPS เพื่อแสดงว่าคุณอยู่ตรงไหนและบอกระยะทางที่เหลือระหว่างเดิน\n\nตำแหน่งของคุณถูกใช้ในเครื่องเท่านั้น ไม่ถูกส่งออกไปที่ไหน</string>
     <string name="permission_grant">อนุญาต</string>
@@ -101,7 +101,7 @@
     <string name="poi_list_empty">ยังไม่มีจุดในระบบ\n\nใช้โหมดสำรวจพิกัดเก็บพิกัดจริงก่อน (ตั้งค่า → โหมดสำรวจพิกัด)</string>
     <string name="poi_list_search">ค้นหาสถานที่</string>
     <string name="poi_unroutable_badge">นำทางไม่ได้</string>
-    <string name="poi_unroutable_explain">จุดนี้อยู่ห่างจากเส้นทางเดินที่บันทึกไว้เกิน 30 เมตร จึงยังนำทางไปไม่ได้ ให้บันทึกเส้นทางเพิ่มในโหมดสำรวจ</string>
+    <string name="poi_unroutable_explain">จุดนี้อยู่ไกลจากถนนและทางเดินที่มีข้อมูลมากเกินไป จึงยังนำทางไปไม่ได้ ให้บันทึกเส้นทางเพิ่มในโหมดสำรวจ</string>
     <string name="poi_distance_away">ห่าง %1$s</string>
 
     <!-- หมวดหมู่ -->
@@ -135,14 +135,14 @@
 
     <!-- เพิ่มจุดจากการแตะแผนที่ (F9) -->
     <string name="add_point_title">เพิ่มจุดตรงนี้</string>
-    <string name="add_point_off_path_warning_title">จุดอยู่ห่างจากทางเดิน</string>
-    <string name="add_point_off_path_warning_body">จุดที่เลือกอยู่ห่างจากทางเดิน %1$d เมตร\n\nกรุณาปักจุดบนเส้นทางเดินเพื่อให้นำทางได้ถูกต้อง</string>
+    <string name="add_point_off_path_warning_title">จุดอยู่ห่างจากเส้นทาง</string>
+    <string name="add_point_off_path_warning_body">จุดที่เลือกอยู่ห่างจากเส้นทางที่ใกล้ที่สุด %1$d เมตร\n\nกรุณาปักจุดบนถนนหรือทางเดินเพื่อให้นำทางได้ถูกต้อง</string>
     <string name="add_point_move_to_path">ย้ายไปจุดใกล้สุดบนทาง</string>
     <string name="add_point_keep_anyway">ยืนยันตำแหน่งนี้</string>
     <string name="add_point_blocked_title">ปักจุดตรงนี้ไม่ได้</string>
-    <string name="add_point_blocked_body">จุดนี้ไม่อยู่บนเส้นทางเดินในมหาวิทยาลัย ไม่สามารถใช้นำทางได้\n\nกรุณาเลือกจุดใหม่บนถนนหรือทางเดิน</string>
-    <string name="add_point_no_network_title">ยังไม่มีข้อมูลเส้นทางเดิน</string>
-    <string name="add_point_no_network_body">ยังไม่ได้บันทึกเส้นทางเดินในมหาวิทยาลัย จึงตรวจไม่ได้ว่าจุดนี้อยู่บนทางหรือไม่\n\nใช้โหมดบันทึกเส้นทางก่อน (ตั้งค่า → โหมดสำรวจพิกัด)</string>
+    <string name="add_point_blocked_body">จุดนี้ไม่อยู่บนเส้นทางในมหาวิทยาลัย ไม่สามารถใช้นำทางได้\n\nกรุณาเลือกจุดใหม่บนถนนหรือทางเดิน</string>
+    <string name="add_point_no_network_title">ยังไม่มีข้อมูลเส้นทาง</string>
+    <string name="add_point_no_network_body">ยังไม่มีข้อมูลถนนและทางเดินในมหาวิทยาลัย จึงตรวจไม่ได้ว่าจุดนี้อยู่บนเส้นทางหรือไม่\n\nใช้โหมดบันทึกเส้นทางก่อน (ตั้งค่า → โหมดสำรวจพิกัด)</string>
 
     <!-- นำทาง -->
     <string name="nav_start">เริ่มนำทาง</string>
@@ -158,7 +158,7 @@
     <string name="nav_clear_all">ล้างทั้งหมด</string>
     <string name="nav_route_summary">%1$s · %2$s</string>
     <string name="nav_no_path_title">ไม่พบเส้นทาง</string>
-    <string name="nav_no_path_body">ไม่พบเส้นทางเดินไปยังจุดนี้\n\nลองเลือกจุดอื่น หรือเพิ่มเส้นทางในโหมดสำรวจ</string>
+    <string name="nav_no_path_body">ไม่พบเส้นทางไปยังจุดนี้\n\nลองเลือกจุดอื่น หรือเพิ่มเส้นทางในโหมดสำรวจ</string>
     <string name="nav_need_location">ต้องรอสัญญาณ GPS ก่อนจึงจะเริ่มนำทางได้</string>
     <string name="nav_need_two_points">ต้องเลือกอย่างน้อย 1 จุดหมาย</string>
     <string name="nav_arrived_title">ถึง %1$s แล้ว</string>

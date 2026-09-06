@@ -247,7 +247,16 @@ class RouteGraphBuilder(
          */
         const val DEFAULT_NODE_MERGE_RADIUS_M = 1.5
 
-        /** A POI further than this from any path cannot be routed to. */
-        const val DEFAULT_MAX_SNAP_DISTANCE_M = 30.0
+        /**
+         * A POI further than this from any road or path cannot be routed to.
+         *
+         * Generous on purpose. A POI is usually the centre of a building footprint, and the
+         * centre of a large one - the auditorium here is the extreme case - sits 60-70 m from
+         * the nearest road even though walking there is trivial. The last stretch is drawn as
+         * a straight line from the road to the marker, which is what a walk across a forecourt
+         * looks like anyway. A tap the user makes is judged separately and much more strictly
+         * by [TapValidator], which is where "you picked the middle of a field" belongs.
+         */
+        const val DEFAULT_MAX_SNAP_DISTANCE_M = 120.0
     }
 }

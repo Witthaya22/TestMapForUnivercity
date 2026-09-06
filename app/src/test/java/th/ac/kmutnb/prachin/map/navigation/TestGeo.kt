@@ -7,11 +7,12 @@ import th.ac.kmutnb.prachin.map.navigation.model.WalkPath
 
 /**
  * Helpers for building small networks in metres, so routing tests read as geometry rather
- * than as decimal degrees. The origin sits inside the Prachin Buri campus latitude band.
+ * than as decimal degrees. The origin is the campus centre from campus_config.json, so a
+ * test network lands where the real one does and the same latitude scaling applies.
  */
 object TestGeo {
 
-    val ORIGIN = GeoPoint(lat = 14.1100, lon = 101.3800)
+    val ORIGIN = GeoPoint(lat = 14.161024, lon = 101.352962)
 
     /** A point [north] metres north and [east] metres east of [ORIGIN]. */
     fun at(north: Double, east: Double, origin: GeoPoint = ORIGIN): GeoPoint {

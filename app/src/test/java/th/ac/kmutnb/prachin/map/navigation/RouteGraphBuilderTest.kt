@@ -96,8 +96,9 @@ class RouteGraphBuilderTest {
     fun `a poi too far from any path is reported as unsnapped`() {
         val built = RouteGraphBuilder().build(
             paths = listOf(path("p1", at(0.0, 0.0), at(100.0, 0.0))),
-            // Middle of a football field, 60 m off the path - beyond the 30 m limit.
-            snapTargets = mapOf("field" to at(50.0, 60.0)),
+            // Well beyond RouteGraphBuilder.DEFAULT_MAX_SNAP_DISTANCE_M: not a building
+            // centroid set back from its road, but a point with no way to reach it.
+            snapTargets = mapOf("field" to at(50.0, 200.0)),
         )
         assertEquals(listOf("field"), built.unsnappedIds)
         assertNull(built.snappedNodes["field"])

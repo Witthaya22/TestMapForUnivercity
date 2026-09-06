@@ -11,6 +11,7 @@ import th.ac.kmutnb.prachin.map.data.config.CampusConfigParser
 import th.ac.kmutnb.prachin.map.data.config.ConfigProblem
 import th.ac.kmutnb.prachin.map.data.geojson.GeoJsonParser
 import th.ac.kmutnb.prachin.map.data.model.Poi
+import th.ac.kmutnb.prachin.map.navigation.AStarRouter
 import th.ac.kmutnb.prachin.map.navigation.RouteGraphBuilder
 import th.ac.kmutnb.prachin.map.navigation.model.WalkPath
 import java.io.File
@@ -18,10 +19,10 @@ import java.io.File
 /**
  * Checks the data files actually shipped in `app/src/main/assets`.
  *
- * Until the coordinates have been surveyed those files are empty placeholders, so the
- * content checks are skipped rather than failed - the build must stay green on a fresh
- * clone. As soon as real data lands, every rule below applies. The same rules run from
- * `tools/geojson_validate.py` before a commit.
+ * The shipped files are seeded from OpenStreetMap by `tools/osm_import.py`, so all of the
+ * rules below apply. They still start with `assumeTrue` rather than a hard failure: someone
+ * who empties the files to survey the campus from scratch should get a green build, not a
+ * broken one. The same rules run from `tools/geojson_validate.py` before a commit.
  */
 class CampusAssetsTest {
 
@@ -93,7 +94,7 @@ class CampusAssetsTest {
     }
 
     @Test
-    fun `every poi is within 30 m of a walking path`() {
+    fun `every poi is close enough to the network to be routed to`() {
         val pois = pois()
         val paths = paths()
         assumeTrue("pois.geojson is still empty", pois.isNotEmpty())
@@ -101,10 +102,10 @@ class CampusAssetsTest {
 
         val tooFar = pois.mapNotNull { poi ->
             val nearest = paths.minOf { GeoUtils.distanceToPolylineMeters(poi.point, it.points) }
-            if (nearest > MAX_POI_DISTANCE_TO_PATH_M) poi.id to nearest else null
+            if (nearest > RouteGraphBuilder.DEFAULT_MAX_SNAP_DISTANCE_M) poi.id to nearest else null
         }
         assertTrue(
-            "these POIs are too far from any path to be routed to: " +
+            "these POIs are too far from any road or path to be routed to: " +
                 tooFar.joinToString { "${it.first} (${"%.1f".format(it.second)} m)" },
             tooFar.isEmpty(),
         )
@@ -145,14 +146,35 @@ class CampusAssetsTest {
             }
         }
         assertEquals(
-            "the walking network is split into disconnected pieces, so some routes will fail; " +
-                "walk the missing links in Track Recording mode",
+            "the route network is split into disconnected pieces, so some routes will fail; " +
+                "re-run tools/osm_import.py, or walk the missing links in Track Recording mode",
             graph.nodeCount,
             reached,
         )
     }
 
-    private companion object {
-        const val MAX_POI_DISTANCE_TO_PATH_M = 30.0
+    @Test
+    fun `a route exists between every pair of pois`() {
+        val pois = pois()
+        val paths = paths()
+        assumeTrue("pois.geojson is still empty", pois.size >= 2)
+        assumeTrue("paths.geojson is still empty", paths.isNotEmpty())
+
+        // What F4-F6 actually promise: pick any two places from the list and get a route.
+        // The connectivity test above proves the network is one piece; this proves the POIs
+        // all hang off that piece rather than off some stub of their own.
+        val built = RouteGraphBuilder().build(paths, pois.associate { it.id to it.point })
+        val nodes = built.snappedNodes
+        assumeTrue("no POI snapped onto the network", nodes.size >= 2)
+
+        val failures = ArrayList<String>()
+        val ids = nodes.keys.toList()
+        for (i in ids.indices) {
+            for (j in i + 1 until ids.size) {
+                val route = AStarRouter.findPath(built.graph, nodes[ids[i]]!!, nodes[ids[j]]!!)
+                if (route == null) failures += "${ids[i]} -> ${ids[j]}"
+            }
+        }
+        assertTrue("no route found for: ${failures.take(10)}", failures.isEmpty())
     }
 }

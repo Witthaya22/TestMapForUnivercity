@@ -16,3 +16,9 @@ local.properties
 
 # Intermediate OSM extracts for tools/build_tiles.sh (hundreds of MB, regenerable)
 /tools/.tilebuild/
+
+# Cached Overpass responses for tools/osm_import.py (regenerable with --refresh)
+/tools/.osm_cache/
+
+# Python bytecode from the scripts in tools/
+__pycache__/
