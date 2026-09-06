@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher icon for API 24-25, which predate <adaptive-icon>. Devices on API 26+ pick
+  mipmap-anydpi-v26 instead, so this is only ever the fallback; it draws the same two layers
+  flattened, with the foreground inset so the pin is not cropped by the system's own mask.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_launcher_background" />
+    <item
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp" />
+</layer-list>

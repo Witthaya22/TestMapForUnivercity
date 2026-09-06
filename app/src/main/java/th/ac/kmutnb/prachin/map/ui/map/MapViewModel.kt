@@ -138,15 +138,18 @@ class MapViewModel(
         viewModelScope.launch {
             try {
                 val config = container.campusRepository.config()
-                _uiState.update {
-                    it.copy(
-                        config = config,
-                        configProblem = null,
-                        styleUri = container.mapStyleProvider.styleUri(),
-                    )
-                }
+                _uiState.update { it.copy(config = config, configProblem = null) }
             } catch (e: CampusConfigException) {
                 _uiState.update { it.copy(configProblem = e.problem) }
+                return@launch
+            }
+
+            // Resolved on every change rather than once, so switching the tile source in
+            // Settings takes effect immediately: MapScreen keys its DisposableEffect on
+            // styleUri and reloads the style when this emits a different one.
+            container.preferences.tileSourceMode.collect { mode ->
+                val uri = container.mapStyleProvider.styleUri(mode)
+                _uiState.update { it.copy(styleUri = uri) }
             }
         }
     }
@@ -158,6 +161,7 @@ class MapViewModel(
     private fun onLocationState(state: LocationState) {
         _uiState.update { it.copy(locationState = state) }
         if (state !is LocationState.Available) return
+        adjustIntervalForSpeed(state.fix.speedMps)
 
         val activeEngine = engine ?: return
         val update = activeEngine.update(state.fix.point, System.currentTimeMillis())
@@ -170,6 +174,21 @@ class MapViewModel(
                 NavigationEvent.BackOnRoute -> _uiState.update { it.copy(isOffRoute = false) }
             }
         }
+    }
+
+    /**
+     * Backs the GPS off while the user is standing still.
+     *
+     * The receiver is the largest single battery draw here, and a stationary walker gains
+     * nothing from a fix every second - the dot does not move. Waiting at a crossing or
+     * reading a noticeboard is the common case on a campus walk, so this covers a real part
+     * of a session rather than an edge case. Any movement restores the full rate on the very
+     * next fix, so the dot never lags behind someone who starts walking again.
+     */
+    private fun adjustIntervalForSpeed(speedMps: Float?) {
+        if (!_uiState.value.isNavigating) return
+        val moving = speedMps == null || speedMps >= WALKING_SPEED_THRESHOLD_MPS
+        locationInterval.value = if (moving) NAVIGATING_INTERVAL_MS else STANDING_INTERVAL_MS
     }
 
     private fun onArrived(event: NavigationEvent.Arrived) {
@@ -429,6 +448,15 @@ class MapViewModel(
 
         private const val NAVIGATING_INTERVAL_MS = 1_000L
         private const val IDLE_INTERVAL_MS = 3_000L
+
+        /** Navigating but not moving; see [adjustIntervalForSpeed]. */
+        private const val STANDING_INTERVAL_MS = 3_000L
+
+        /**
+         * Below this the user counts as standing still. Set under a slow walk (about
+         * 1.2 m/s) but above the drift a stationary receiver reports.
+         */
+        private const val WALKING_SPEED_THRESHOLD_MPS = 0.5f
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

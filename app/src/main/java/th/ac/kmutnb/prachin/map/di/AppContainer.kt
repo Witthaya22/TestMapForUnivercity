@@ -55,7 +55,7 @@ class AppContainer(context: Context) {
         preferences = preferences,
     )
 
-    val mapStyleProvider = MapStyleProvider(campusRepository)
+    val mapStyleProvider = MapStyleProvider(appContext, campusRepository)
 
     val locationSource = GpsLocationSource(appContext)
 }

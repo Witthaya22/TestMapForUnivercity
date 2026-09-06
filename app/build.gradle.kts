@@ -49,6 +49,14 @@ android {
         compose = true
         buildConfig = true
     }
+    androidResources {
+        // The MBTiles pack of TileSourceMode.BUNDLED has to be copied out of assets before
+        // SQLite can open it, and AssetManager.openFd - which is how LocalTileServer checks
+        // whether the copy is already current - only works on assets that were stored
+        // uncompressed. Leaving it compressed also buys little: the vector tiles inside are
+        // gzipped already.
+        noCompress += "mbtiles"
+    }
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
