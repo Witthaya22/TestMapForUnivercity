@@ -465,10 +465,29 @@ fun PlacementDialog(
 
         is TapVerdict.FarFromPath -> AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text(stringResource(R.string.add_point_blocked_title)) },
-            text = { Text(stringResource(R.string.add_point_blocked_body)) },
+            title = { Text(stringResource(R.string.add_point_far_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.add_point_far_body,
+                        verdict.distanceMeters.roundToInt(),
+                    ),
+                )
+            },
             confirmButton = {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_ok)) }
+                TextButton(onClick = onMoveToPath) {
+                    Text(stringResource(R.string.add_point_move_to_path))
+                }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = onKeepAnyway) {
+                        Text(stringResource(R.string.add_point_keep_anyway))
+                    }
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
+                }
             },
         )
 

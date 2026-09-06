@@ -145,6 +145,8 @@
     <string name="add_point_off_path_warning_body">จุดที่เลือกอยู่ห่างจากเส้นทางที่ใกล้ที่สุด %1$d เมตร\n\nกรุณาปักจุดบนถนนหรือทางเดินเพื่อให้นำทางได้ถูกต้อง</string>
     <string name="add_point_move_to_path">ย้ายไปจุดใกล้สุดบนทาง</string>
     <string name="add_point_keep_anyway">ยืนยันตำแหน่งนี้</string>
+    <string name="add_point_far_title">จุดนี้อยู่ไกลจากเส้นทาง</string>
+    <string name="add_point_far_body">จุดที่เลือกอยู่ห่างจากถนนและทางเดินที่ใกล้ที่สุด %1$d เมตร\n\nปักไว้ตรงนี้ก็ได้ แต่การนำทางอาจพาไปได้แค่ถึงถนนที่ใกล้ที่สุด แล้วต้องเดินต่อเอง</string>
     <string name="add_point_blocked_title">ปักจุดตรงนี้ไม่ได้</string>
     <string name="add_point_blocked_body">จุดนี้ไม่อยู่บนเส้นทางในมหาวิทยาลัย ไม่สามารถใช้นำทางได้\n\nกรุณาเลือกจุดใหม่บนถนนหรือทางเดิน</string>
     <string name="add_point_no_network_title">ยังไม่มีข้อมูลเส้นทาง</string>

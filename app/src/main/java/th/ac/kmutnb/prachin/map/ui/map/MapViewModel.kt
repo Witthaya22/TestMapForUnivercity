@@ -428,17 +428,20 @@ class MapViewModel(
 
     /** "Move it onto the path" from the warning dialog. */
     fun acceptSuggestedPlacement() {
-        val verdict = _uiState.value.pendingPlacement?.verdict
-        val point = (verdict as? TapVerdict.NearPath)?.suggestion ?: return
+        val point = when (val verdict = _uiState.value.pendingPlacement?.verdict) {
+            is TapVerdict.NearPath -> verdict.suggestion
+            is TapVerdict.FarFromPath -> verdict.suggestion
+            else -> null
+        } ?: return
         _uiState.update { it.copy(pendingPlacement = null, namingPoint = point) }
     }
 
     /** "Keep it where I tapped" from the warning dialog. */
     fun keepPlacementAnyway() {
-        val verdict = _uiState.value.pendingPlacement?.verdict
-        val point = when (verdict) {
+        val point = when (val verdict = _uiState.value.pendingPlacement?.verdict) {
             is TapVerdict.NearPath -> verdict.point
             is TapVerdict.OnPath -> verdict.point
+            is TapVerdict.FarFromPath -> verdict.point
             else -> null
         } ?: return
         _uiState.update { it.copy(pendingPlacement = null, namingPoint = point) }

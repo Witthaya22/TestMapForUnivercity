@@ -18,8 +18,19 @@ sealed interface TapVerdict {
         val suggestion: GeoPoint,
     ) : TapVerdict
 
-    /** Too far to navigate to - the middle of a field, or inside a building. */
-    data class FarFromPath(val point: GeoPoint, val distanceMeters: Double) : TapVerdict
+    /**
+     * Far from any road or path - the middle of a field, or inside a building.
+     *
+     * Carries [suggestion] like [NearPath] does, because the answer to "you picked somewhere
+     * with no way to reach it" is a choice, not a refusal: move it to the network, or keep
+     * it and accept that routing may stop short. Marking a spot is a legitimate thing to
+     * want, and the map shows unroutable points differently anyway.
+     */
+    data class FarFromPath(
+        val point: GeoPoint,
+        val distanceMeters: Double,
+        val suggestion: GeoPoint,
+    ) : TapVerdict
 
     /** No walking network has been surveyed yet, so nothing can be checked. */
     data object NoNetwork : TapVerdict
@@ -52,7 +63,7 @@ object TapValidator {
             projection.distanceMeters <= MAX_USABLE_METERS ->
                 TapVerdict.NearPath(point, projection.distanceMeters, projection.point)
 
-            else -> TapVerdict.FarFromPath(point, projection.distanceMeters)
+            else -> TapVerdict.FarFromPath(point, projection.distanceMeters, projection.point)
         }
     }
 }
