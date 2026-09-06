@@ -14,7 +14,8 @@ class PointSurveySessionTest {
     @Test
     fun `median of an odd and an even sample count`() {
         assertEquals(3.0, PointSurveySession.median(listOf(1.0, 5.0, 3.0)), 1e-9)
-        assertEquals(3.5, PointSurveySession.median(listOf(1.0, 5.0, 2.0, 4.0)), 1e-9)
+        // Even count: the mean of the two middle values, (2 + 4) / 2.
+        assertEquals(3.0, PointSurveySession.median(listOf(1.0, 5.0, 2.0, 4.0)), 1e-9)
         assertEquals(7.0, PointSurveySession.median(listOf(7.0)), 1e-9)
     }
 

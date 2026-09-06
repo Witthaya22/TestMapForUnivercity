@@ -12,11 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -38,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -168,13 +164,13 @@ fun MapScreen(
                 horizontalAlignment = Alignment.End,
             ) {
                 SmallFloatingActionButton(onClick = onOpenSettings) {
-                    Icon(Icons.Default.Settings, stringResource(R.string.settings_title))
+                    Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title))
                 }
                 SmallFloatingActionButton(onClick = viewModel::toggleWalkingNetwork) {
-                    Icon(Icons.Default.Place, stringResource(R.string.map_layers))
+                    Icon(painterResource(R.drawable.ic_layers), stringResource(R.string.map_layers))
                 }
                 FloatingActionButton(onClick = viewModel::recenter) {
-                    Icon(Icons.Default.LocationOn, stringResource(R.string.map_recenter))
+                    Icon(painterResource(R.drawable.ic_my_location), stringResource(R.string.map_recenter))
                 }
             }
 
@@ -358,7 +354,7 @@ private fun RoutePlanBar(
                     onClick = onOpenPoiList,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Icon(Icons.Default.Place, null, Modifier.padding(end = 8.dp))
+                    Icon(painterResource(R.drawable.ic_place), null, Modifier.padding(end = 8.dp))
                     Text(stringResource(R.string.poi_list_title))
                 }
             } else {
@@ -393,10 +389,10 @@ private fun RoutePlanBar(
                         Text(stringResource(R.string.nav_start))
                     }
                     androidx.compose.material3.OutlinedButton(onClick = onOpenPoiList) {
-                        Icon(Icons.Default.Place, stringResource(R.string.nav_add_waypoint))
+                        Icon(painterResource(R.drawable.ic_place), stringResource(R.string.nav_add_waypoint))
                     }
                     androidx.compose.material3.OutlinedButton(onClick = onClear) {
-                        Icon(Icons.Default.Close, stringResource(R.string.nav_clear_all))
+                        Icon(painterResource(R.drawable.ic_close), stringResource(R.string.nav_clear_all))
                     }
                 }
             }
