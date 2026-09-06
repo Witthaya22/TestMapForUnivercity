@@ -73,6 +73,8 @@ fun MapScreen(
             when (effect) {
                 MapEffect.VibrateArrival -> vibrate(context)
                 is MapEffect.Message -> snackbarHostState.showSnackbar(context.getString(effect.messageRes))
+                is MapEffect.MessageWith ->
+                    snackbarHostState.showSnackbar(context.getString(effect.messageRes, effect.arg))
                 is MapEffect.CameraTo -> mapLibreMap?.animateCamera(
                     CameraUpdateFactory.newLatLng(LatLng(effect.point.lat, effect.point.lon)),
                 )
@@ -153,6 +155,9 @@ fun MapScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 GpsStatusBanner(state.locationState)
+                if (state.startsAtFirstStop) {
+                    InfoBanner(stringResource(R.string.nav_starts_at_first_stop))
+                }
                 state.relocatingPoi?.let { poi ->
                     RelocateBanner(
                         poi = poi,

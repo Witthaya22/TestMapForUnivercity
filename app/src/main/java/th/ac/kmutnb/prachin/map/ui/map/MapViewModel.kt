@@ -28,6 +28,8 @@ import th.ac.kmutnb.prachin.map.data.local.RouteHistoryEntity
 import th.ac.kmutnb.prachin.map.data.model.Poi
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetwork
+import th.ac.kmutnb.prachin.map.navigation.model.RouteWaypoint
+import kotlin.math.roundToInt
 import th.ac.kmutnb.prachin.map.di.AppContainer
 import th.ac.kmutnb.prachin.map.location.LocationState
 import th.ac.kmutnb.prachin.map.location.SatelliteInfo
@@ -62,6 +64,9 @@ data class MapUiState(
     /** Set while the user is choosing a new position for this POI. */
     val relocatingPoi: Poi? = null,
 
+    /** True when the route had to start at the first chosen stop, not at the user. */
+    val startsAtFirstStop: Boolean = false,
+
     /** POI whose detail sheet is open, either tapped or just reached. */
     val detailPoi: Poi? = null,
     val detailIsArrival: Boolean = false,
@@ -82,6 +87,9 @@ data class MapUiState(
 sealed interface MapEffect {
     data object VibrateArrival : MapEffect
     data class Message(@param:StringRes val messageRes: Int) : MapEffect
+
+    /** A message with a value in it, formatted against the string resource. */
+    data class MessageWith(@param:StringRes val messageRes: Int, val arg: Any) : MapEffect
     data class CameraTo(val point: GeoPoint) : MapEffect
 }
 
@@ -256,7 +264,17 @@ class MapViewModel(
     // Routing
     // ----------------------------------------------------------------------------------
 
-    /** Recomputes the route from the live position through the chosen destinations. */
+    /**
+     * Recomputes the route through the chosen destinations, starting from the live position
+     * when that position is actually on the campus network.
+     *
+     * Being somewhere the map does not cover must not make the app useless. Standing in a
+     * dorm a kilometre off campus, "หอพักชาย to โรงอาหาร" is still a perfectly good question,
+     * and every other map app answers it. So an unusable start is not an error: the route is
+     * planned between the chosen places instead, and the UI says the line does not begin
+     * where the user is. Only a single destination with no usable start has nothing to draw,
+     * and that case explains itself with the real distance rather than "no route found".
+     */
     private fun planRoute() {
         val state = _uiState.value
         if (state.selectedWaypoints.isEmpty()) {
@@ -264,42 +282,65 @@ class MapViewModel(
             return
         }
 
-        val start = state.currentPoint
-        if (start == null) {
-            viewModelScope.launch { effectChannel.send(MapEffect.Message(R.string.nav_need_location)) }
-            return
-        }
-
         val network = state.network
-        val startWaypoint = network.waypointFor(
-            id = CURRENT_LOCATION_ID,
-            name = "",
-            point = start,
-        )
-        if (startWaypoint == null) {
-            viewModelScope.launch { effectChannel.send(MapEffect.Message(R.string.nav_no_path_body)) }
-            return
-        }
-
         val destinations = state.selectedWaypoints.mapNotNull(network::waypointFor)
         if (destinations.size != state.selectedWaypoints.size) {
             viewModelScope.launch { effectChannel.send(MapEffect.Message(R.string.poi_unroutable_explain)) }
             return
         }
 
-        when (val result = RoutePlanner.plan(network.graph, listOf(startWaypoint) + destinations)) {
+        val startWaypoint = state.currentPoint?.let { point ->
+            network.waypointFor(id = CURRENT_LOCATION_ID, name = "", point = point)
+        }
+
+        if (startWaypoint == null) {
+            if (destinations.size < 2) {
+                _uiState.update { it.copy(route = null, progress = null, startsAtFirstStop = false) }
+                viewModelScope.launch { effectChannel.send(offNetworkMessage(state)) }
+                return
+            }
+            // Enough destinations to draw a route between: fall back to that rather than
+            // refusing, and tell the user where the line starts.
+            plan(network, destinations, startsAtFirstStop = true, wasNavigating = state.isNavigating)
+            return
+        }
+
+        plan(
+            network = network,
+            waypoints = listOf(startWaypoint) + destinations,
+            startsAtFirstStop = false,
+            wasNavigating = state.isNavigating,
+        )
+    }
+
+    private fun plan(
+        network: RouteNetwork,
+        waypoints: List<RouteWaypoint>,
+        startsAtFirstStop: Boolean,
+        wasNavigating: Boolean,
+    ) {
+        when (val result = RoutePlanner.plan(network.graph, waypoints)) {
             is RoutePlanResult.Success -> {
-                _uiState.update { it.copy(route = result.route) }
-                if (state.isNavigating) attachEngine(result.route)
+                _uiState.update { it.copy(route = result.route, startsAtFirstStop = startsAtFirstStop) }
+                if (wasNavigating && !startsAtFirstStop) attachEngine(result.route)
             }
 
             is RoutePlanResult.NoPath,
             RoutePlanResult.NotEnoughWaypoints,
             -> {
-                _uiState.update { it.copy(route = null, progress = null) }
+                _uiState.update { it.copy(route = null, progress = null, startsAtFirstStop = false) }
                 viewModelScope.launch { effectChannel.send(MapEffect.Message(R.string.nav_no_path_body)) }
             }
         }
+    }
+
+    /** Says how far off the network the user is, instead of blaming the destination. */
+    private fun offNetworkMessage(state: MapUiState): MapEffect {
+        val point = state.currentPoint
+            ?: return MapEffect.Message(R.string.nav_need_location)
+        val metres = state.network.graph.distanceToNetworkMeters(point)
+        if (metres == Double.MAX_VALUE) return MapEffect.Message(R.string.nav_no_path_body)
+        return MapEffect.MessageWith(R.string.nav_off_campus, metres.roundToInt())
     }
 
     fun startNavigation() {

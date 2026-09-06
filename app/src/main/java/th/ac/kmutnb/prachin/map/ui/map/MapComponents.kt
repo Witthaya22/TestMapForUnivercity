@@ -397,6 +397,24 @@ fun RelocateBanner(
     }
 }
 
+/** A plain notice strip over the map, for state the user needs to understand a result. */
+@Composable
+fun InfoBanner(text: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 3.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(12.dp),
+        )
+    }
+}
+
 @Composable
 fun CategoryPicker(selected: PoiCategory, onSelected: (PoiCategory) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

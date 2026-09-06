@@ -166,6 +166,10 @@
     <string name="nav_clear_all">ล้างทั้งหมด</string>
     <string name="nav_route_summary">%1$s · %2$s</string>
     <string name="nav_no_path_title">ไม่พบเส้นทาง</string>
+    <string name="nav_off_campus">คุณอยู่ห่างจากพื้นที่ที่มีข้อมูลเส้นทางประมาณ %1$d เมตร จึงเริ่มนำทางจากตำแหน่งปัจจุบันไม่ได้
+
+เลือกจุดเริ่มต้นเพิ่มอีกจุดเพื่อดูเส้นทางระหว่างสองจุด</string>
+    <string name="nav_starts_at_first_stop">คุณอยู่นอกพื้นที่ เส้นทางนี้จึงเริ่มจากจุดแรกที่เลือก ไม่ได้เริ่มจากตำแหน่งของคุณ</string>
     <string name="nav_no_path_body">ไม่พบเส้นทางไปยังจุดนี้\n\nลองเลือกจุดอื่น หรือเพิ่มเส้นทางในโหมดสำรวจ</string>
     <string name="nav_need_location">ต้องรอสัญญาณ GPS ก่อนจึงจะเริ่มนำทางได้</string>
     <string name="nav_need_two_points">ต้องเลือกอย่างน้อย 1 จุดหมาย</string>
