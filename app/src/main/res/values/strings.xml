@@ -251,7 +251,17 @@
     <string name="track_type_stairs">บันได</string>
     <string name="track_too_short">เส้นทางสั้นเกินไป ต้องเดินอย่างน้อย 10 เมตร</string>
     <string name="track_saved">บันทึกเส้นทางแล้ว</string>
-    <string name="track_saved_count">บันทึกไว้แล้ว %1$d เส้น (ยังไม่ได้ส่งออก)</string>
+    <string name="track_saved_count">สำรวจแล้ว %1$d เส้น · %2$s — ใช้นำทางได้ทันที</string>
+    <string name="track_recorded_list">เส้นทางที่สำรวจไว้</string>
+    <string name="track_delete_confirm">ลบเส้นทาง \"%1$s\" ที่เดินเก็บไว้?</string>
+    <string name="track_unnamed">เส้นทางไม่มีชื่อ</string>
+    <string name="track_item_summary">%1$s · %2$d จุด</string>
+    <string name="settings_restore_seeded">กู้คืนจุดที่มากับแอป</string>
+    <string name="settings_restore_seeded_result">กู้คืนแล้ว %1$d จุด</string>
+    <string name="settings_restore_seeded_none">ไม่มีจุดที่หายไป ครบอยู่แล้ว</string>
+    <string name="settings_surveyed_only">ใช้เฉพาะเส้นทางที่สำรวจเอง</string>
+    <string name="settings_surveyed_only_desc">ปิดเส้นทางที่มากับแอป (จาก OpenStreetMap) แล้วใช้เฉพาะเส้นที่เดินเก็บเอง เหมาะกับตอนที่ต้องการ map ทั้งมอด้วยตัวเอง</string>
+    <string name="settings_surveyed_only_empty">ยังไม่มีเส้นทางที่สำรวจเอง ถ้าเปิดตัวเลือกนี้จะนำทางไม่ได้เลย</string>
 
     <!-- หน้า Debug GPS -->
     <string name="gps_debug_title">ข้อมูล GPS</string>

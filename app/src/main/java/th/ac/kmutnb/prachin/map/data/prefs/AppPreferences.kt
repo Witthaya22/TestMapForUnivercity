@@ -69,6 +69,20 @@ class AppPreferences(context: Context) {
         store.edit { it[KEY_POIS_DIGEST] = digest }
     }
 
+    /**
+     * When true the router ignores the paths shipped in assets and uses only what the user
+     * walked and recorded.
+     *
+     * For someone mapping the campus themselves this is the difference between surveying and
+     * correcting: with the imported network switched off, what they see on the map is exactly
+     * what they have walked, and nothing has to be reconciled against someone else's data.
+     */
+    val surveyedPathsOnly: Flow<Boolean> = store.data.map { it[KEY_SURVEYED_ONLY] ?: false }
+
+    suspend fun setSurveyedPathsOnly(enabled: Boolean) {
+        store.edit { it[KEY_SURVEYED_ONLY] = enabled }
+    }
+
     suspend fun setAutoRecalculate(enabled: Boolean) {
         store.edit { it[KEY_AUTO_RECALCULATE] = enabled }
     }
@@ -87,6 +101,7 @@ class AppPreferences(context: Context) {
         val KEY_TILE_SOURCE_MODE = stringPreferencesKey("tile_source_mode")
         val KEY_POIS_SEEDED = booleanPreferencesKey("pois_seeded")
         val KEY_POIS_DIGEST = stringPreferencesKey("pois_seed_digest")
+        val KEY_SURVEYED_ONLY = booleanPreferencesKey("surveyed_paths_only")
         val KEY_AUTO_RECALCULATE = booleanPreferencesKey("auto_recalculate")
         val KEY_DEBUG_UNLOCKED = booleanPreferencesKey("debug_unlocked")
         val KEY_KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")

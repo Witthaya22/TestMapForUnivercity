@@ -12,6 +12,7 @@ import th.ac.kmutnb.prachin.map.data.repository.CampusRepository
 import th.ac.kmutnb.prachin.map.data.repository.OfflineMapRepository
 import th.ac.kmutnb.prachin.map.data.repository.PoiRepository
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetworkRepository
+import th.ac.kmutnb.prachin.map.data.repository.WalkPathRepository
 import th.ac.kmutnb.prachin.map.location.GpsLocationSource
 import th.ac.kmutnb.prachin.map.map.MapStyleProvider
 
@@ -43,9 +44,13 @@ class AppContainer(context: Context) {
 
     val routeHistoryDao = database.routeHistoryDao()
 
+    val walkPathRepository = WalkPathRepository(database.walkPathDao())
+
     val routeNetworkRepository = RouteNetworkRepository(
         campusRepository = campusRepository,
         poiRepository = poiRepository,
+        walkPathRepository = walkPathRepository,
+        preferences = preferences,
         scope = applicationScope,
     )
 

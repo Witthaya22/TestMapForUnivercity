@@ -4,12 +4,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.model.Poi
+import th.ac.kmutnb.prachin.map.data.prefs.AppPreferences
 import th.ac.kmutnb.prachin.map.navigation.RouteGraph
 import th.ac.kmutnb.prachin.map.navigation.RouteGraphBuilder
 import th.ac.kmutnb.prachin.map.navigation.model.RouteWaypoint
@@ -25,6 +27,8 @@ data class RouteNetwork(
     val poiSnapDistances: Map<String, Double>,
     /** POIs further than the snap limit from any path, so no route can reach them. */
     val unroutablePoiIds: List<String>,
+    /** How many of [paths] the user walked and recorded themselves. */
+    val surveyedPathCount: Int = 0,
 ) {
     val isReady: Boolean get() = !graph.isEmpty
 
@@ -73,27 +77,43 @@ data class RouteNetwork(
 }
 
 /**
- * Keeps a [RouteNetwork] in sync with the stored POIs.
+ * Keeps a [RouteNetwork] in sync with the stored POIs and the paths the user has walked.
  *
  * The graph has to be rebuilt whenever a POI moves or is added, because each POI owns a node
- * spliced into the path it sits beside. A rebuild is a linear pass over a few thousand
- * vertices, so doing it on every POI change is cheaper than tracking incremental edits.
+ * spliced into the path it sits beside, and whenever a path is recorded or deleted. A rebuild
+ * is a linear pass over a few thousand vertices, so doing it on every change is cheaper than
+ * tracking incremental edits - and it is what makes a path usable for routing the moment the
+ * walker stops recording it.
  */
 class RouteNetworkRepository(
     private val campusRepository: CampusRepository,
     poiRepository: PoiRepository,
+    walkPathRepository: WalkPathRepository,
+    preferences: AppPreferences,
     scope: CoroutineScope,
 ) {
 
-    val network: Flow<RouteNetwork> = poiRepository.pois
-        .map { pois -> build(pois) }
+    val network: Flow<RouteNetwork> = combine(
+        poiRepository.pois,
+        walkPathRepository.paths,
+        preferences.surveyedPathsOnly,
+    ) { pois, surveyed, surveyedOnly -> Triple(pois, surveyed, surveyedOnly) }
+        .map { (pois, surveyed, surveyedOnly) -> build(pois, surveyed, surveyedOnly) }
         .flowOn(Dispatchers.Default)
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), RouteNetwork.EMPTY)
 
     suspend fun current(): RouteNetwork = network.first()
 
-    private suspend fun build(pois: List<Poi>): RouteNetwork {
-        val paths = campusRepository.paths().items
+    private suspend fun build(
+        pois: List<Poi>,
+        surveyed: List<WalkPath>,
+        surveyedOnly: Boolean,
+    ): RouteNetwork {
+        // Surveyed paths come last so that where a recorded path and an imported one share a
+        // junction, the builder's node merging joins them into one network rather than
+        // leaving the walker's work stranded beside the imported data.
+        val imported = if (surveyedOnly) emptyList() else campusRepository.paths().items
+        val paths = imported + surveyed
         if (paths.isEmpty()) return RouteNetwork.EMPTY
 
         val built = RouteGraphBuilder().build(
@@ -106,6 +126,7 @@ class RouteNetworkRepository(
             poiNodes = built.snappedNodes,
             poiSnapDistances = built.snapDistances,
             unroutablePoiIds = built.unsnappedIds,
+            surveyedPathCount = surveyed.size,
         )
     }
 }

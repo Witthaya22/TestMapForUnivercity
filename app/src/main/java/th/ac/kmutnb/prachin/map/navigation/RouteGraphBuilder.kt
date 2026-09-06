@@ -31,6 +31,7 @@ data class BuiltRouteGraph(
 class RouteGraphBuilder(
     private val nodeMergeRadiusMeters: Double = DEFAULT_NODE_MERGE_RADIUS_M,
     private val maxSnapDistanceMeters: Double = DEFAULT_MAX_SNAP_DISTANCE_M,
+    private val junctionRadiusMeters: Double = DEFAULT_JUNCTION_RADIUS_M,
 ) {
 
     private class MutableSegment(
@@ -68,6 +69,7 @@ class RouteGraphBuilder(
         }
 
         paths.forEach(::addPath)
+        weldDanglingEnds()
 
         val snappedNodes = LinkedHashMap<String, Int>()
         val snapDistances = LinkedHashMap<String, Double>()
@@ -106,6 +108,63 @@ class RouteGraphBuilder(
             }
             previous = node
         }
+    }
+
+    /**
+     * Joins a path that ends on top of another path but not at one of its vertices.
+     *
+     * Merging identical coordinates is not enough on its own. A path drawn as two points
+     * hundreds of metres apart has no vertex in the middle, so a spur walked off the middle
+     * of it lands 50 m from either end and stays a separate component - the route then does
+     * not exist even though the two lines visibly cross on the map. That is exactly what
+     * happens when someone surveys a new footpath leading off an imported road, which is the
+     * normal way this app gets better.
+     *
+     * So every loose end - a node with a single connection - is projected onto the other
+     * segments, and where it lands on one within [junctionRadiusMeters] that segment is split
+     * around it. The radius is deliberately GPS-sized: at this distance the two lines are the
+     * same junction in the real world, and beyond it they are not.
+     */
+    private fun weldDanglingEnds() {
+        val degree = IntArray(nodes.size)
+        for (segment in segments) {
+            degree[segment.fromNode]++
+            degree[segment.toNode]++
+        }
+
+        // Snapshot: splitting appends segments, and a fresh half never needs welding itself.
+        val ends = (0 until nodes.size).filter { degree[it] == 1 }
+        for (node in ends) {
+            splitSegmentAt(nodes[node], node)
+        }
+    }
+
+    /**
+     * Splits whichever segment [point] lies on around [node], skipping segments that already
+     * touch it. Does nothing when nothing is close enough.
+     */
+    private fun splitSegmentAt(point: GeoPoint, node: Int) {
+        var bestIndex = -1
+        var bestDistance = junctionRadiusMeters
+
+        segments.forEachIndexed { index, segment ->
+            if (segment.fromNode == node || segment.toNode == node) return@forEachIndexed
+            val a = nodes[segment.fromNode]
+            val b = nodes[segment.toNode]
+            val t = GeoUtils.segmentProjectionFactor(point, a, b)
+            val onSegment = GeoUtils.interpolate(a, b, t)
+            val distance = GeoUtils.haversineMeters(point, onSegment)
+            if (distance <= bestDistance) {
+                bestDistance = distance
+                bestIndex = index
+            }
+        }
+        if (bestIndex < 0) return
+
+        val segment = segments[bestIndex]
+        val originalTo = segment.toNode
+        segment.toNode = node
+        segments += MutableSegment(node, originalTo, segment.pathId, segment.type, segment.oneway)
     }
 
     /** Returns an existing node within the merge radius, or creates a new one. */
@@ -246,6 +305,15 @@ class RouteGraphBuilder(
          * gap between genuinely separate parallel footpaths.
          */
         const val DEFAULT_NODE_MERGE_RADIUS_M = 1.5
+
+        /**
+         * How close a path's loose end has to be to another path to count as joining it.
+         *
+         * Sized for GPS rather than for drawing: a surveyor standing on a road records it to
+         * within a few metres, so anything nearer than this is the same junction. Widening it
+         * would start welding paths that merely run alongside each other.
+         */
+        const val DEFAULT_JUNCTION_RADIUS_M = 4.0
 
         /**
          * A POI further than this from any road or path cannot be routed to.

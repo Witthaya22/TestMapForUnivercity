@@ -24,6 +24,9 @@ data class SettingsUiState(
     val bundledTilesAvailable: Boolean = false,
     val autoRecalculate: Boolean = true,
     val keepScreenOn: Boolean = true,
+    val surveyedPathsOnly: Boolean = false,
+    /** How many paths the user has walked; zero makes [surveyedPathsOnly] a trap. */
+    val surveyedPathCount: Int = 0,
     val debugUnlocked: Boolean = false,
     val versionName: String = "",
 )
@@ -56,8 +59,9 @@ class SettingsViewModel(
                 container.preferences.autoRecalculate,
                 container.preferences.keepScreenOn,
                 container.preferences.debugUnlocked,
-            ) { mode, autoRecalculate, keepScreenOn, debugUnlocked ->
-                Preferences(mode, autoRecalculate, keepScreenOn, debugUnlocked)
+                container.preferences.surveyedPathsOnly,
+            ) { mode, autoRecalculate, keepScreenOn, debugUnlocked, surveyedOnly ->
+                Preferences(mode, autoRecalculate, keepScreenOn, debugUnlocked, surveyedOnly)
             }.collect { preferences ->
                 _uiState.update {
                     it.copy(
@@ -65,8 +69,15 @@ class SettingsViewModel(
                         autoRecalculate = preferences.autoRecalculate,
                         keepScreenOn = preferences.keepScreenOn,
                         debugUnlocked = preferences.debugUnlocked,
+                        surveyedPathsOnly = preferences.surveyedPathsOnly,
                     )
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            container.walkPathRepository.paths.collect { paths ->
+                _uiState.update { it.copy(surveyedPathCount = paths.size) }
             }
         }
     }
@@ -76,10 +87,20 @@ class SettingsViewModel(
         val autoRecalculate: Boolean,
         val keepScreenOn: Boolean,
         val debugUnlocked: Boolean,
+        val surveyedPathsOnly: Boolean,
     )
 
     fun setTileSourceMode(mode: TileSourceMode) {
         viewModelScope.launch { container.preferences.setTileSourceMode(mode) }
+    }
+
+    /** Settings -> restore the shipped places the user has deleted. */
+    fun restoreSeededPois(onResult: (Int) -> Unit) {
+        viewModelScope.launch { onResult(container.poiRepository.restoreSeededPois()) }
+    }
+
+    fun setSurveyedPathsOnly(enabled: Boolean) {
+        viewModelScope.launch { container.preferences.setSurveyedPathsOnly(enabled) }
     }
 
     fun setAutoRecalculate(enabled: Boolean) {

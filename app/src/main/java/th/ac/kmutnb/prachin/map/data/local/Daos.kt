@@ -64,6 +64,34 @@ interface PoiDao {
 }
 
 @Dao
+interface WalkPathDao {
+
+    @Query("SELECT * FROM walk_path ORDER BY createdAt ASC")
+    fun observeAll(): Flow<List<WalkPathEntity>>
+
+    @Query("SELECT * FROM walk_path ORDER BY createdAt ASC")
+    suspend fun getAll(): List<WalkPathEntity>
+
+    @Query("SELECT COUNT(*) FROM walk_path")
+    suspend fun count(): Int
+
+    @Upsert
+    suspend fun upsert(path: WalkPathEntity)
+
+    @Upsert
+    suspend fun upsertAll(paths: List<WalkPathEntity>)
+
+    @Query("UPDATE walk_path SET name = :name, type = :type, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateDetails(id: String, name: String?, type: String, updatedAt: Long)
+
+    @Query("DELETE FROM walk_path WHERE id = :id")
+    suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM walk_path")
+    suspend fun deleteAll()
+}
+
+@Dao
 interface RouteHistoryDao {
 
     @Query("SELECT * FROM route_history ORDER BY completedAt DESC LIMIT :limit")

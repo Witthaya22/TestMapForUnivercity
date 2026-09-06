@@ -149,6 +149,26 @@ fun SettingsScreen(
                 onCheckedChange = viewModel::setKeepScreenOn,
             )
 
+            SwitchRow(
+                title = stringResource(R.string.settings_surveyed_only),
+                checked = state.surveyedPathsOnly,
+                onCheckedChange = viewModel::setSurveyedPathsOnly,
+            )
+            Text(
+                text = if (state.surveyedPathCount == 0) {
+                    stringResource(R.string.settings_surveyed_only_empty)
+                } else {
+                    stringResource(R.string.settings_surveyed_only_desc)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = if (state.surveyedPathCount == 0) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_admin))
 
@@ -163,6 +183,25 @@ fun SettingsScreen(
             ClickableRow(
                 title = stringResource(R.string.settings_import_pois),
                 onClick = { importLauncher.launch(arrayOf("*/*")) },
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_restore_seeded),
+                onClick = {
+                    viewModel.restoreSeededPois { restored ->
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                if (restored == 0) {
+                                    context.getString(R.string.settings_restore_seeded_none)
+                                } else {
+                                    context.getString(
+                                        R.string.settings_restore_seeded_result,
+                                        restored,
+                                    )
+                                },
+                            )
+                        }
+                    }
+                },
             )
             if (state.debugUnlocked) {
                 ClickableRow(

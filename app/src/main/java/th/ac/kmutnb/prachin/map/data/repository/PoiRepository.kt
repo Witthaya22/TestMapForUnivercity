@@ -78,6 +78,23 @@ class PoiRepository(
         return inserted
     }
 
+    /**
+     * Puts back the shipped POIs the user has deleted.
+     *
+     * Deleting a seeded place is allowed - a building that was demolished or never existed
+     * should go - but deleting the wrong one used to be permanent, because seeding only runs
+     * when the asset file changes. This is the way back. Insert-if-absent means restoring
+     * cannot disturb anything still present, edited or moved.
+     *
+     * @return how many places came back.
+     */
+    suspend fun restoreSeededPois(): Int {
+        val json = campusRepository.poisAssetJson() ?: return 0
+        val seed = GeoJsonParser.parsePois(json)
+        if (seed.items.isEmpty()) return 0
+        return poiDao.insertIfAbsent(seed.items.map { it.toEntity() }).count { it != -1L }
+    }
+
     private fun digestOf(json: String): String =
         MessageDigest.getInstance("SHA-256")
             .digest(json.toByteArray(Charsets.UTF_8))

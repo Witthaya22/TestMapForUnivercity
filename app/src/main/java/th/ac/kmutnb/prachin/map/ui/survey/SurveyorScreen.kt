@@ -35,6 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,6 +50,7 @@ import kotlinx.coroutines.launch
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.navigation.model.PathType
+import th.ac.kmutnb.prachin.map.navigation.model.WalkPath
 import th.ac.kmutnb.prachin.map.survey.PointSurveySession
 import th.ac.kmutnb.prachin.map.ui.common.Formats
 import th.ac.kmutnb.prachin.map.ui.common.labelRes
@@ -136,6 +141,7 @@ fun SurveyorScreen(
                         onStop = viewModel::stopTrackRecording,
                         onCancel = viewModel::cancelTrackRecording,
                         onExport = { exportTracksLauncher.launch("paths_surveyed.geojson") },
+                        onDeleteTrack = viewModel::deleteTrack,
                         onTooShort = {
                             scope.launch {
                                 snackbarHostState.showSnackbar(
@@ -302,6 +308,7 @@ private fun TrackSection(
     onCancel: () -> Unit,
     onExport: () -> Unit,
     onTooShort: () -> Unit,
+    onDeleteTrack: (String) -> Unit,
 ) {
     val context = LocalContext.current
     var name by rememberSaveable { mutableStateOf("") }
@@ -349,7 +356,11 @@ private fun TrackSection(
         )
     }
     Text(
-        text = stringResource(R.string.track_saved_count, state.recordedTracks.size),
+        text = stringResource(
+            R.string.track_saved_count,
+            state.recordedTracks.size,
+            Formats.distance(context, state.surveyedLengthMeters),
+        ),
         style = MaterialTheme.typography.bodySmall,
     )
 
@@ -362,6 +373,72 @@ private fun TrackSection(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(stringResource(R.string.survey_export_paths))
+    }
+
+    if (state.recordedTracks.isNotEmpty()) {
+        HorizontalDivider(Modifier.padding(vertical = 4.dp))
+        Text(
+            text = stringResource(R.string.track_recorded_list),
+            style = MaterialTheme.typography.titleSmall,
+        )
+        // Listed newest first: the one just walked is the one most likely to be wrong and
+        // wanted gone.
+        state.recordedTracks.asReversed().forEach { path ->
+            RecordedTrackRow(path = path, onDelete = { onDeleteTrack(path.id) })
+        }
+    }
+}
+
+@Composable
+private fun RecordedTrackRow(path: WalkPath, onDelete: () -> Unit) {
+    var confirming by rememberSaveable(path.id) { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = path.name ?: stringResource(R.string.track_unnamed),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(
+                    R.string.track_item_summary,
+                    stringResource(path.type.labelRes),
+                    path.points.size,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        TextButton(onClick = { confirming = true }) {
+            Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
+        }
+    }
+
+    if (confirming) {
+        AlertDialog(
+            onDismissRequest = { confirming = false },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.track_delete_confirm,
+                        path.name ?: stringResource(R.string.track_unnamed),
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { confirming = false; onDelete() }) {
+                    Text(stringResource(R.string.action_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirming = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
     }
 }
 
