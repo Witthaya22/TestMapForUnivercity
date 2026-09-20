@@ -7,6 +7,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import th.ac.kmutnb.prachin.map.core.geo.GeoUtils
+import th.ac.kmutnb.prachin.map.location.SatelliteInfo
 import th.ac.kmutnb.prachin.map.navigation.TestGeo.at
 
 class PointSurveySessionTest {
@@ -70,6 +71,45 @@ class PointSurveySessionTest {
         session.offer(at(0.0, 0.0), 8f)
         session.offer(at(0.0, 0.0), 30f) // rejected
         assertEquals(6f, session.averageAccuracyMeters, 0.01f)
+    }
+
+    @Test
+    fun `the quality fields summarise the session, not the last reading`() {
+        val session = PointSurveySession(targetSampleCount = 3)
+        val start = 1_789_889_525_000L
+        session.offer(at(0.0, 0.0), 4f, 60.0, 9f, SatelliteInfo(8, 20), start)
+        session.offer(at(0.0, 0.0), 6f, 61.0, 7f, SatelliteInfo(12, 22), start + 10_000L)
+        // A momentary dropout at the end must not become the recorded satellite count.
+        session.offer(at(0.0, 0.0), 5f, 68.0, 8f, SatelliteInfo(5, 21), start + 20_000L)
+
+        val result = session.result()!!
+        // Medians throughout: the 68 m altitude spike and the 5-satellite dropout are
+        // outliers of exactly the kind a mean would carry into a stored coordinate.
+        assertEquals(61.0, result.elevationMeters!!, 1e-9)
+        assertEquals(8, result.satellites.inUse)
+        assertEquals(21, result.satellites.visible)
+        assertEquals(8f, result.verticalAccuracyMeters!!, 0.01f)
+        assertEquals(20, result.durationSeconds)
+    }
+
+    @Test
+    fun `rejections are reported on the result, not only on the session`() {
+        val session = PointSurveySession(targetSampleCount = 2)
+        session.offer(at(0.0, 0.0), 40f)
+        session.offer(at(0.0, 0.0), 5f)
+        assertEquals(1, session.result()!!.rejectedCount)
+    }
+
+    @Test
+    fun `a fix with no altitude leaves the height unknown rather than zero`() {
+        val session = PointSurveySession(targetSampleCount = 2)
+        session.offer(at(0.0, 0.0), 5f)
+        session.offer(at(0.0, 0.0), 5f)
+
+        val result = session.result()!!
+        assertNull(result.elevationMeters)
+        assertNull(result.verticalAccuracyMeters)
+        assertEquals(SatelliteInfo.UNKNOWN, result.satellites)
     }
 
     @Test

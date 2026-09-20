@@ -9,6 +9,14 @@ data class LocationFix(
     /** The unsmoothed position as reported, kept for the debug screen. */
     val rawPoint: GeoPoint,
     val accuracyMeters: Float,
+    /**
+     * Height above the WGS84 ellipsoid, not above sea level, and typically two to three
+     * times worse than [accuracyMeters]. Recorded because a surveyed point is worth more
+     * with a rough height than with none; never used for navigation.
+     */
+    val altitudeMeters: Double?,
+    /** Reported from API 26 onwards; null on older devices and on fixes that omit it. */
+    val verticalAccuracyMeters: Float?,
     val speedMps: Float?,
     val bearingDegrees: Float?,
     /** Monotonic timestamp, immune to clock changes; used to judge how stale a fix is. */

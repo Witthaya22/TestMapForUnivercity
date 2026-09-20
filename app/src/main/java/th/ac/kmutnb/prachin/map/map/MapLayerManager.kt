@@ -31,24 +31,15 @@ class MapLayerManager(private val context: Context) {
 
     private var style: Style? = null
 
-    /**
-     * The font stack to label POIs with.
-     *
-     * Taken from a symbol layer already in the style rather than hardcoded: only fonts the
-     * style ships glyphs for will render, and a name the offline pack never downloaded makes
-     * every label silently vanish once the device is offline.
-     */
-    private var labelFont: Array<String> = DEFAULT_FONT
+    /** Resolved from the loaded style on [attach]; see [labelFontStack]. */
+    private var labelFont: Array<String> = arrayOf()
 
     val isAttached: Boolean get() = style != null
 
     /** Adds the sources, images and layers to a freshly loaded style. */
     fun attach(style: Style) {
         this.style = style
-        labelFont = style.layers
-            .filterIsInstance<SymbolLayer>()
-            .firstNotNullOfOrNull { layer -> layer.textFont?.value?.takeIf { it.isNotEmpty() } }
-            ?: DEFAULT_FONT
+        labelFont = style.labelFontStack()
 
         addPinImage(style)
 
@@ -243,8 +234,6 @@ class MapLayerManager(private val context: Context) {
         private const val PIN_WIDTH_DP = 24
         private const val PIN_HEIGHT_DP = 32
 
-        private val DEFAULT_FONT = arrayOf("Noto Sans Regular")
-
         private const val COLOR_ROUTE = 0xFF1E88E5.toInt()
         private const val COLOR_ROUTE_TRAVELLED = 0xFF9E9E9E.toInt()
         private const val COLOR_USER = 0xFF2196F3.toInt()
@@ -254,3 +243,16 @@ class MapLayerManager(private val context: Context) {
         private const val COLOR_CATEGORY_DEFAULT = 0xFF5D4037.toInt()
     }
 }
+
+/**
+ * The font stack to label anything with, taken from a symbol layer already in the style.
+ *
+ * Never hardcoded: only fonts the style ships glyphs for will render, and a name the
+ * offline pack never downloaded makes every label silently vanish once the device is
+ * offline - the same failure `includeIdeographs = false` guards against on the download
+ * side. Shared by every overlay that draws text.
+ */
+internal fun Style.labelFontStack(): Array<String> =
+    layers.filterIsInstance<SymbolLayer>()
+        .firstNotNullOfOrNull { layer -> layer.textFont?.value?.takeIf { it.isNotEmpty() } }
+        ?: arrayOf("Noto Sans Regular")

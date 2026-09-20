@@ -109,10 +109,20 @@ class SurveyorViewModel(
 
     private fun onLocation(location: LocationState) {
         _uiState.update { it.copy(locationState = location) }
-        val fix = (location as? LocationState.Available)?.fix ?: return
+        val available = location as? LocationState.Available ?: return
+        val fix = available.fix
 
         session?.let { active ->
-            active.offer(fix.point, fix.accuracyMeters)
+            // The same session type the GPS point log uses, given everything the fix knows:
+            // a POI surveyed here can then report its satellite count and height too.
+            active.offer(
+                point = fix.point,
+                accuracyMeters = fix.accuracyMeters,
+                altitudeMeters = fix.altitudeMeters,
+                verticalAccuracyMeters = fix.verticalAccuracyMeters,
+                satellites = available.satellites,
+                atMillis = fix.timeMs,
+            )
             _uiState.update {
                 it.copy(
                     collectedSamples = active.sampleCount,

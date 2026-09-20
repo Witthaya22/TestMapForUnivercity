@@ -92,6 +92,32 @@ interface WalkPathDao {
 }
 
 @Dao
+interface GpsPointDao {
+
+    /** Oldest first, so the running codes P001, P002... read in the order they were walked. */
+    @Query("SELECT * FROM gps_point ORDER BY recordedAt ASC")
+    fun observeAll(): Flow<List<GpsPointEntity>>
+
+    @Query("SELECT * FROM gps_point ORDER BY recordedAt ASC")
+    suspend fun getAll(): List<GpsPointEntity>
+
+    @Query("SELECT COUNT(*) FROM gps_point")
+    suspend fun count(): Int
+
+    @Upsert
+    suspend fun upsert(point: GpsPointEntity)
+
+    @Query("UPDATE gps_point SET note = :note WHERE id = :id")
+    suspend fun updateNote(id: String, note: String)
+
+    @Query("DELETE FROM gps_point WHERE id = :id")
+    suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM gps_point")
+    suspend fun deleteAll()
+}
+
+@Dao
 interface RouteHistoryDao {
 
     @Query("SELECT * FROM route_history ORDER BY completedAt DESC LIMIT :limit")

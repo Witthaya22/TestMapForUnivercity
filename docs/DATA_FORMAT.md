@@ -214,6 +214,20 @@ Surveyor Mode เขียนไฟล์ลง `Documents/` ผ่าน MediaS
 
 เอาไปทับไฟล์ใน `assets/data/` ได้ตรง ๆ property ส่วนเกินจะถูกละเลยตอนอ่าน
 
+### ไฟล์จากหน้า "เก็บพิกัด GPS" — คนละชุดกับข้างบน
+
+| ไฟล์ | เนื้อหา |
+|---|---|
+| `gps_points_YYYYMMDD_HHmm.geojson` | ค่าที่วัดได้จากเครื่องรับ GPS ล้วน ๆ |
+| `gps_points_YYYYMMDD_HHmm.csv` | ข้อมูลชุดเดียวกันในรูปตาราง (UTF-8 BOM + CRLF สำหรับ Excel) |
+
+property มีเฉพาะค่าการวัด: `code`, `accuracyMeters`, `elevationMeters`,
+`verticalAccuracyMeters`, `satellitesUsed`, `satellitesVisible`, `sampleCount`,
+`rejectedCount`, `spreadMeters`, `durationSeconds`, `recordedAt` (ISO-8601), `note`
+
+**ไม่มี `id` / `name` / `category`** จึงเอาไปทับ `pois.geojson` ตรง ๆ ไม่ได้
+ต้องเติมเองก่อน — รายละเอียดทั้งหมดอยู่ใน [GPS_LOGGING.md](GPS_LOGGING.md)
+
 ---
 
 ## 6. ตรวจไฟล์ก่อน commit

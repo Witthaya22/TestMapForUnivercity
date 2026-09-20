@@ -103,6 +103,15 @@ class GpsLocationSource(context: Context) {
                     point = smoothed,
                     rawPoint = raw,
                     accuracyMeters = location.accuracy,
+                    altitudeMeters = if (location.hasAltitude()) location.altitude else null,
+                    verticalAccuracyMeters = if (
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                        location.hasVerticalAccuracy()
+                    ) {
+                        location.verticalAccuracyMeters
+                    } else {
+                        null
+                    },
                     speedMps = if (location.hasSpeed()) location.speed else null,
                     bearingDegrees = if (location.hasBearing()) location.bearing else null,
                     elapsedRealtimeNanos = location.elapsedRealtimeNanos,

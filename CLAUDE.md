@@ -27,7 +27,11 @@
 7. vector tile ใน MBTiles ถูก gzip ไว้ → ต้องตั้ง header `Content-Encoding: gzip` ไม่งั้นจอขาว
 8. String ที่ผู้ใช้เห็นต้องอยู่ใน `res/values/strings.xml` เป็นภาษาไทยทั้งหมด
    โค้ดและคอมเมนต์เป็นภาษาอังกฤษ
-9. ห้าม import `androidx.compose.material.icons.*` — `material-icons-core` หยุดที่ 1.7.8
+9. **ระบบเก็บพิกัด GPS (`ui/gpslog/`) กับ POI (`ui/survey/`) ต้องแยกกัน**
+   ไฟล์ที่ export จากหน้าเก็บพิกัด GPS ต้องมีเฉพาะ**ค่าที่วัดได้** (พิกัด ความคลาดเคลื่อน
+   ดาวเทียม จำนวนครั้งที่วัด เวลา) ห้ามใส่ชื่อสถานที่ / หมวดหมู่ / คณะ / อาคาร ลงไป
+   และจุดที่เก็บต้องไม่เข้ากราฟ routing — อ่าน `docs/GPS_LOGGING.md` ก่อนแก้
+10. ห้าม import `androidx.compose.material.icons.*` — `material-icons-core` หยุดที่ 1.7.8
    และไม่อยู่ใน Compose BOM ที่โปรเจกต์นี้ใช้แล้ว ให้ใช้ vector drawable ใน `res/drawable/`
    ผ่าน `painterResource(R.drawable.ic_*)` แทน
 
@@ -58,6 +62,10 @@
 | `navigation/RouteGraphBuilder.kt` | สร้างกราฟ + merge node 1.5 ม. + snap POI ลงถนน |
 | `data/repository/OfflineMapRepository.kt` | ดาวน์โหลด/จัดการแผนที่ออฟไลน์ |
 | `map/LocalTileServer.kt` | เสิร์ฟ MBTiles โหมด BUNDLED (NanoHTTPD บน 127.0.0.1) |
+| `survey/PointSurveySession.kt` | เฉลี่ย GPS fix ด้วย median — ใช้ร่วมกันทั้ง POI surveyor และหน้าเก็บพิกัด GPS |
+| `ui/gpslog/GpsLogScreen.kt` | หน้าเก็บพิกัด GPS บนแผนที่ (เห็นตัวเองเดิน + เก็บจุด + ส่งออก) |
+| `data/geojson/GpsPointExporter.kt` | เขียนไฟล์ GeoJSON / CSV ของค่าที่วัดได้ — ชื่อฟิลด์ต้องตรงกับ `data/model/GpsPoint.kt` |
+| `data/local/AppDatabase.kt` | Room version **3** (`poi`, `walk_path`, `gps_point`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
@@ -68,6 +76,18 @@ python3 tools/osm_import.py        # ดึงข้อมูลจาก OSM �
 python3 tools/geojson_validate.py  # ตรวจไฟล์พิกัดก่อน commit
 bash tools/build_tiles.sh          # สร้าง MBTiles ใหม่ (โหมด BUNDLED)
 ```
+
+> บนเครื่องนี้ Gradle จะเลือก JRE ของ VS Code (ไม่มี `jlink`) แล้ว `compileDebugJavaWithJavac` พัง
+> ต้องตั้ง `JAVA_HOME` เป็น JBR ของ Android Studio ก่อนสั่ง build
+> PowerShell: `$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`
+
+## เอกสารที่ต้องอ่านก่อนแก้เรื่องนั้น ๆ
+| หัวข้อ | อ่าน |
+|---|---|
+| พิกัดไม่ตรง / ความแม่นยำ GPS | `docs/ACCURACY.md` |
+| รูปแบบไฟล์ GeoJSON และ config | `docs/DATA_FORMAT.md` |
+| กลไกออฟไลน์ / จอขาว | `docs/OFFLINE.md` |
+| ระบบเก็บพิกัด GPS + ไฟล์ที่ส่งออก | `docs/GPS_LOGGING.md` |
 
 ## เรื่องพิกัดไม่ตรง (อ่าน `docs/ACCURACY.md` ก่อนแก้)
 **ห้ามก็อปพิกัดจาก Google Maps มาใส่** ภาพดาวเทียม Google มี offset กับข้อมูล OSM ได้ 3–15 ม.

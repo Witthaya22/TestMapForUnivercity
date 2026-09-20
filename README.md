@@ -48,6 +48,7 @@
 | F9 | เตือนเมื่อปักจุดนอกเส้นทาง + เสนอย้ายไปจุดใกล้สุดบนเส้นทาง |
 | F10 | เตือนเมื่อออกนอกเส้นทาง + คำนวณเส้นทางใหม่ |
 | F11 | โหมดสำรวจพิกัด (Surveyor) เก็บพิกัดจริงด้วย GPS แล้ว export GeoJSON |
+| F11b | หน้าเก็บพิกัด GPS — เดินดูตัวเองบนแผนที่ กดเก็บจุด เห็นความคลาดเคลื่อน/ดาวเทียมสด ๆ แล้ว export GeoJSON หรือ CSV |
 
 ---
 
@@ -105,6 +106,7 @@ python3 tools/geojson_validate.py  # ตรวจก่อน commit ทุก�
 | [docs/ACCURACY.md](docs/ACCURACY.md) | ทำไมหมุดไม่ตรง และแก้ยังไง — **อ่านก่อนแก้เรื่องพิกัด** |
 | [docs/OFFLINE.md](docs/OFFLINE.md) | กลไกออฟไลน์ทั้ง 2 แบบ และกับดักที่ทำให้จอขาว |
 | [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md) | รูปแบบ GeoJSON และ config |
+| [docs/GPS_LOGGING.md](docs/GPS_LOGGING.md) | ระบบเก็บพิกัด GPS — ค่าที่เก็บ ทำไมเก็บ และไฟล์ที่ส่งออก |
 | [CLAUDE.md](CLAUDE.md) | บริบทโปรเจกต์สำหรับ AI agent |
 
 ---

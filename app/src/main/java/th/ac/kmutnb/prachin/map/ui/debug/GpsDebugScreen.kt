@@ -110,6 +110,10 @@ fun GpsDebugScreen(
                         "${location.satellites.inUse} / ${location.satellites.visible}",
                     )
                     DebugRow(
+                        stringResource(R.string.gps_debug_altitude),
+                        fix.altitudeMeters?.let { "%.0f m".format(it) } ?: "-",
+                    )
+                    DebugRow(
                         stringResource(R.string.gps_debug_speed),
                         fix.speedMps?.let { "%.2f m/s".format(it) } ?: "-",
                     )

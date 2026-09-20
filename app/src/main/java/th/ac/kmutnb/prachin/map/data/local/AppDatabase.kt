@@ -8,8 +8,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [PoiEntity::class, WalkPathEntity::class, RouteHistoryEntity::class],
-    version = 2,
+    entities = [
+        PoiEntity::class,
+        WalkPathEntity::class,
+        GpsPointEntity::class,
+        RouteHistoryEntity::class,
+    ],
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -17,6 +22,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun poiDao(): PoiDao
 
     abstract fun walkPathDao(): WalkPathDao
+
+    abstract fun gpsPointDao(): GpsPointDao
 
     abstract fun routeHistoryDao(): RouteHistoryDao
 
@@ -50,6 +57,38 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Adds the table behind the GPS point log.
+         *
+         * Separate from `poi` rather than a few more columns on it: a logged point is a
+         * measurement of where the device stood, while a POI is a place on the campus with
+         * a name and a category. Mixing them would put half-finished measurements on the
+         * map and campus semantics into the exported readings - see `docs/GPS_LOGGING.md`.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `gps_point` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`code` TEXT NOT NULL, " +
+                        "`lat` REAL NOT NULL, " +
+                        "`lon` REAL NOT NULL, " +
+                        "`accuracyMeters` REAL NOT NULL, " +
+                        "`elevationMeters` REAL, " +
+                        "`verticalAccuracyMeters` REAL, " +
+                        "`satellitesUsed` INTEGER NOT NULL, " +
+                        "`satellitesVisible` INTEGER NOT NULL, " +
+                        "`sampleCount` INTEGER NOT NULL, " +
+                        "`rejectedCount` INTEGER NOT NULL, " +
+                        "`spreadMeters` REAL NOT NULL, " +
+                        "`durationSeconds` INTEGER NOT NULL, " +
+                        "`note` TEXT NOT NULL, " +
+                        "`recordedAt` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -58,7 +97,7 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 NAME,
-            ).addMigrations(MIGRATION_1_2).build().also { instance = it }
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
         }
     }
 }
