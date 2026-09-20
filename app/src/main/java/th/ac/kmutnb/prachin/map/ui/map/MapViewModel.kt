@@ -25,6 +25,8 @@ import th.ac.kmutnb.prachin.map.data.config.CampusConfig
 import th.ac.kmutnb.prachin.map.data.config.CampusConfigException
 import th.ac.kmutnb.prachin.map.data.config.ConfigProblem
 import th.ac.kmutnb.prachin.map.data.local.RouteHistoryEntity
+import th.ac.kmutnb.prachin.map.data.model.HazardPoint
+import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
 import th.ac.kmutnb.prachin.map.data.model.Poi
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetwork
@@ -33,6 +35,9 @@ import kotlin.math.roundToInt
 import th.ac.kmutnb.prachin.map.di.AppContainer
 import th.ac.kmutnb.prachin.map.location.LocationState
 import th.ac.kmutnb.prachin.map.location.SatelliteInfo
+import th.ac.kmutnb.prachin.map.navigation.HazardAlert
+import th.ac.kmutnb.prachin.map.navigation.HazardMonitor
+import th.ac.kmutnb.prachin.map.navigation.HazardOnRoute
 import th.ac.kmutnb.prachin.map.navigation.NavigationEngine
 import th.ac.kmutnb.prachin.map.navigation.NavigationEvent
 import th.ac.kmutnb.prachin.map.navigation.NavigationProgress
@@ -41,6 +46,7 @@ import th.ac.kmutnb.prachin.map.navigation.TapValidator
 import th.ac.kmutnb.prachin.map.navigation.TapVerdict
 import th.ac.kmutnb.prachin.map.navigation.model.NavigationRoute
 import th.ac.kmutnb.prachin.map.navigation.model.RoutePlanResult
+import th.ac.kmutnb.prachin.map.ui.common.HazardWording
 
 /** A dialog waiting on the user, driven by [TapVerdict]. */
 data class PendingPlacement(val verdict: TapVerdict)
@@ -76,6 +82,15 @@ data class MapUiState(
     val namingPoint: GeoPoint? = null,
 
     val showWalkingNetwork: Boolean = false,
+
+    /** Hazards still in force, drawn on the map whether or not warnings are switched on. */
+    val hazards: List<HazardPoint> = emptyList(),
+    /** Hazards the walker is inside right now; drives the banner. */
+    val hazardAlerts: List<HazardAlert> = emptyList(),
+    /** Hazards the planned route runs into, in the order they will be met. */
+    val hazardsOnRoute: List<HazardOnRoute> = emptyList(),
+    /** The hazard whose read-only sheet is open, after a tap on the map. */
+    val detailHazard: HazardPoint? = null,
 ) {
     val currentPoint: GeoPoint?
         get() = (locationState as? LocationState.Available)?.fix?.point
@@ -91,11 +106,18 @@ sealed interface MapEffect {
     /** A message with a value in it, formatted against the string resource. */
     data class MessageWith(@param:StringRes val messageRes: Int, val arg: Any) : MapEffect
     data class CameraTo(val point: GeoPoint) : MapEffect
+
+    /**
+     * A hazard bad enough to interrupt with. Only DANGER raises one: a dialog over the map
+     * while somebody is walking is itself a small hazard, so it is spent on the cases where
+     * stopping to read is the right thing to do.
+     */
+    data class HazardDanger(val alert: HazardAlert) : MapEffect
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModel(
-    application: Application,
+    private val application: Application,
     private val container: AppContainer,
 ) : ViewModel() {
 
@@ -116,6 +138,15 @@ class MapViewModel(
 
     private var engine: NavigationEngine? = null
 
+    /** Remembers what has already been said, so a hazard is announced once per approach. */
+    private val hazardMonitor = HazardMonitor()
+
+    private var hazardAlertsEnabled = true
+    private var hazardVoiceEnabled = true
+
+    /** Told the user once that this phone has no Thai voice; saying it twice helps nobody. */
+    private var reportedMissingVoice = false
+
     init {
         loadConfig()
 
@@ -135,6 +166,33 @@ class MapViewModel(
         viewModelScope.launch {
             container.routeNetworkRepository.network.collect { network ->
                 _uiState.update { it.copy(network = network) }
+            }
+        }
+
+        viewModelScope.launch {
+            container.hazardRepository.activeHazards.collect { hazards ->
+                _uiState.update { it.copy(hazards = hazards) }
+                // A hazard added or switched off while a route is on screen changes what
+                // that route walks into, so the summary is recomputed rather than stale.
+                refreshHazardsOnRoute()
+            }
+        }
+
+        viewModelScope.launch {
+            container.preferences.hazardAlerts.collect { enabled ->
+                hazardAlertsEnabled = enabled
+                if (!enabled) {
+                    hazardMonitor.reset()
+                    container.speechAnnouncer.stop()
+                    _uiState.update { it.copy(hazardAlerts = emptyList()) }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            container.preferences.hazardVoice.collect { enabled ->
+                hazardVoiceEnabled = enabled
+                if (!enabled) container.speechAnnouncer.stop()
             }
         }
 
@@ -173,6 +231,7 @@ class MapViewModel(
         _uiState.update { it.copy(locationState = state) }
         if (state !is LocationState.Available) return
         adjustIntervalForSpeed(state.fix.speedMps)
+        checkHazards(state.fix.point)
 
         val activeEngine = engine ?: return
         val update = activeEngine.update(state.fix.point, System.currentTimeMillis())
@@ -227,6 +286,73 @@ class MapViewModel(
     }
 
     // ----------------------------------------------------------------------------------
+    // Hazard warnings
+    // ----------------------------------------------------------------------------------
+
+    /**
+     * Decides whether this fix is worth warning about, and says so.
+     *
+     * The banner is refreshed from what the walker is currently inside, while the speech
+     * and the dialog come from the monitor's transitions - the difference between "there
+     * is a dog here" being true and it being news. Running both from one fix keeps them
+     * from disagreeing.
+     */
+    private fun checkHazards(position: GeoPoint) {
+        if (!hazardAlertsEnabled) return
+        val hazards = _uiState.value.hazards
+        if (hazards.isEmpty()) {
+            if (_uiState.value.hazardAlerts.isNotEmpty()) {
+                _uiState.update { it.copy(hazardAlerts = emptyList()) }
+            }
+            return
+        }
+
+        val now = System.currentTimeMillis()
+        val newAlerts = hazardMonitor.onPosition(position, hazards, now)
+        _uiState.update { it.copy(hazardAlerts = hazardMonitor.nearby(position, hazards)) }
+        if (newAlerts.isEmpty()) return
+
+        // Only the most urgent is spoken. Reading out three hazards at a junction takes
+        // longer than walking through it, and the walker acts on the first one anyway.
+        val worst = newAlerts.first()
+        if (hazardVoiceEnabled) {
+            container.speechAnnouncer.speak(
+                text = HazardWording.spokenText(application, worst),
+                interrupt = HazardWording.interrupts(worst),
+            )
+            // Thai voice data is missing on plenty of budget phones. Say so once, so the
+            // silence reads as a device limitation rather than as a broken warning.
+            if (container.speechAnnouncer.isUnavailable && !reportedMissingVoice) {
+                reportedMissingVoice = true
+                viewModelScope.launch {
+                    effectChannel.send(MapEffect.Message(R.string.hazard_voice_unavailable))
+                }
+            }
+        }
+        if (worst.hazard.severity == HazardSeverity.DANGER && !worst.isRepeat) {
+            viewModelScope.launch { effectChannel.send(MapEffect.HazardDanger(worst)) }
+        }
+    }
+
+    /** Recomputes which hazards the current route runs into. */
+    private fun refreshHazardsOnRoute() {
+        val state = _uiState.value
+        val route = state.route
+        val onRoute = if (route == null) {
+            emptyList()
+        } else {
+            HazardMonitor.alongRoute(route.points, state.hazards)
+        }
+        _uiState.update { it.copy(hazardsOnRoute = onRoute) }
+    }
+
+    fun showHazardDetail(id: String) = _uiState.update { state ->
+        state.copy(detailHazard = state.hazards.firstOrNull { it.id == id })
+    }
+
+    fun dismissHazardDetail() = _uiState.update { it.copy(detailHazard = null) }
+
+    // ----------------------------------------------------------------------------------
     // Waypoint selection
     // ----------------------------------------------------------------------------------
 
@@ -279,6 +405,7 @@ class MapViewModel(
         val state = _uiState.value
         if (state.selectedWaypoints.isEmpty()) {
             _uiState.update { it.copy(route = null, progress = null) }
+            refreshHazardsOnRoute()
             return
         }
 
@@ -322,6 +449,7 @@ class MapViewModel(
         when (val result = RoutePlanner.plan(network.graph, waypoints)) {
             is RoutePlanResult.Success -> {
                 _uiState.update { it.copy(route = result.route, startsAtFirstStop = startsAtFirstStop) }
+                refreshHazardsOnRoute()
                 if (wasNavigating && !startsAtFirstStop) attachEngine(result.route)
             }
 
@@ -329,6 +457,7 @@ class MapViewModel(
             RoutePlanResult.NotEnoughWaypoints,
             -> {
                 _uiState.update { it.copy(route = null, progress = null, startsAtFirstStop = false) }
+                refreshHazardsOnRoute()
                 viewModelScope.launch { effectChannel.send(MapEffect.Message(R.string.nav_no_path_body)) }
             }
         }
@@ -356,12 +485,16 @@ class MapViewModel(
         planRoute()
         val route = _uiState.value.route ?: return
         attachEngine(route)
+        // Setting off is a fresh start: a hazard the walker is already standing in should
+        // be announced now rather than counted as already told.
+        hazardMonitor.reset()
         locationInterval.value = NAVIGATING_INTERVAL_MS
         _uiState.update { it.copy(isNavigating = true) }
     }
 
     fun stopNavigation(showMessage: Boolean = true) {
         engine = null
+        container.speechAnnouncer.stop()
         locationInterval.value = IDLE_INTERVAL_MS
         _uiState.update { it.copy(isNavigating = false, progress = null, isOffRoute = false) }
         if (showMessage) {

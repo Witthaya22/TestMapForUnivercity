@@ -39,11 +39,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import th.ac.kmutnb.prachin.map.R
+import th.ac.kmutnb.prachin.map.data.model.HazardPoint
 import th.ac.kmutnb.prachin.map.data.model.Poi
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
+import th.ac.kmutnb.prachin.map.map.HazardLayerManager
+import th.ac.kmutnb.prachin.map.navigation.HazardAlert
+import th.ac.kmutnb.prachin.map.navigation.HazardOnRoute
 import th.ac.kmutnb.prachin.map.navigation.NavigationProgress
 import th.ac.kmutnb.prachin.map.navigation.TapVerdict
+import androidx.compose.ui.graphics.Color
 import th.ac.kmutnb.prachin.map.ui.common.Formats
+import th.ac.kmutnb.prachin.map.ui.common.HazardWording
 import th.ac.kmutnb.prachin.map.ui.common.labelRes
 import kotlin.math.roundToInt
 
@@ -561,3 +567,141 @@ fun NamePointDialog(
         },
     )
 }
+
+// --------------------------------------------------------------------------------------
+// Hazard warnings
+// --------------------------------------------------------------------------------------
+
+/**
+ * The standing warning while the walker is inside one or more hazards.
+ *
+ * A banner rather than a dialog, because it has to survive being ignored: someone crossing
+ * a road should be able to glance at it and keep walking, and the warning has to still be
+ * there when they look again. The worst hazard is spelled out and the rest are counted -
+ * a list of four hazards at a junction is read by nobody.
+ */
+@Composable
+fun HazardBanner(alerts: List<HazardAlert>, modifier: Modifier = Modifier) {
+    val worst = alerts.firstOrNull() ?: return
+    val context = LocalContext.current
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(HazardLayerManager.composeColour(worst.hazard.severity)),
+            contentColor = Color.White,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = stringResource(R.string.hazard_alert_title),
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Text(
+                text = HazardWording.bannerText(context, worst),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            if (alerts.size > 1) {
+                Text(
+                    text = stringResource(R.string.hazard_alert_more, alerts.size - 1),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The one hazard bad enough to stop for.
+ *
+ * Raised only on entering a DANGER hazard, and only once: a dialog over the map while
+ * somebody is walking is itself a small hazard, so it is spent where stopping to read is
+ * the right response.
+ */
+@Composable
+fun HazardDangerDialog(alert: HazardAlert, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.hazard_dialog_title)) },
+        text = { Text(HazardWording.bannerText(context, alert)) },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.hazard_dialog_acknowledge))
+            }
+        },
+    )
+}
+
+/** What a planned route walks into, listed before the walker sets off rather than at the kerb. */
+@Composable
+fun HazardsOnRouteNotice(hazards: List<HazardOnRoute>, modifier: Modifier = Modifier) {
+    if (hazards.isEmpty()) return
+    val context = LocalContext.current
+
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = stringResource(R.string.hazard_on_route_title, hazards.size),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.error,
+        )
+        hazards.take(MAX_LISTED_ROUTE_HAZARDS).forEach { onRoute ->
+            Text(
+                text = stringResource(
+                    R.string.hazard_on_route_item,
+                    HazardWording.subject(context, onRoute.hazard),
+                    onRoute.alongRouteMeters.roundToInt(),
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+/** Read-only detail for a hazard tapped on the main map; editing lives on the hazard screen. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HazardInfoSheet(hazard: HazardPoint, onDismiss: () -> Unit) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(hazard.type.labelRes),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = stringResource(hazard.severity.labelRes),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color(HazardLayerManager.composeColour(hazard.severity)),
+                )
+            }
+            if (hazard.description.isNotBlank()) {
+                Text(hazard.description, style = MaterialTheme.typography.bodyMedium)
+            }
+            Text(
+                text = stringResource(
+                    R.string.hazard_info_alert_radius,
+                    hazard.alertRadiusMeters.roundToInt(),
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** More than this at one junction and nobody reads the list. */
+private const val MAX_LISTED_ROUTE_HAZARDS = 3

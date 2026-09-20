@@ -320,6 +320,12 @@
     <string name="hazard_voice_ahead">ระวัง %1$s ข้างหน้า %2$d เมตร</string>
     <string name="hazard_voice_danger_ahead">อันตราย %1$s ข้างหน้า %2$d เมตร</string>
     <string name="hazard_voice_repeat">ยังอยู่ใกล้จุดอันตราย %1$s</string>
+    <string name="hazard_alert_more">และอีก %1$d จุดใกล้ ๆ</string>
+    <string name="hazard_dialog_title">อันตรายข้างหน้า</string>
+    <string name="hazard_dialog_acknowledge">รับทราบ</string>
+    <string name="hazard_on_route_title">เส้นทางนี้ผ่านจุดอันตราย %1$d จุด</string>
+    <string name="hazard_on_route_item">• %1$s (ห่างจากจุดเริ่ม %2$d ม.)</string>
+    <string name="hazard_info_alert_radius">แอปจะเตือนเมื่อเข้าใกล้ภายใน %1$d ม.</string>
     <string name="hazard_voice_unavailable">เครื่องนี้ยังไม่มีเสียงพูดภาษาไทย จะเตือนเป็นข้อความอย่างเดียว (ติดตั้งเสียงไทยได้ในตั้งค่าระบบ)</string>
 
     <!-- หน้าเก็บพิกัด GPS (บันทึกค่าดิบเพื่อส่งออก) -->

@@ -50,7 +50,9 @@ import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.config.CampusConfig
 import th.ac.kmutnb.prachin.map.location.LocationState
+import th.ac.kmutnb.prachin.map.navigation.HazardAlert
 import th.ac.kmutnb.prachin.map.map.MapGeoJson
+import th.ac.kmutnb.prachin.map.map.HazardLayerManager
 import th.ac.kmutnb.prachin.map.map.MapLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
@@ -67,6 +69,8 @@ fun MapScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
     val layerManager = remember { MapLayerManager(context) }
+    val hazardLayers = remember { HazardLayerManager() }
+    var dangerAlert by remember { mutableStateOf<HazardAlert?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.effects.collectLatest { effect ->
@@ -78,6 +82,8 @@ fun MapScreen(
                 is MapEffect.CameraTo -> mapLibreMap?.animateCamera(
                     CameraUpdateFactory.newLatLng(LatLng(effect.point.lat, effect.point.lon)),
                 )
+
+                is MapEffect.HazardDanger -> dangerAlert = effect.alert
             }
         }
     }
@@ -103,8 +109,10 @@ fun MapScreen(
                 config = config,
                 styleUri = styleUri,
                 layerManager = layerManager,
+                hazardLayers = hazardLayers,
                 onMapReady = { mapLibreMap = it },
                 onPoiTapped = viewModel::onPoiTapped,
+                onHazardTapped = viewModel::showHazardDetail,
                 onLongPressed = viewModel::onMapLongPressed,
             )
 
@@ -126,6 +134,9 @@ fun MapScreen(
                     point = available?.fix?.point,
                     accuracyMeters = available?.fix?.accuracyMeters ?: 0f,
                 )
+            }
+            LaunchedEffect(state.hazards, hazardLayers.isAttached) {
+                if (hazardLayers.isAttached) hazardLayers.setHazards(state.hazards)
             }
             LaunchedEffect(state.route, state.progress, layerManager.isAttached) {
                 if (!layerManager.isAttached) return@LaunchedEffect
@@ -154,6 +165,7 @@ fun MapScreen(
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                HazardBanner(state.hazardAlerts)
                 GpsStatusBanner(state.locationState)
                 if (state.startsAtFirstStop) {
                     InfoBanner(stringResource(R.string.nav_starts_at_first_stop))
@@ -228,6 +240,14 @@ fun MapScreen(
         )
     }
 
+    state.detailHazard?.let { hazard ->
+        HazardInfoSheet(hazard = hazard, onDismiss = viewModel::dismissHazardDetail)
+    }
+
+    dangerAlert?.let { alert ->
+        HazardDangerDialog(alert = alert, onDismiss = { dangerAlert = null })
+    }
+
     state.pendingPlacement?.let { pending ->
         PlacementDialog(
             verdict = pending.verdict,
@@ -250,8 +270,10 @@ private fun CampusMapView(
     config: CampusConfig,
     styleUri: String,
     layerManager: MapLayerManager,
+    hazardLayers: HazardLayerManager,
     onMapReady: (MapLibreMap) -> Unit,
     onPoiTapped: (String) -> Unit,
+    onHazardTapped: (String) -> Unit,
     onLongPressed: (GeoPoint) -> Unit,
 ) {
     val mapView = rememberMapViewWithLifecycle()
@@ -260,6 +282,9 @@ private fun CampusMapView(
         mapView.getMapAsync { map ->
             onMapReady(map)
             map.setStyle(Style.Builder().fromUri(styleUri)) { style ->
+                // Hazards first, so their shaded circles sit under the route line and the
+                // POI pins rather than hiding either.
+                hazardLayers.attach(style)
                 layerManager.attach(style)
                 map.cameraPosition = CameraPosition.Builder()
                     .target(LatLng(config.center.lat, config.center.lon))
@@ -284,16 +309,26 @@ private fun CampusMapView(
             map.uiSettings.isAttributionEnabled = true
 
             map.addOnMapClickListener { latLng ->
-                val screenPoint = map.projection.toScreenLocation(latLng)
-                val hits = map.queryRenderedFeatures(
-                    PointF(screenPoint.x, screenPoint.y),
-                    MapLayerManager.LAYER_POIS,
-                )
-                val id = hits.firstNotNullOfOrNull {
-                    it.getStringProperty(MapGeoJson.PROPERTY_ID)
+                val projected = map.projection.toScreenLocation(latLng)
+                val screenPoint = PointF(projected.x, projected.y)
+                // POIs win a tap that hits both: the pin is the smaller target and the one
+                // the user aimed at, while a hazard circle can be tens of metres wide.
+                val poiId = map.queryRenderedFeatures(screenPoint, MapLayerManager.LAYER_POIS)
+                    .firstNotNullOfOrNull { it.getStringProperty(MapGeoJson.PROPERTY_ID) }
+                if (poiId != null) {
+                    onPoiTapped(poiId)
+                    return@addOnMapClickListener true
                 }
-                if (id != null) {
-                    onPoiTapped(id)
+
+                val hazardId = map.queryRenderedFeatures(
+                    screenPoint,
+                    HazardLayerManager.LAYER_POINTS,
+                    HazardLayerManager.LAYER_AREAS,
+                ).firstNotNullOfOrNull {
+                    it.getStringProperty(HazardLayerManager.PROPERTY_ID)
+                }
+                if (hazardId != null) {
+                    onHazardTapped(hazardId)
                     true
                 } else {
                     false
@@ -305,7 +340,10 @@ private fun CampusMapView(
                 true
             }
         }
-        onDispose { layerManager.detach() }
+        onDispose {
+            layerManager.detach()
+            hazardLayers.detach()
+        }
     }
 
     AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
@@ -376,6 +414,7 @@ private fun RoutePlanBar(
                     text = state.selectedWaypoints.joinToString(" → ") { it.label },
                     style = MaterialTheme.typography.titleSmall,
                 )
+                HazardsOnRouteNotice(state.hazardsOnRoute)
                 if (route != null) {
                     Text(
                         text = stringResource(
