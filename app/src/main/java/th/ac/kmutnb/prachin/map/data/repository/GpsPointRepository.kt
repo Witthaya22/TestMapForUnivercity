@@ -8,6 +8,7 @@ import th.ac.kmutnb.prachin.map.data.geojson.GpsPointExporter
 import th.ac.kmutnb.prachin.map.data.local.GpsPointDao
 import th.ac.kmutnb.prachin.map.data.local.toEntity
 import th.ac.kmutnb.prachin.map.data.local.toGpsPoint
+import th.ac.kmutnb.prachin.map.data.model.GpsCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.GpsPoint
 import th.ac.kmutnb.prachin.map.survey.SurveyedPoint
 import java.util.UUID
@@ -47,6 +48,7 @@ class GpsPointRepository(private val gpsPointDao: GpsPointDao) {
     suspend fun save(
         surveyed: SurveyedPoint,
         code: String,
+        captureMode: GpsCaptureMode,
         note: String = "",
         recordedAt: Long = System.currentTimeMillis(),
     ): GpsPoint {
@@ -65,6 +67,7 @@ class GpsPointRepository(private val gpsPointDao: GpsPointDao) {
             durationSeconds = surveyed.durationSeconds,
             note = note,
             recordedAt = recordedAt,
+            captureMode = captureMode,
         )
         gpsPointDao.upsert(point.toEntity())
         return point
@@ -77,13 +80,19 @@ class GpsPointRepository(private val gpsPointDao: GpsPointDao) {
 
     suspend fun deleteAll() = gpsPointDao.deleteAll()
 
-    suspend fun exportGeoJson(): String = withContext(Dispatchers.Default) {
-        GpsPointExporter.writeGeoJson(all())
-    }
+    /**
+     * @param mode null to export everything, or one capture mode to export only what that
+     * screen recorded. Both screens write to one log, so this is how a file of only the
+     * readings taken with the map in front of the surveyor can still be produced.
+     */
+    suspend fun exportGeoJson(mode: GpsCaptureMode? = null): String =
+        withContext(Dispatchers.Default) { GpsPointExporter.writeGeoJson(all(mode)) }
 
-    suspend fun exportCsv(): String = withContext(Dispatchers.Default) {
-        GpsPointExporter.writeCsv(all())
-    }
+    suspend fun exportCsv(mode: GpsCaptureMode? = null): String =
+        withContext(Dispatchers.Default) { GpsPointExporter.writeCsv(all(mode)) }
+
+    private suspend fun all(mode: GpsCaptureMode?): List<GpsPoint> =
+        all().filter { mode == null || it.captureMode == mode }
 
     private companion object {
         const val CODE_PREFIX = "P"

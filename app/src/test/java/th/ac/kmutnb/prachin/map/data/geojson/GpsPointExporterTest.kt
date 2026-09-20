@@ -6,6 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
+import th.ac.kmutnb.prachin.map.data.model.GpsCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.GpsPoint
 import java.util.TimeZone
 
@@ -28,6 +29,7 @@ class GpsPointExporterTest {
         code: String = "P001",
         note: String = "",
         elevation: Double? = 61.4,
+        captureMode: GpsCaptureMode = GpsCaptureMode.MAP,
     ) = GpsPoint(
         id = "gps_$code",
         code = code,
@@ -43,6 +45,7 @@ class GpsPointExporterTest {
         durationSeconds = 31,
         note = note,
         recordedAt = recordedAt,
+        captureMode = captureMode,
     )
 
     @Test
@@ -63,6 +66,7 @@ class GpsPointExporterTest {
         assertEquals(3.4, properties["spreadMeters"].asDouble, 1e-9)
         assertEquals(31, properties["durationSeconds"].asInt)
         assertEquals("2026-09-20T14:32:05+07:00", properties["recordedAt"].asString)
+        assertEquals("map", properties["captureMode"].asString)
 
         // Nothing that describes a place may leak into a file of measurements.
         listOf("category", "name", "description", "icon", "order").forEach { forbidden ->
@@ -111,7 +115,7 @@ class GpsPointExporterTest {
         assertEquals(GpsPointExporter.CSV_HEADER.joinToString(","), lines[0])
         assertEquals(
             "P001,14.1610243,101.3529617,4.3,61.4,8.5,11,23,30,2,3.4,31," +
-                "2026-09-20T14:32:05+07:00,",
+                "2026-09-20T14:32:05+07:00,map,",
             lines[1],
         )
     }
@@ -142,6 +146,24 @@ class GpsPointExporterTest {
 
         assertEquals(GpsPointExporter.CSV_HEADER.size, columns.size)
         assertEquals("", columns[GpsPointExporter.CSV_HEADER.indexOf("elevationMeters")])
+    }
+
+    @Test
+    fun `the screen a reading was taken on travels with it`() {
+        val readout = samplePoint(captureMode = GpsCaptureMode.READOUT)
+
+        val properties = JsonParser.parseString(GpsPointExporter.writeGeoJson(listOf(readout), bangkok))
+            .asJsonObject
+            .getAsJsonArray("features")[0].asJsonObject
+            .getAsJsonObject("properties")
+        assertEquals("readout", properties["captureMode"].asString)
+
+        val columns = splitCsv(
+            GpsPointExporter.writeCsv(listOf(readout), bangkok)
+                .removePrefix(bom)
+                .split(newline)[1],
+        )
+        assertEquals("readout", columns[GpsPointExporter.CSV_HEADER.indexOf("captureMode")])
     }
 
     @Test

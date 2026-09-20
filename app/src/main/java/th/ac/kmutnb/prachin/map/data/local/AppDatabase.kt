@@ -15,7 +15,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         HazardPointEntity::class,
         RouteHistoryEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -123,6 +123,21 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Records which screen each GPS reading was taken on.
+         *
+         * Existing rows default to the map screen, and that is not a guess: it was the
+         * only collecting screen there was when they were written.
+         */
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `gps_point` ADD COLUMN `captureMode` TEXT NOT NULL" +
+                        " DEFAULT 'map'"
+                )
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -131,7 +146,7 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 NAME,
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { instance = it }
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build().also { instance = it }
         }
     }
 }

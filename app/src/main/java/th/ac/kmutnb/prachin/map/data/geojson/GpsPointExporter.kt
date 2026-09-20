@@ -49,6 +49,7 @@ object GpsPointExporter {
         "spreadMeters",
         "durationSeconds",
         "recordedAt",
+        "captureMode",
         "note",
     )
 
@@ -81,6 +82,7 @@ object GpsPointExporter {
                 addProperty("spreadMeters", round(gpsPoint.spreadMeters, METER_DECIMALS))
                 addProperty("durationSeconds", gpsPoint.durationSeconds)
                 addProperty("recordedAt", formatTimestamp(gpsPoint.recordedAt, timeZone))
+                addProperty("captureMode", gpsPoint.captureMode.id)
                 addProperty("note", gpsPoint.note)
             }
 
@@ -143,6 +145,7 @@ object GpsPointExporter {
                 decimal(gpsPoint.spreadMeters, METER_DECIMALS),
                 gpsPoint.durationSeconds.toString(),
                 formatTimestamp(gpsPoint.recordedAt, timeZone),
+                gpsPoint.captureMode.id,
                 gpsPoint.note,
             )
             builder.append(row.joinToString(",") { escapeCsv(it) }).append(CRLF)

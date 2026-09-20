@@ -20,6 +20,7 @@ import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.config.CampusConfig
 import th.ac.kmutnb.prachin.map.data.config.CampusConfigException
 import th.ac.kmutnb.prachin.map.data.config.ConfigProblem
+import th.ac.kmutnb.prachin.map.data.model.GpsCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.GpsPoint
 import th.ac.kmutnb.prachin.map.di.AppContainer
 import th.ac.kmutnb.prachin.map.location.LocationState
@@ -83,7 +84,7 @@ data class GpsLogUiState(
 }
 
 /**
- * Drives the GPS point log: a map the surveyor walks on, and the measurements taken from it.
+ * Drives both GPS point logs: the map one and the readout one.
  *
  * The POI surveyor in [th.ac.kmutnb.prachin.map.ui.survey.SurveyorViewModel] answers a
  * different question - "where is this building's door" - and immediately turns its result
@@ -91,12 +92,20 @@ data class GpsLogUiState(
  * there, so the exported file is a set of readings that can be checked, re-measured and
  * compared, with nothing about the campus mixed into it.
  *
+ * One view model for two screens, differing only in [captureMode]. The two screens show
+ * the same measurement in different ways, and splitting the logic would mean maintaining
+ * the averaging, the running codes and the export twice - the classic way two screens
+ * quietly stop agreeing about what a saved point contains. What the mode does change is
+ * real, though: without a map there is no style to resolve and no trail to draw, so
+ * neither is set up.
+ *
  * The averaging itself is [PointSurveySession], shared with the POI surveyor: there is one
  * implementation of "stand still and take the median", and it is unit tested once.
  */
 class GpsLogViewModel(
     private val application: Application,
     private val container: AppContainer,
+    private val captureMode: GpsCaptureMode,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GpsLogUiState())
@@ -114,8 +123,11 @@ class GpsLogViewModel(
 
     private var locationJob: Job? = null
 
+    /** True on the map screen; the readout screen needs no basemap and no breadcrumb. */
+    private val showsMap: Boolean get() = captureMode == GpsCaptureMode.MAP
+
     init {
-        loadConfig()
+        if (showsMap) loadConfig()
         observePoints()
         startLocationUpdates()
     }
@@ -164,7 +176,7 @@ class GpsLogViewModel(
         val available = location as? LocationState.Available ?: return
         val fix = available.fix
 
-        if (trail.offer(fix.point)) {
+        if (showsMap && trail.offer(fix.point)) {
             _uiState.update { it.copy(trail = trail.points.toList()) }
         }
 
@@ -230,7 +242,12 @@ class GpsLogViewModel(
             // the measurement: the preview is set when capturing starts, and only what is
             // true at the moment of writing may decide the running number.
             val code = container.gpsPointRepository.nextCode()
-            container.gpsPointRepository.save(surveyed = result, code = code, note = note.trim())
+            container.gpsPointRepository.save(
+                surveyed = result,
+                code = code,
+                captureMode = captureMode,
+                note = note.trim(),
+            )
             _uiState.update { it.copy(pendingResult = null) }
         }
     }
@@ -276,12 +293,23 @@ class GpsLogViewModel(
     // Export
     // ----------------------------------------------------------------------------------
 
-    fun export(target: Uri, format: GpsLogExportFormat, onResult: (Boolean) -> Unit) {
+    /**
+     * @param filter null for every reading in the log, or one mode to write out only what
+     * that screen recorded.
+     */
+    fun export(
+        target: Uri,
+        format: GpsLogExportFormat,
+        filter: GpsCaptureMode?,
+        onResult: (Boolean) -> Unit,
+    ) {
         viewModelScope.launch {
             val ok = runCatching {
                 val content = when (format) {
-                    GpsLogExportFormat.GEOJSON -> container.gpsPointRepository.exportGeoJson()
-                    GpsLogExportFormat.CSV -> container.gpsPointRepository.exportCsv()
+                    GpsLogExportFormat.GEOJSON ->
+                        container.gpsPointRepository.exportGeoJson(filter)
+
+                    GpsLogExportFormat.CSV -> container.gpsPointRepository.exportCsv(filter)
                 }
                 withContext(Dispatchers.IO) {
                     application.contentResolver.openOutputStream(target)?.use { stream ->
@@ -302,12 +330,19 @@ class GpsLogViewModel(
         private const val FIX_INTERVAL_MS = 1_000L
         private const val TRAIL_SPACING_M = 2.0
 
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
-                    as MapApplication
-                GpsLogViewModel(app, app.container)
+        /** For the map screen. */
+        val Factory: ViewModelProvider.Factory = factoryFor(GpsCaptureMode.MAP)
+
+        /** For the readout screen. Each destination has its own store, so both can exist. */
+        val ReadoutFactory: ViewModelProvider.Factory = factoryFor(GpsCaptureMode.READOUT)
+
+        private fun factoryFor(mode: GpsCaptureMode): ViewModelProvider.Factory =
+            viewModelFactory {
+                initializer {
+                    val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
+                        as MapApplication
+                    GpsLogViewModel(app, app.container, mode)
+                }
             }
-        }
     }
 }

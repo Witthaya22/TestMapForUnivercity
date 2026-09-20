@@ -1,8 +1,10 @@
 package th.ac.kmutnb.prachin.map.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
+import th.ac.kmutnb.prachin.map.data.model.GpsCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.GpsPoint
 
 /**
@@ -33,6 +35,13 @@ data class GpsPointEntity(
     val durationSeconds: Int,
     val note: String,
     val recordedAt: Long,
+    /**
+     * [GpsCaptureMode.id]; an unknown value reads back as the map screen.
+     *
+     * The default is declared here as well as in the migration so the two schemas are
+     * identical whether a device upgraded into this column or was installed with it.
+     */
+    @ColumnInfo(defaultValue = "map") val captureMode: String,
 )
 
 fun GpsPointEntity.toGpsPoint(): GpsPoint = GpsPoint(
@@ -50,6 +59,7 @@ fun GpsPointEntity.toGpsPoint(): GpsPoint = GpsPoint(
     durationSeconds = durationSeconds,
     note = note,
     recordedAt = recordedAt,
+    captureMode = GpsCaptureMode.fromId(captureMode),
 )
 
 fun GpsPoint.toEntity(): GpsPointEntity = GpsPointEntity(
@@ -68,4 +78,5 @@ fun GpsPoint.toEntity(): GpsPointEntity = GpsPointEntity(
     durationSeconds = durationSeconds,
     note = note,
     recordedAt = recordedAt,
+    captureMode = captureMode.id,
 )

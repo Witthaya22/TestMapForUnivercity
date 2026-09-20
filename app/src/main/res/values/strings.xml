@@ -210,6 +210,7 @@
     <string name="settings_hazard_voice">เตือนด้วยเสียงพูดภาษาไทย</string>
     <string name="settings_hazard_voice_desc">อ่านคำเตือนออกเสียง จะได้ไม่ต้องก้มดูจอตอนเดิน (ใช้เสียงในเครื่อง ไม่ต้องต่อเน็ต)</string>
     <string name="settings_gpslog">เก็บพิกัด GPS (บันทึกค่าดิบ + ส่งออก)</string>
+    <string name="settings_gpsreadout">เก็บพิกัด GPS (โหมดตัวเลข ไม่มีแผนที่)</string>
     <string name="settings_gps_debug">ข้อมูล GPS (Debug)</string>
     <string name="settings_version">เวอร์ชัน %1$s</string>
     <string name="settings_map_attribution">ข้อมูลแผนที่ © OpenStreetMap contributors (ODbL)</string>
@@ -373,9 +374,25 @@
     <string name="gpslog_delete_all_confirm">ลบจุดที่เก็บไว้ทั้งหมด %1$d จุด? กู้คืนไม่ได้ ควรส่งออกไฟล์เก็บไว้ก่อน</string>
     <string name="gpslog_export_title">ส่งออกจุดพิกัด</string>
     <string name="gpslog_export_explain">ส่งออกค่าที่วัดได้ %1$d จุด — มีเฉพาะข้อมูลการวัด GPS (พิกัด ความคลาดเคลื่อน ดาวเทียม เวลา) ไม่มีชื่อสถานที่หรือหมวดหมู่ปนมา</string>
+    <string name="gpslog_export_filter">เลือกข้อมูลที่จะส่งออก</string>
+    <string name="gpslog_export_filter_all">ทั้งหมด</string>
+    <string name="gpslog_export_filter_map">จากโหมดแผนที่</string>
+    <string name="gpslog_export_filter_readout">จากโหมดตัวเลข</string>
     <string name="gpslog_export_geojson">ไฟล์ GeoJSON</string>
     <string name="gpslog_export_csv">ไฟล์ CSV</string>
     <string name="gpslog_export_empty">ยังไม่มีจุดให้ส่งออก</string>
+
+    <!-- หน้าเก็บพิกัด GPS แบบไม่มีแผนที่ (โหมดตัวเลข) -->
+    <string name="gpsreadout_title">เก็บพิกัด GPS (โหมดตัวเลข)</string>
+    <string name="gpsreadout_intro">โหมดนี้ไม่แสดงแผนที่ เปิดเร็วกว่าและกินแบตน้อยกว่า เหมาะกับการยืนเก็บทีละจุด เห็นค่าจากเครื่องรับครบทุกตัว — เก็บลงชุดข้อมูลเดียวกับโหมดแผนที่ แล้วส่งออกไฟล์เดียวกันได้</string>
+    <string name="gpsreadout_no_fix">ยังไม่มีสัญญาณ — ออกไปกลางแจ้งแล้วรอสักครู่</string>
+    <string name="gpsreadout_field_speed">ความเร็ว</string>
+    <string name="gpsreadout_speed_value">%1$.1f ม./วินาที</string>
+    <string name="gpsreadout_field_bearing">ทิศทาง</string>
+    <string name="gpsreadout_bearing_value">%1$.0f°</string>
+    <string name="gpsreadout_field_fix_age">อายุ fix ล่าสุด</string>
+    <string name="gpsreadout_fix_age_value">%1$d วินาทีที่แล้ว</string>
+    <string name="gpsreadout_field_rejected_live">fix ที่ถูกทิ้งไปแล้ว</string>
 
     <!-- หน้า Debug GPS -->
     <string name="gps_debug_title">ข้อมูล GPS</string>

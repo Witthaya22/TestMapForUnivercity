@@ -35,6 +35,33 @@ enum class GpsFixQuality {
 }
 
 /**
+ * Which of the two collecting screens a reading came from.
+ *
+ * Recorded because the two are not equivalent evidence. On the map screen the surveyor
+ * could see where the device thought it was standing and would have noticed it sitting in
+ * the wrong building; on the readout screen they could not. Months later, that is the
+ * difference between a reading somebody checked and one they only took - and it is the
+ * kind of thing nobody remembers unless the file says so.
+ */
+enum class GpsCaptureMode(val id: String) {
+    /** The map screen: position, accuracy ring and the walked trail all visible. */
+    MAP("map"),
+
+    /** The readout screen: numbers only, no map. */
+    READOUT("readout"),
+    ;
+
+    companion object {
+        /**
+         * Unknown values read back as [MAP], which is also what rows recorded before this
+         * field existed are migrated to - every one of them came from the map screen,
+         * because it was the only one there was.
+         */
+        fun fromId(id: String?): GpsCaptureMode = entries.firstOrNull { it.id == id } ?: MAP
+    }
+}
+
+/**
  * One coordinate measured in the field, with the receiver's own account of how good it was.
  *
  * Deliberately **not** a [Poi]. A POI answers "what is this place and how do I route to it",
@@ -70,6 +97,8 @@ data class GpsPoint(
     /** Free text from the surveyor, empty when they did not add any. */
     val note: String,
     val recordedAt: Long,
+    /** Which screen it was taken on; see [GpsCaptureMode]. */
+    val captureMode: GpsCaptureMode,
 ) {
     val quality: GpsFixQuality get() = GpsFixQuality.of(accuracyMeters)
 }
