@@ -134,26 +134,11 @@ class GpsLogLayerManager {
                 addProperty(PROPERTY_CODE, gpsPoint.code)
                 addProperty(PROPERTY_ACCURACY, gpsPoint.accuracyMeters)
             }
-            val coordinates = JsonArray().apply {
-                add(gpsPoint.point.lon)
-                add(gpsPoint.point.lat)
-            }
-            val geometry = JsonObject().apply {
-                addProperty("type", "Point")
-                add("coordinates", coordinates)
-            }
             features.add(
-                JsonObject().apply {
-                    addProperty("type", "Feature")
-                    add("geometry", geometry)
-                    add("properties", properties)
-                },
+                MapGeoJson.featureOf(MapGeoJson.pointGeometry(gpsPoint.point), properties),
             )
         }
-        return JsonObject().apply {
-            addProperty("type", "FeatureCollection")
-            add("features", features)
-        }.toString()
+        return MapGeoJson.documentOf(features)
     }
 
     private fun qualityColourExpression(): Expression = Expression.step(

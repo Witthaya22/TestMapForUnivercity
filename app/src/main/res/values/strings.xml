@@ -204,6 +204,7 @@
     <string name="settings_export_pois">ส่งออกจุดเป็นไฟล์ GeoJSON</string>
     <string name="settings_import_pois">นำเข้าจุดจากไฟล์ GeoJSON</string>
     <string name="settings_section_hazard">การเตือนจุดอันตราย</string>
+    <string name="settings_hazard_manage">ปักและจัดการจุดอันตราย</string>
     <string name="settings_hazard_alerts">เตือนเมื่อเข้าใกล้จุดอันตราย</string>
     <string name="settings_hazard_alerts_desc">แสดงข้อความเตือนเมื่อเดินเข้าใกล้จุดที่มีคนปักไว้ว่าอันตราย</string>
     <string name="settings_hazard_voice">เตือนด้วยเสียงพูดภาษาไทย</string>
@@ -282,6 +283,35 @@
     <string name="hazard_severity_caution">ควรระวัง</string>
     <string name="hazard_severity_warning">อันตราย</string>
     <string name="hazard_severity_danger">อันตรายมาก</string>
+
+    <string name="hazard_count">%1$d จุด</string>
+    <string name="hazard_meters">%1$d ม.</string>
+    <string name="hazard_add_here">ปักจุดอันตรายตรงนี้</string>
+    <string name="hazard_add_hint">ยืนตรงจุดที่อันตรายแล้วกดปุ่มนี้ หรือกดค้างบนแผนที่เพื่อปักจุดที่ยืนไม่ได้ เช่น กลางถนน</string>
+    <string name="hazard_wait_fix">รอให้จับสัญญาณ GPS ได้ก่อน หรือกดค้างบนแผนที่เพื่อปักเอง</string>
+    <string name="hazard_new_title">ปักจุดอันตราย</string>
+    <string name="hazard_edit_title">แก้ไขจุดอันตราย</string>
+    <string name="hazard_field_type">ประเภทอันตราย</string>
+    <string name="hazard_field_severity">ระดับความอันตราย</string>
+    <string name="hazard_field_radius">ขอบเขตที่อันตราย: %1$d ม.</string>
+    <string name="hazard_field_radius_label">ขอบเขตที่อันตราย</string>
+    <string name="hazard_field_radius_hint">แอปจะเริ่มเตือนตั้งแต่ห่าง %1$d ม. (ขอบเขต + ระยะเผื่อตามระดับความอันตราย)</string>
+    <string name="hazard_field_description">รายละเอียด เช่น หมา 3 ตัวเฝ้ารถอยู่หน้าโรงอาหาร</string>
+    <string name="hazard_alert_radius">เริ่มเตือนเมื่อห่าง</string>
+    <string name="hazard_marked_source">ที่มาของพิกัด</string>
+    <string name="hazard_marked_by_gps">ยืนปักด้วย GPS (คลาดเคลื่อน %1$.1f ม.)</string>
+    <string name="hazard_marked_by_tap">กดปักบนแผนที่ (ไม่ได้วัดด้วย GPS)</string>
+    <string name="hazard_marked_at">ปักเมื่อ</string>
+    <string name="hazard_inactive">ปิดการเตือนจุดนี้อยู่</string>
+    <string name="hazard_turn_off">ปิดการเตือน</string>
+    <string name="hazard_turn_on">เปิดการเตือน</string>
+    <string name="hazard_delete_confirm">ลบจุดอันตรายนี้ทิ้ง? ถ้าแค่แก้ไขเสร็จแล้วให้กด \"ปิดการเตือน\" แทน จะได้เก็บประวัติไว้</string>
+    <string name="hazard_list_title">จุดอันตรายที่ปักไว้</string>
+    <string name="hazard_list_empty">ยังไม่มีจุดอันตราย เดินไปยืนตรงจุดที่อันตรายแล้วกดปักได้เลย</string>
+    <string name="hazard_list_item_summary">%1$s · เตือนที่ %2$d ม.</string>
+    <string name="hazard_export">ส่งออกไฟล์</string>
+    <string name="hazard_import">นำเข้าไฟล์</string>
+    <string name="hazard_import_result">นำเข้า %1$d จุด · ข้าม %2$d จุด</string>
 
     <!-- ข้อความเตือน (ทั้งบนจอและเสียงพูด) -->
     <string name="hazard_alert_title">เตือนจุดอันตราย</string>

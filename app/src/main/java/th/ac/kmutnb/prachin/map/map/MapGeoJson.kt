@@ -70,8 +70,23 @@ object MapGeoJson {
      */
     fun accuracyCircle(centre: GeoPoint?, radiusMeters: Float, segments: Int = 48): String {
         if (centre == null || radiusMeters <= 0f) return EMPTY_COLLECTION
-        val (latDelta, lonDelta) = GeoUtils.degreesForMeters(radiusMeters.toDouble(), centre)
+        val polygon = circleGeometry(centre, radiusMeters.toDouble(), segments)
+        return collection(JsonArray().apply { add(feature(polygon, JsonObject())) })
+    }
 
+    /**
+     * A circle of [radiusMeters] around [centre] as a real polygon.
+     *
+     * Shared by the accuracy ring and by the hazard radii, which need the same thing for
+     * the same reason: a radius drawn in pixels would keep its size as the user zooms,
+     * telling them the hazard had grown.
+     */
+    internal fun circleGeometry(
+        centre: GeoPoint,
+        radiusMeters: Double,
+        segments: Int = 48,
+    ): JsonObject {
+        val (latDelta, lonDelta) = GeoUtils.degreesForMeters(radiusMeters, centre)
         val ring = JsonArray()
         for (i in 0..segments) {
             val angle = 2.0 * Math.PI * i / segments
@@ -84,13 +99,19 @@ object MapGeoJson {
                 ),
             )
         }
-
-        val polygon = JsonObject().apply {
+        return JsonObject().apply {
             addProperty("type", "Polygon")
             add("coordinates", JsonArray().apply { add(ring) })
         }
-        return collection(JsonArray().apply { add(feature(polygon, JsonObject())) })
     }
+
+    /** Wraps a geometry and its properties into a one-feature document. Used by overlays. */
+    internal fun documentOf(features: JsonArray): String = collection(features)
+
+    internal fun featureOf(geometry: JsonObject, properties: JsonObject): JsonObject =
+        feature(geometry, properties)
+
+    internal fun pointGeometry(point: GeoPoint): JsonObject = point(point)
 
     // ----------------------------------------------------------------------------------
 

@@ -47,6 +47,7 @@ fun SettingsScreen(
     onOpenOfflineManager: () -> Unit,
     onOpenSurvey: () -> Unit,
     onOpenGpsLog: () -> Unit,
+    onOpenHazards: () -> Unit,
     onOpenGpsDebug: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
@@ -173,6 +174,10 @@ fun SettingsScreen(
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_hazard))
 
+            ClickableRow(
+                title = stringResource(R.string.settings_hazard_manage),
+                onClick = onOpenHazards,
+            )
             SwitchRow(
                 title = stringResource(R.string.settings_hazard_alerts),
                 checked = state.hazardAlerts,
