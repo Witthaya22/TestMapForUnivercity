@@ -47,6 +47,7 @@ fun SettingsScreen(
     onOpenOfflineManager: () -> Unit,
     onOpenSurvey: () -> Unit,
     onOpenGpsLog: () -> Unit,
+    onOpenGpsReadout: () -> Unit,
     onOpenHazards: () -> Unit,
     onOpenGpsDebug: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
@@ -211,6 +212,10 @@ fun SettingsScreen(
             ClickableRow(
                 title = stringResource(R.string.settings_gpslog),
                 onClick = onOpenGpsLog,
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_gpsreadout),
+                onClick = onOpenGpsReadout,
             )
             ClickableRow(
                 title = stringResource(R.string.settings_export_pois),

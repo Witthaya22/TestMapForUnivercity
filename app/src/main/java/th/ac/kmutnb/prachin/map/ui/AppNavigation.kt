@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import th.ac.kmutnb.prachin.map.ui.debug.GpsDebugScreen
 import th.ac.kmutnb.prachin.map.ui.gpslog.GpsLogScreen
+import th.ac.kmutnb.prachin.map.ui.gpslog.GpsReadoutScreen
 import th.ac.kmutnb.prachin.map.ui.hazard.HazardScreen
 import th.ac.kmutnb.prachin.map.ui.map.MapScreen
 import th.ac.kmutnb.prachin.map.ui.map.MapViewModel
@@ -25,6 +26,7 @@ object Routes {
     const val OFFLINE_MANAGER = "offline_manager"
     const val SURVEY = "survey"
     const val GPS_LOG = "gps_log"
+    const val GPS_READOUT = "gps_readout"
     const val HAZARDS = "hazards"
     const val GPS_DEBUG = "gps_debug"
 }
@@ -71,6 +73,7 @@ fun AppNavHost(
                 onOpenOfflineManager = { navController.navigate(Routes.OFFLINE_MANAGER) },
                 onOpenSurvey = { navController.navigate(Routes.SURVEY) },
                 onOpenGpsLog = { navController.navigate(Routes.GPS_LOG) },
+                onOpenGpsReadout = { navController.navigate(Routes.GPS_READOUT) },
                 onOpenHazards = { navController.navigate(Routes.HAZARDS) },
                 onOpenGpsDebug = { navController.navigate(Routes.GPS_DEBUG) },
             )
@@ -82,6 +85,10 @@ fun AppNavHost(
 
         composable(Routes.SURVEY) {
             SurveyorScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.GPS_READOUT) {
+            GpsReadoutScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.HAZARDS) {
