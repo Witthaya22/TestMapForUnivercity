@@ -31,7 +31,11 @@
    ไฟล์ที่ export จากหน้าเก็บพิกัด GPS ต้องมีเฉพาะ**ค่าที่วัดได้** (พิกัด ความคลาดเคลื่อน
    ดาวเทียม จำนวนครั้งที่วัด เวลา) ห้ามใส่ชื่อสถานที่ / หมวดหมู่ / คณะ / อาคาร ลงไป
    และจุดที่เก็บต้องไม่เข้ากราฟ routing — อ่าน `docs/GPS_LOGGING.md` ก่อนแก้
-10. ห้าม import `androidx.compose.material.icons.*` — `material-icons-core` หยุดที่ 1.7.8
+10. **คำเตือนจุดอันตรายห้ามเตือนถี่ขึ้นกว่านี้** กติกาทั้งหมดอยู่ที่ `navigation/HazardMonitor.kt`
+   ที่เดียว (เตือนครั้งเดียวตอนเข้าเขต + ต้องออกไปไกลกว่าระยะเตือน 15 ม. ถึงเตือนใหม่ได้)
+   ระบบที่เตือนบ่อยเกินไปจะโดนปิดเสียงทิ้ง แล้วจะไม่เตือนใครอีกเลย — อ่าน `docs/HAZARDS.md`
+11. เสียงพูดต้องเป็น `android.speech.tts` (สังเคราะห์ในเครื่อง) ห้ามใช้ TTS ที่ต้องต่อเน็ต
+12. ห้าม import `androidx.compose.material.icons.*` — `material-icons-core` หยุดที่ 1.7.8
    และไม่อยู่ใน Compose BOM ที่โปรเจกต์นี้ใช้แล้ว ให้ใช้ vector drawable ใน `res/drawable/`
    ผ่าน `painterResource(R.drawable.ic_*)` แทน
 
@@ -65,7 +69,11 @@
 | `survey/PointSurveySession.kt` | เฉลี่ย GPS fix ด้วย median — ใช้ร่วมกันทั้ง POI surveyor และหน้าเก็บพิกัด GPS |
 | `ui/gpslog/GpsLogScreen.kt` | หน้าเก็บพิกัด GPS บนแผนที่ (เห็นตัวเองเดิน + เก็บจุด + ส่งออก) |
 | `data/geojson/GpsPointExporter.kt` | เขียนไฟล์ GeoJSON / CSV ของค่าที่วัดได้ — ชื่อฟิลด์ต้องตรงกับ `data/model/GpsPoint.kt` |
-| `data/local/AppDatabase.kt` | Room version **3** (`poi`, `walk_path`, `gps_point`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/model/HazardPoint.kt` | จุดอันตราย: ประเภท / ระดับ / รัศมี — `alertRadiusMeters` คือระยะที่เริ่มเตือน |
+| `navigation/HazardMonitor.kt` | กติกาการเตือนจุดอันตรายทั้งหมด (pure Kotlin, unit test ครบ) |
+| `core/speech/SpeechAnnouncer.kt` | เสียงพูดไทยในเครื่อง (AOSP TTS ไม่ต้องต่อเน็ต) |
+| `ui/hazard/HazardScreen.kt` | หน้าปักและจัดการจุดอันตราย |
+| `data/local/AppDatabase.kt` | Room version **4** (`poi`, `walk_path`, `gps_point`, `hazard_point`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
@@ -88,6 +96,7 @@ bash tools/build_tiles.sh          # สร้าง MBTiles ใหม่ (โ�
 | รูปแบบไฟล์ GeoJSON และ config | `docs/DATA_FORMAT.md` |
 | กลไกออฟไลน์ / จอขาว | `docs/OFFLINE.md` |
 | ระบบเก็บพิกัด GPS + ไฟล์ที่ส่งออก | `docs/GPS_LOGGING.md` |
+| จุดอันตราย + การแจ้งเตือน (ข้อความ/เสียง) | `docs/HAZARDS.md` |
 
 ## เรื่องพิกัดไม่ตรง (อ่าน `docs/ACCURACY.md` ก่อนแก้)
 **ห้ามก็อปพิกัดจาก Google Maps มาใส่** ภาพดาวเทียม Google มี offset กับข้อมูล OSM ได้ 3–15 ม.

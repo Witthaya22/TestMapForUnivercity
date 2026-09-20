@@ -228,6 +228,15 @@ property มีเฉพาะค่าการวัด: `code`, `accuracyMete
 **ไม่มี `id` / `name` / `category`** จึงเอาไปทับ `pois.geojson` ตรง ๆ ไม่ได้
 ต้องเติมเองก่อน — รายละเอียดทั้งหมดอยู่ใน [GPS_LOGGING.md](GPS_LOGGING.md)
 
+### `hazards.geojson` — จุดอันตราย
+
+`FeatureCollection` ของ `Point` ใช้ schema แบบเดียวกับ POI (คีย์ camelCase, เวลาเป็น epoch ms)
+property: `id`, `type`, `severity`, `radiusMeters`, `description`, `isActive`,
+`gpsAccuracy`, `createdAt`, `updatedAt`
+
+`id` คงเดิมตอน export/import จึงส่งไฟล์ให้กันได้ นำเข้าซ้ำ = อัปเดตทับ ไม่เกิดจุดซ้ำ
+ค่า `type` ที่ไม่รู้จักจะอ่านเป็น `other` **ไม่ทิ้ง** — ดู [HAZARDS.md](HAZARDS.md)
+
 ---
 
 ## 6. ตรวจไฟล์ก่อน commit
