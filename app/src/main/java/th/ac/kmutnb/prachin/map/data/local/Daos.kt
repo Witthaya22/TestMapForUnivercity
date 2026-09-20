@@ -118,6 +118,47 @@ interface GpsPointDao {
 }
 
 @Dao
+interface HazardPointDao {
+
+    @Query("SELECT * FROM hazard_point ORDER BY createdAt ASC")
+    fun observeAll(): Flow<List<HazardPointEntity>>
+
+    /**
+     * Only the hazards still worth warning about.
+     *
+     * A separate query rather than filtering in Kotlin: this one is collected for the whole
+     * life of the map screen and re-read on every change, while the full list is only
+     * opened when someone is managing hazards.
+     */
+    @Query("SELECT * FROM hazard_point WHERE isActive = 1 ORDER BY createdAt ASC")
+    fun observeActive(): Flow<List<HazardPointEntity>>
+
+    @Query("SELECT * FROM hazard_point ORDER BY createdAt ASC")
+    suspend fun getAll(): List<HazardPointEntity>
+
+    @Query("SELECT * FROM hazard_point WHERE id = :id")
+    suspend fun findById(id: String): HazardPointEntity?
+
+    @Query("SELECT COUNT(*) FROM hazard_point WHERE isActive = 1")
+    suspend fun countActive(): Int
+
+    @Upsert
+    suspend fun upsert(hazard: HazardPointEntity)
+
+    @Upsert
+    suspend fun upsertAll(hazards: List<HazardPointEntity>)
+
+    @Query("UPDATE hazard_point SET isActive = :active, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun setActive(id: String, active: Boolean, updatedAt: Long)
+
+    @Query("DELETE FROM hazard_point WHERE id = :id")
+    suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM hazard_point")
+    suspend fun deleteAll()
+}
+
+@Dao
 interface RouteHistoryDao {
 
     @Query("SELECT * FROM route_history ORDER BY completedAt DESC LIMIT :limit")

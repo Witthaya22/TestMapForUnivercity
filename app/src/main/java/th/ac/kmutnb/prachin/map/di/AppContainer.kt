@@ -10,6 +10,7 @@ import th.ac.kmutnb.prachin.map.data.local.AppDatabase
 import th.ac.kmutnb.prachin.map.data.prefs.AppPreferences
 import th.ac.kmutnb.prachin.map.data.repository.CampusRepository
 import th.ac.kmutnb.prachin.map.data.repository.GpsPointRepository
+import th.ac.kmutnb.prachin.map.data.repository.HazardRepository
 import th.ac.kmutnb.prachin.map.data.repository.OfflineMapRepository
 import th.ac.kmutnb.prachin.map.data.repository.PoiRepository
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetworkRepository
@@ -48,6 +49,8 @@ class AppContainer(context: Context) {
     val walkPathRepository = WalkPathRepository(database.walkPathDao())
 
     val gpsPointRepository = GpsPointRepository(database.gpsPointDao())
+
+    val hazardRepository = HazardRepository(database.hazardPointDao())
 
     val routeNetworkRepository = RouteNetworkRepository(
         campusRepository = campusRepository,

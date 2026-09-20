@@ -12,9 +12,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PoiEntity::class,
         WalkPathEntity::class,
         GpsPointEntity::class,
+        HazardPointEntity::class,
         RouteHistoryEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +25,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun walkPathDao(): WalkPathDao
 
     abstract fun gpsPointDao(): GpsPointDao
+
+    abstract fun hazardPointDao(): HazardPointDao
 
     abstract fun routeHistoryDao(): RouteHistoryDao
 
@@ -89,6 +92,37 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Adds the table of marked hazards.
+         *
+         * Indexed on `isActive` because the map screen re-reads the active hazards on every
+         * change while navigating, and a table someone has been filling in for a term is
+         * mostly rows that were dealt with months ago.
+         */
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `hazard_point` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`type` TEXT NOT NULL, " +
+                        "`severity` TEXT NOT NULL, " +
+                        "`lat` REAL NOT NULL, " +
+                        "`lon` REAL NOT NULL, " +
+                        "`radiusMeters` REAL NOT NULL, " +
+                        "`description` TEXT NOT NULL, " +
+                        "`isActive` INTEGER NOT NULL, " +
+                        "`gpsAccuracy` REAL, " +
+                        "`createdAt` INTEGER NOT NULL, " +
+                        "`updatedAt` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_hazard_point_isActive`" +
+                        " ON `hazard_point` (`isActive`)"
+                )
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -97,7 +131,7 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 NAME,
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { instance = it }
         }
     }
 }
