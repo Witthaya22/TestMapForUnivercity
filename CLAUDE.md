@@ -67,13 +67,15 @@
 | `data/repository/OfflineMapRepository.kt` | ดาวน์โหลด/จัดการแผนที่ออฟไลน์ |
 | `map/LocalTileServer.kt` | เสิร์ฟ MBTiles โหมด BUNDLED (NanoHTTPD บน 127.0.0.1) |
 | `survey/PointSurveySession.kt` | เฉลี่ย GPS fix ด้วย median — ใช้ร่วมกันทั้ง POI surveyor และหน้าเก็บพิกัด GPS |
-| `ui/gpslog/GpsLogScreen.kt` | หน้าเก็บพิกัด GPS บนแผนที่ (เห็นตัวเองเดิน + เก็บจุด + ส่งออก) |
+| `ui/gpslog/GpsLogScreen.kt` | หน้าเก็บพิกัด GPS **โหมดแผนที่** (เห็นตัวเองเดิน + เก็บจุด + ส่งออก) |
+| `ui/gpslog/GpsReadoutScreen.kt` | หน้าเก็บพิกัด GPS **โหมดตัวเลข** (ไม่มีแผนที่) — ชุดข้อมูลเดียวกัน ต่างกันที่ `captureMode` |
+| `ui/gpslog/GpsLogComponents.kt` | UI ที่สองหน้าจอใช้ร่วมกัน — เพิ่มหน้าจอเก็บค่าใหม่ให้ใช้ซ้ำจากที่นี่ ห้ามก๊อป |
 | `data/geojson/GpsPointExporter.kt` | เขียนไฟล์ GeoJSON / CSV ของค่าที่วัดได้ — ชื่อฟิลด์ต้องตรงกับ `data/model/GpsPoint.kt` |
 | `data/model/HazardPoint.kt` | จุดอันตราย: ประเภท / ระดับ / รัศมี — `alertRadiusMeters` คือระยะที่เริ่มเตือน |
 | `navigation/HazardMonitor.kt` | กติกาการเตือนจุดอันตรายทั้งหมด (pure Kotlin, unit test ครบ) |
 | `core/speech/SpeechAnnouncer.kt` | เสียงพูดไทยในเครื่อง (AOSP TTS ไม่ต้องต่อเน็ต) |
 | `ui/hazard/HazardScreen.kt` | หน้าปักและจัดการจุดอันตราย |
-| `data/local/AppDatabase.kt` | Room version **4** (`poi`, `walk_path`, `gps_point`, `hazard_point`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/local/AppDatabase.kt` | Room version **5** (`poi`, `walk_path`, `gps_point`, `hazard_point`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash

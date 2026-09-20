@@ -223,7 +223,8 @@ Surveyor Mode เขียนไฟล์ลง `Documents/` ผ่าน MediaS
 
 property มีเฉพาะค่าการวัด: `code`, `accuracyMeters`, `elevationMeters`,
 `verticalAccuracyMeters`, `satellitesUsed`, `satellitesVisible`, `sampleCount`,
-`rejectedCount`, `spreadMeters`, `durationSeconds`, `recordedAt` (ISO-8601), `note`
+`rejectedCount`, `spreadMeters`, `durationSeconds`, `recordedAt` (ISO-8601),
+`captureMode` (`map` / `readout` — เก็บจากหน้าจอไหน), `note`
 
 **ไม่มี `id` / `name` / `category`** จึงเอาไปทับ `pois.geojson` ตรง ๆ ไม่ได้
 ต้องเติมเองก่อน — รายละเอียดทั้งหมดอยู่ใน [GPS_LOGGING.md](GPS_LOGGING.md)
