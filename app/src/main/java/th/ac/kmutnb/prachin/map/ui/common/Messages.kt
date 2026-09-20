@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.config.ConfigProblem
 import th.ac.kmutnb.prachin.map.data.geojson.GeoJsonIssue
+import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
+import th.ac.kmutnb.prachin.map.data.model.HazardType
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.navigation.model.PathType
 
@@ -59,4 +61,25 @@ val PathType.labelRes: Int
         PathType.ROAD -> R.string.track_type_road
         PathType.CROSSING -> R.string.track_type_crossing
         PathType.STAIRS -> R.string.track_type_stairs
+    }
+
+@get:StringRes
+val HazardType.labelRes: Int
+    get() = when (this) {
+        HazardType.DOG -> R.string.hazard_type_dog
+        HazardType.TRAFFIC -> R.string.hazard_type_traffic
+        HazardType.FLOOD -> R.string.hazard_type_flood
+        HazardType.DARK -> R.string.hazard_type_dark
+        HazardType.CONSTRUCTION -> R.string.hazard_type_construction
+        HazardType.BROKEN_PATH -> R.string.hazard_type_broken_path
+        HazardType.ANIMAL -> R.string.hazard_type_animal
+        HazardType.OTHER -> R.string.hazard_type_other
+    }
+
+@get:StringRes
+val HazardSeverity.labelRes: Int
+    get() = when (this) {
+        HazardSeverity.CAUTION -> R.string.hazard_severity_caution
+        HazardSeverity.WARNING -> R.string.hazard_severity_warning
+        HazardSeverity.DANGER -> R.string.hazard_severity_danger
     }

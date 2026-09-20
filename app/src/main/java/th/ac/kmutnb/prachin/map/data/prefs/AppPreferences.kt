@@ -41,6 +41,21 @@ class AppPreferences(context: Context) {
     /** Keep the screen awake while navigating. */
     val keepScreenOn: Flow<Boolean> = store.data.map { it[KEY_KEEP_SCREEN_ON] ?: true }
 
+    /**
+     * Warn when the walker approaches a marked hazard. On by default: someone who has not
+     * been told a crossing is dangerous cannot have decided they do not need telling.
+     */
+    val hazardAlerts: Flow<Boolean> = store.data.map { it[KEY_HAZARD_ALERTS] ?: true }
+
+    /**
+     * Say those warnings out loud as well as showing them.
+     *
+     * Separate from [hazardAlerts] because the two fail differently: the voice is what
+     * reaches someone who is watching the road rather than the screen, but it is also the
+     * part people switch off in a quiet library or on a shared phone.
+     */
+    val hazardVoice: Flow<Boolean> = store.data.map { it[KEY_HAZARD_VOICE] ?: true }
+
     suspend fun setOfflineMapReady(ready: Boolean, downloadedAt: Long = System.currentTimeMillis()) {
         store.edit {
             it[KEY_OFFLINE_READY] = ready
@@ -95,6 +110,14 @@ class AppPreferences(context: Context) {
         store.edit { it[KEY_KEEP_SCREEN_ON] = enabled }
     }
 
+    suspend fun setHazardAlerts(enabled: Boolean) {
+        store.edit { it[KEY_HAZARD_ALERTS] = enabled }
+    }
+
+    suspend fun setHazardVoice(enabled: Boolean) {
+        store.edit { it[KEY_HAZARD_VOICE] = enabled }
+    }
+
     private companion object {
         val KEY_OFFLINE_READY = booleanPreferencesKey("offline_map_ready")
         val KEY_OFFLINE_DOWNLOADED_AT = longPreferencesKey("offline_map_downloaded_at")
@@ -105,5 +128,7 @@ class AppPreferences(context: Context) {
         val KEY_AUTO_RECALCULATE = booleanPreferencesKey("auto_recalculate")
         val KEY_DEBUG_UNLOCKED = booleanPreferencesKey("debug_unlocked")
         val KEY_KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
+        val KEY_HAZARD_ALERTS = booleanPreferencesKey("hazard_alerts")
+        val KEY_HAZARD_VOICE = booleanPreferencesKey("hazard_voice")
     }
 }

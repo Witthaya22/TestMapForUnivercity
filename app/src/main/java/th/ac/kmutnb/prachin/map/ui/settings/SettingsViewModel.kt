@@ -27,6 +27,8 @@ data class SettingsUiState(
     val surveyedPathsOnly: Boolean = false,
     /** How many paths the user has walked; zero makes [surveyedPathsOnly] a trap. */
     val surveyedPathCount: Int = 0,
+    val hazardAlerts: Boolean = true,
+    val hazardVoice: Boolean = true,
     val debugUnlocked: Boolean = false,
     val versionName: String = "",
 )
@@ -75,6 +77,19 @@ class SettingsViewModel(
             }
         }
 
+        // A second collector rather than widening the combine above: kotlinx.coroutines
+        // only types combine up to five flows, and an Array<Any?> overload would trade a
+        // compile-time check for a cast.
+        viewModelScope.launch {
+            combine(
+                container.preferences.hazardAlerts,
+                container.preferences.hazardVoice,
+            ) { alerts, voice -> alerts to voice }
+                .collect { (alerts, voice) ->
+                    _uiState.update { it.copy(hazardAlerts = alerts, hazardVoice = voice) }
+                }
+        }
+
         viewModelScope.launch {
             container.walkPathRepository.paths.collect { paths ->
                 _uiState.update { it.copy(surveyedPathCount = paths.size) }
@@ -109,6 +124,14 @@ class SettingsViewModel(
 
     fun setKeepScreenOn(enabled: Boolean) {
         viewModelScope.launch { container.preferences.setKeepScreenOn(enabled) }
+    }
+
+    fun setHazardAlerts(enabled: Boolean) {
+        viewModelScope.launch { container.preferences.setHazardAlerts(enabled) }
+    }
+
+    fun setHazardVoice(enabled: Boolean) {
+        viewModelScope.launch { container.preferences.setHazardVoice(enabled) }
     }
 
     /** Seven taps on the logo reveals the GPS debug screen, as the brief specifies. */

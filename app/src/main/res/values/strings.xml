@@ -203,6 +203,11 @@
     <string name="settings_surveyor">โหมดสำรวจพิกัด (สำหรับผู้ดูแล)</string>
     <string name="settings_export_pois">ส่งออกจุดเป็นไฟล์ GeoJSON</string>
     <string name="settings_import_pois">นำเข้าจุดจากไฟล์ GeoJSON</string>
+    <string name="settings_section_hazard">การเตือนจุดอันตราย</string>
+    <string name="settings_hazard_alerts">เตือนเมื่อเข้าใกล้จุดอันตราย</string>
+    <string name="settings_hazard_alerts_desc">แสดงข้อความเตือนเมื่อเดินเข้าใกล้จุดที่มีคนปักไว้ว่าอันตราย</string>
+    <string name="settings_hazard_voice">เตือนด้วยเสียงพูดภาษาไทย</string>
+    <string name="settings_hazard_voice_desc">อ่านคำเตือนออกเสียง จะได้ไม่ต้องก้มดูจอตอนเดิน (ใช้เสียงในเครื่อง ไม่ต้องต่อเน็ต)</string>
     <string name="settings_gpslog">เก็บพิกัด GPS (บันทึกค่าดิบ + ส่งออก)</string>
     <string name="settings_gps_debug">ข้อมูล GPS (Debug)</string>
     <string name="settings_version">เวอร์ชัน %1$s</string>
@@ -263,6 +268,29 @@
     <string name="settings_surveyed_only">ใช้เฉพาะเส้นทางที่สำรวจเอง</string>
     <string name="settings_surveyed_only_desc">ปิดเส้นทางที่มากับแอป (จาก OpenStreetMap) แล้วใช้เฉพาะเส้นที่เดินเก็บเอง เหมาะกับตอนที่ต้องการ map ทั้งมอด้วยตัวเอง</string>
     <string name="settings_surveyed_only_empty">ยังไม่มีเส้นทางที่สำรวจเอง ถ้าเปิดตัวเลือกนี้จะนำทางไม่ได้เลย</string>
+
+    <!-- จุดอันตราย -->
+    <string name="hazard_title">จุดอันตราย</string>
+    <string name="hazard_type_dog">สุนัข</string>
+    <string name="hazard_type_traffic">รถ / ทางข้ามอันตราย</string>
+    <string name="hazard_type_flood">น้ำท่วมขัง / พื้นลื่น</string>
+    <string name="hazard_type_dark">ไม่มีไฟส่องสว่าง</string>
+    <string name="hazard_type_construction">พื้นที่ก่อสร้าง</string>
+    <string name="hazard_type_broken_path">ทางชำรุด / หลุม</string>
+    <string name="hazard_type_animal">งู / แมลง / สัตว์อื่น</string>
+    <string name="hazard_type_other">อื่น ๆ</string>
+    <string name="hazard_severity_caution">ควรระวัง</string>
+    <string name="hazard_severity_warning">อันตราย</string>
+    <string name="hazard_severity_danger">อันตรายมาก</string>
+
+    <!-- ข้อความเตือน (ทั้งบนจอและเสียงพูด) -->
+    <string name="hazard_alert_title">เตือนจุดอันตราย</string>
+    <string name="hazard_alert_ahead">%1$s ข้างหน้า %2$d เมตร</string>
+    <string name="hazard_alert_here">%1$s อยู่ตรงนี้</string>
+    <string name="hazard_voice_ahead">ระวัง %1$s ข้างหน้า %2$d เมตร</string>
+    <string name="hazard_voice_danger_ahead">อันตราย %1$s ข้างหน้า %2$d เมตร</string>
+    <string name="hazard_voice_repeat">ยังอยู่ใกล้จุดอันตราย %1$s</string>
+    <string name="hazard_voice_unavailable">เครื่องนี้ยังไม่มีเสียงพูดภาษาไทย จะเตือนเป็นข้อความอย่างเดียว (ติดตั้งเสียงไทยได้ในตั้งค่าระบบ)</string>
 
     <!-- หน้าเก็บพิกัด GPS (บันทึกค่าดิบเพื่อส่งออก) -->
     <string name="gpslog_title">เก็บพิกัด GPS</string>

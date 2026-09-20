@@ -171,6 +171,32 @@ fun SettingsScreen(
             )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            SectionHeader(stringResource(R.string.settings_section_hazard))
+
+            SwitchRow(
+                title = stringResource(R.string.settings_hazard_alerts),
+                checked = state.hazardAlerts,
+                onCheckedChange = viewModel::setHazardAlerts,
+            )
+            Text(
+                text = stringResource(R.string.settings_hazard_alerts_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            SwitchRow(
+                title = stringResource(R.string.settings_hazard_voice),
+                checked = state.hazardVoice && state.hazardAlerts,
+                onCheckedChange = viewModel::setHazardVoice,
+            )
+            Text(
+                text = stringResource(R.string.settings_hazard_voice_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_admin))
 
             ClickableRow(
