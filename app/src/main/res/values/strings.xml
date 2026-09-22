@@ -211,6 +211,7 @@
     <string name="settings_hazard_voice_desc">อ่านคำเตือนออกเสียง จะได้ไม่ต้องก้มดูจอตอนเดิน (ใช้เสียงในเครื่อง ไม่ต้องต่อเน็ต)</string>
     <string name="settings_hazard_sound">ส่งเสียงเตือนก่อนพูด</string>
     <string name="settings_hazard_sound_desc">ส่งเสียงสั้น ๆ นำก่อนคำเตือน ได้ยินทันแม้อยู่ริมถนน และยังเตือนได้แม้เครื่องไม่มีเสียงพูดภาษาไทย</string>
+    <string name="settings_hazard_sound_manage">เสียงเตือน — เพิ่ม mp3 ของตัวเอง / ลองฟัง</string>
     <string name="settings_gpslog">เก็บพิกัด GPS (บันทึกค่าดิบ + ส่งออก)</string>
     <string name="settings_gpsreadout">เก็บพิกัด GPS (โหมดตัวเลข ไม่มีแผนที่)</string>
     <string name="settings_pathlog">เดินเก็บเส้นทาง (มีแผนที่)</string>
@@ -312,7 +313,17 @@
     <string name="hazard_sound_unnamed">เสียงที่นำเข้า</string>
     <string name="hazard_sound_hint">เสียงจะดังสั้น ๆ ก่อนคำเตือน ค่าเริ่มต้นคือ %1$s ตามระดับที่เลือกไว้</string>
     <string name="hazard_sound_preview">ลองฟัง</string>
-    <string name="hazard_sound_import">นำเข้าเสียงจากเครื่อง</string>
+    <string name="hazard_sound_import">นำเข้าเสียง mp3 จากเครื่อง</string>
+    <string name="hazard_sound_title">เสียงเตือนจุดอันตราย</string>
+    <string name="hazard_sound_import_hint">รองรับ mp3 / ogg / wav / m4a · ไม่เกิน %1$d MB และยาวไม่เกิน %2$d วินาที · ไฟล์จะถูกคัดลอกเก็บไว้ในแอป ใช้ได้แม้ลบไฟล์ต้นฉบับทิ้ง</string>
+    <string name="hazard_sound_list_title">เสียงที่ใช้ได้</string>
+    <string name="hazard_sound_origin_bundled">มากับแอป</string>
+    <string name="hazard_sound_origin_asset">ฝังมากับแอป (assets/sounds)</string>
+    <string name="hazard_sound_origin_imported">นำเข้าเอง</string>
+    <string name="hazard_sound_default_for">ใช้เป็นเสียงเริ่มต้นของ \"%1$s\"</string>
+    <string name="hazard_sound_delete_confirm">ลบเสียงนี้? จุดที่เคยใช้เสียงนี้จะกลับไปใช้เสียงตามระดับความอันตราย</string>
+    <string name="hazard_sound_where_used">เลือกเสียงให้จุดไหนเป็นพิเศษได้ตอนปักจุด หรือตอนแก้ไขจุดนั้น — ถ้าไม่เลือก จะใช้เสียงเริ่มต้นตามระดับความอันตราย</string>
+    <string name="hazard_sound_open_manager">เพิ่ม / ลองฟังเสียงทั้งหมด</string>
     <string name="hazard_sound_delete">ลบเสียงนี้</string>
     <string name="hazard_sound_imported">เพิ่มเสียง \"%1$s\" แล้ว</string>
     <string name="hazard_sound_deleted">ลบเสียงแล้ว จุดที่เคยใช้เสียงนี้จะกลับไปใช้เสียงตามระดับความอันตราย</string>

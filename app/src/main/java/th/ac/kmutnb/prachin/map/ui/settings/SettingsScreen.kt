@@ -51,6 +51,7 @@ fun SettingsScreen(
     onOpenPathLog: () -> Unit,
     onOpenPathReadout: () -> Unit,
     onOpenHazards: () -> Unit,
+    onOpenHazardSounds: () -> Unit,
     onOpenGpsDebug: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
@@ -213,6 +214,10 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_hazard_sound_manage),
+                onClick = onOpenHazardSounds,
             )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))

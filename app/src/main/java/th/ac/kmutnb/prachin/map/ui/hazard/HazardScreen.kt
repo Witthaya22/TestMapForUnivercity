@@ -599,23 +599,29 @@ private fun HazardSoundPicker(
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        TextButton(onClick = onPreview, enabled = !isSilent) {
+    // Buttons rather than text links, and the preview first: a chip labelled "two
+    // beats" tells nobody what they are about to hear next to a road.
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(
+            onClick = onPreview,
+            enabled = !isSilent,
+            modifier = Modifier.weight(1f),
+        ) {
             Text(stringResource(R.string.hazard_sound_preview))
         }
-        TextButton(onClick = onImport) {
+        OutlinedButton(onClick = onImport, modifier = Modifier.weight(1f)) {
             Text(stringResource(R.string.hazard_sound_import))
         }
-        // Only imported sounds can go. The generated tones and anything shipped in
-        // assets/sounds/ are part of the build, and a campus with no warning tone left at
-        // all is not a state worth reaching.
-        if (selected != null && selected.isRemovable) {
-            TextButton(onClick = { onDelete(selected.id) }) {
-                Text(
-                    text = stringResource(R.string.hazard_sound_delete),
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
+    }
+    // Only imported sounds can go. The generated tones and anything shipped in
+    // assets/sounds/ are part of the build, and a campus with no warning tone left at
+    // all is not a state worth reaching.
+    if (selected != null && selected.isRemovable) {
+        TextButton(onClick = { onDelete(selected.id) }) {
+            Text(
+                text = stringResource(R.string.hazard_sound_delete),
+                color = MaterialTheme.colorScheme.error,
+            )
         }
     }
 }

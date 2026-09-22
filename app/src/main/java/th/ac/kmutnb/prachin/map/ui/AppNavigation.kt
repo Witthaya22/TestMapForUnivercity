@@ -10,6 +10,7 @@ import th.ac.kmutnb.prachin.map.ui.debug.GpsDebugScreen
 import th.ac.kmutnb.prachin.map.ui.gpslog.GpsLogScreen
 import th.ac.kmutnb.prachin.map.ui.gpslog.GpsReadoutScreen
 import th.ac.kmutnb.prachin.map.ui.hazard.HazardScreen
+import th.ac.kmutnb.prachin.map.ui.hazard.HazardSoundScreen
 import th.ac.kmutnb.prachin.map.ui.map.MapScreen
 import th.ac.kmutnb.prachin.map.ui.map.MapViewModel
 import th.ac.kmutnb.prachin.map.ui.onboarding.OnboardingScreen
@@ -32,6 +33,7 @@ object Routes {
     const val PATH_LOG = "path_log"
     const val PATH_READOUT = "path_readout"
     const val HAZARDS = "hazards"
+    const val HAZARD_SOUNDS = "hazard_sounds"
     const val GPS_DEBUG = "gps_debug"
 }
 
@@ -81,6 +83,7 @@ fun AppNavHost(
                 onOpenPathLog = { navController.navigate(Routes.PATH_LOG) },
                 onOpenPathReadout = { navController.navigate(Routes.PATH_READOUT) },
                 onOpenHazards = { navController.navigate(Routes.HAZARDS) },
+                onOpenHazardSounds = { navController.navigate(Routes.HAZARD_SOUNDS) },
                 onOpenGpsDebug = { navController.navigate(Routes.GPS_DEBUG) },
             )
         }
@@ -99,6 +102,10 @@ fun AppNavHost(
 
         composable(Routes.HAZARDS) {
             HazardScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.HAZARD_SOUNDS) {
+            HazardSoundScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.GPS_LOG) {
