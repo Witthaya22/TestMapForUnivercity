@@ -136,7 +136,8 @@ fun MapScreen(
                 if (!layerManager.isAttached) return@LaunchedEffect
                 val available = state.locationState as? LocationState.Available
                 layerManager.setUserLocation(
-                    point = available?.fix?.point,
+                    point = state.displayPoint,
+                    truePoint = available?.fix?.point,
                     accuracyMeters = available?.fix?.accuracyMeters ?: 0f,
                 )
             }
@@ -174,7 +175,12 @@ fun MapScreen(
             ) {
                 HazardBanner(state.hazardAlerts)
                 GpsStatusBanner(state.locationState)
-                GpsAccuracyChip(state.locationState)
+                // Both answer "should I trust what I am looking at", and they answer it
+                // differently: one says the app does not know where you are, the other
+                // that it does and you are not where the route is.
+                PoorAccuracyBanner(state)
+                OffRouteBanner(state)
+                GpsAccuracyChip(state.locationState, state.metresFromRoute)
                 if (state.startsAtFirstStop) {
                     InfoBanner(stringResource(R.string.nav_starts_at_first_stop))
                 }
@@ -370,6 +376,57 @@ private fun CampusMapView(
  * the map silently blank would read as a broken app.
  */
 /**
+ * Says the fix has become too coarse to walk by.
+ *
+ * Loud, and separate from the quiet accuracy chip, because the chip is a number somebody
+ * has stopped reading by the second kilometre. This appears only when it matters and says
+ * what to do about it.
+ */
+@Composable
+private fun PoorAccuracyBanner(state: MapUiState) {
+    if (!state.hasPoorAccuracy) return
+    val accuracy = state.accuracyMeters ?: return
+
+    WarningBanner(
+        text = stringResource(R.string.map_accuracy_warning, accuracy),
+        container = MaterialTheme.colorScheme.errorContainer,
+        content = MaterialTheme.colorScheme.onErrorContainer,
+    )
+}
+
+/**
+ * Says the walker has left the route, and by how much.
+ *
+ * The navigation panel has said "off route" all along, but only inside the panel, which is
+ * exactly where somebody who has wandered off is not looking. The metres matter too: three
+ * metres past the threshold and twenty are the same words and very different situations.
+ *
+ * This is also the honest half of snapping the dot. While the dot is held on the line the
+ * app is flattering the walk; the moment it stops being plausible, it says so here.
+ */
+@Composable
+private fun OffRouteBanner(state: MapUiState) {
+    if (!state.isNavigating || !state.isOffRoute) return
+    val metres = state.metresFromRoute ?: return
+
+    WarningBanner(
+        text = stringResource(R.string.map_off_route_warning, metres.roundToInt()),
+        container = MaterialTheme.colorScheme.errorContainer,
+        content = MaterialTheme.colorScheme.onErrorContainer,
+    )
+}
+
+@Composable
+private fun WarningBanner(text: String, container: Color, content: Color) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = container, contentColor = content),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(text, Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/**
  * How good the fix is right now, always on screen.
  *
  * The survey screens have shown this all along and the map has not, so the one number
@@ -378,7 +435,7 @@ private fun CampusMapView(
  * same thing wherever it appears.
  */
 @Composable
-private fun GpsAccuracyChip(locationState: LocationState) {
+private fun GpsAccuracyChip(locationState: LocationState, metresFromRoute: Double? = null) {
     val accuracy = when (locationState) {
         is LocationState.Available -> locationState.fix.accuracyMeters
         is LocationState.Searching -> locationState.lastAccuracyMeters
@@ -415,6 +472,15 @@ private fun GpsAccuracyChip(locationState: LocationState) {
                 style = MaterialTheme.typography.labelSmall,
                 color = colour,
             )
+            // Stated rather than hidden: while the dot is held on the line this is the
+            // only thing on screen that still says how far off the fix really was.
+            metresFromRoute?.let { metres ->
+                Text(
+                    text = stringResource(R.string.map_distance_from_route, metres),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

@@ -161,9 +161,15 @@ class MapLayerManager(private val context: Context) {
         setGeoJson(SOURCE_ROUTE_REMAINING, MapGeoJson.EMPTY_COLLECTION)
     }
 
-    fun setUserLocation(point: GeoPoint?, accuracyMeters: Float) {
+    /**
+     * @param point where to draw the dot - possibly held on the route line.
+     * @param truePoint where the receiver actually says the walker is. The accuracy circle
+     * is drawn here and never moved, so a dot being helped onto the line sits visibly off
+     * centre in its own circle rather than pretending the uncertainty moved with it.
+     */
+    fun setUserLocation(point: GeoPoint?, truePoint: GeoPoint? = point, accuracyMeters: Float) {
         setGeoJson(SOURCE_USER, MapGeoJson.singlePoint(point))
-        setGeoJson(SOURCE_ACCURACY, MapGeoJson.accuracyCircle(point, accuracyMeters))
+        setGeoJson(SOURCE_ACCURACY, MapGeoJson.accuracyCircle(truePoint, accuracyMeters))
     }
 
     /** The dashed line from a rejected tap to the nearest point on a path. */

@@ -40,6 +40,7 @@ import th.ac.kmutnb.prachin.map.location.SatelliteInfo
 import th.ac.kmutnb.prachin.map.navigation.HazardAlert
 import th.ac.kmutnb.prachin.map.navigation.HazardMonitor
 import th.ac.kmutnb.prachin.map.navigation.HazardOnRoute
+import th.ac.kmutnb.prachin.map.navigation.RouteSnapper
 import th.ac.kmutnb.prachin.map.navigation.NavigationEngine
 import th.ac.kmutnb.prachin.map.navigation.NavigationEvent
 import th.ac.kmutnb.prachin.map.navigation.NavigationProgress
@@ -68,6 +69,11 @@ data class MapUiState(
     val progress: NavigationProgress? = null,
     val isNavigating: Boolean = false,
     val isOffRoute: Boolean = false,
+    /**
+     * True while the drawn dot is being held on the route line rather than where the
+     * receiver put it. See [th.ac.kmutnb.prachin.map.navigation.RouteSnapper].
+     */
+    val isSnappedToRoute: Boolean = false,
 
     /** Set while the user is choosing a new position for this POI. */
     val relocatingPoi: Poi? = null,
@@ -98,6 +104,47 @@ data class MapUiState(
         get() = (locationState as? LocationState.Available)?.fix?.point
 
     val hasLocation: Boolean get() = currentPoint != null
+
+    /**
+     * Where to draw the dot: on the route line while it is being held there, otherwise
+     * exactly where the receiver says.
+     *
+     * Only the drawing uses this. Everything that answers a question about the ground -
+     * hazard warnings, the logs, the surveyor - reads [currentPoint].
+     */
+    val displayPoint: GeoPoint?
+        get() = if (isSnappedToRoute) progress?.snappedPoint ?: currentPoint else currentPoint
+
+    /** How far the fix is from the route line, or null when not navigating. */
+    val metresFromRoute: Double?
+        get() = if (isNavigating) progress?.distanceFromRouteMeters else null
+
+    val accuracyMeters: Float?
+        get() = when (val location = locationState) {
+            is LocationState.Available -> location.fix.accuracyMeters
+            is LocationState.Searching -> location.lastAccuracyMeters
+            else -> null
+        }
+
+    /**
+     * True when the fix is too coarse to act on without looking up.
+     *
+     * Not the same as being off route: this says the app does not know where the walker
+     * is, rather than that it knows and they are somewhere else.
+     */
+    val hasPoorAccuracy: Boolean
+        get() = (accuracyMeters ?: 0f) > POOR_ACCURACY_METERS
+
+    companion object {
+        /**
+         * Past this the fix is too coarse to walk by without looking up.
+         *
+         * Chosen against what the map is for: a campus path is a few metres wide, so at
+         * fifteen metres the app can no longer say which side of a building the walker is
+         * on. Fixes coarser than 25 m never arrive here at all - `ACCURACY.md` A4.
+         */
+        const val POOR_ACCURACY_METERS = 15f
+    }
 }
 
 /** One-shot side effects: things that happen rather than things that are true. */
@@ -142,6 +189,9 @@ class MapViewModel(
 
     /** Remembers what has already been said, so a hazard is announced once per approach. */
     private val hazardMonitor = HazardMonitor()
+
+    /** Decides whether the drawn dot is held on the route line. Display only. */
+    private val routeSnapper = RouteSnapper()
 
     private var hazardAlertsEnabled = true
     private var hazardVoiceEnabled = true
@@ -193,6 +243,7 @@ class MapViewModel(
                 hazardAlertsEnabled = enabled
                 if (!enabled) {
                     hazardMonitor.reset()
+        routeSnapper.reset()
                     container.speechAnnouncer.stop()
                     container.hazardSoundPlayer.release()
                     _uiState.update { it.copy(hazardAlerts = emptyList()) }
@@ -258,8 +309,13 @@ class MapViewModel(
         checkHazards(state.fix.point)
 
         val activeEngine = engine ?: return
+        // The engine is always given the raw fix. Snapping is a decision about the
+        // drawing, taken afterwards from what the engine measured.
         val update = activeEngine.update(state.fix.point, System.currentTimeMillis())
-        _uiState.update { it.copy(progress = update.progress) }
+        val snapped = update.progress
+            ?.let { routeSnapper.onDistanceFromRoute(it.distanceFromRouteMeters) }
+            ?: false
+        _uiState.update { it.copy(progress = update.progress, isSnappedToRoute = snapped) }
 
         update.events.forEach { event ->
             when (event) {
@@ -546,7 +602,15 @@ class MapViewModel(
         container.speechAnnouncer.stop()
         container.hazardSoundPlayer.release()
         locationInterval.value = IDLE_INTERVAL_MS
-        _uiState.update { it.copy(isNavigating = false, progress = null, isOffRoute = false) }
+        routeSnapper.reset()
+        _uiState.update {
+            it.copy(
+                isNavigating = false,
+                progress = null,
+                isOffRoute = false,
+                isSnappedToRoute = false,
+            )
+        }
         if (showMessage) {
             viewModelScope.launch { effectChannel.send(MapEffect.Message(R.string.nav_stop)) }
         }
