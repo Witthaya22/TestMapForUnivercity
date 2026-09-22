@@ -25,8 +25,12 @@
 |---|---|
 | Branch ที่ทำงานอยู่ | `feat/hazard-sounds-and-path-logging` |
 | Branch หลัก | `master` |
-| รวมเข้า master แล้วหรือยัง | **รวมแล้ว** (merge แบบเก็บประวัติไว้ ไม่ได้ลบ branch ทิ้ง) |
-| push ขึ้น remote แล้วหรือยัง | **ยัง** — ยังไม่มี remote ในโปรเจกต์นี้ |
+| รวมเข้า master แล้วหรือยัง | **รวมแล้ว** — merge commit `c8e27cb` (ใช้ `--no-ff` เก็บประวัติครบ ไม่ได้ลบ branch) |
+| remote | `origin` = https://github.com/Witthaya22/TestMapForUnivercity.git |
+| push ขึ้น GitHub แล้วหรือยัง | **ยัง** — `master` นำหน้า `origin/master` อยู่ **21 commit** |
+
+**ยังไม่ได้ push ให้** เพราะ push คือการส่งของออกไปข้างนอก ต้องให้เจ้าของตัดสินใจเอง
+อยากขึ้น GitHub เมื่อไรสั่ง `git push origin master` ได้เลย (หรือบอกให้ทำให้)
 
 **branch เดิมยังอยู่ ไม่ได้ลบ** ถ้าอยากย้อนกลับไปดูว่าฟีเจอร์ชุดนี้ทำอะไรบ้างทีละก้าว
 `git log feat/hazard-sounds-and-path-logging` ได้เลย
@@ -106,7 +110,7 @@
 | **สวิตช์ "เปิดหน้าจอค้างไว้" กดแล้วไม่มีผล** | **เป็นบั๊ก** ค่าถูกบันทึกลง DataStore จริง แต่ไม่มีที่ไหนเอาไปเซ็ต `FLAG_KEEP_SCREEN_ON` | เล็ก (~3 บรรทัด) |
 | A* เลี่ยงจุดอันตรายอัตโนมัติ | ยังไม่ทำ โดยตั้งใจ (เลี่ยงแล้วไม่บอกเหตุผล ผู้ใช้จะงง) | กลาง |
 | `PathType` ของเส้นที่เดินเก็บ | ตัดทิ้งตอนเปลี่ยนมาใช้ `track_log` — เส้นที่เดินเก็บนับเป็น footway หมด | กลาง |
-| push ขึ้น remote | ยังไม่มี remote | — |
+| push ขึ้น GitHub | `master` นำหน้า `origin/master` 21 commit — ยังไม่ push | — |
 
 ---
 
