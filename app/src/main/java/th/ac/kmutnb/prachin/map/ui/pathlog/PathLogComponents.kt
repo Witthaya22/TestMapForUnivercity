@@ -1,9 +1,11 @@
 package th.ac.kmutnb.prachin.map.ui.pathlog
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +13,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -33,15 +36,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import th.ac.kmutnb.prachin.map.R
-import th.ac.kmutnb.prachin.map.data.model.GpsFixQuality
-import th.ac.kmutnb.prachin.map.data.model.TrackCaptureMode
-import th.ac.kmutnb.prachin.map.data.model.TrackLog
-import th.ac.kmutnb.prachin.map.survey.TrackRecorder
-import th.ac.kmutnb.prachin.map.ui.common.Formats
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import th.ac.kmutnb.prachin.map.R
+import th.ac.kmutnb.prachin.map.data.model.GpsFixQuality
+import th.ac.kmutnb.prachin.map.data.model.TrackLog
+import th.ac.kmutnb.prachin.map.survey.TrackRecorder
+import th.ac.kmutnb.prachin.map.ui.common.Formats
 
 /**
  * The parts of the walked-path log that both recording screens share.
@@ -277,6 +279,7 @@ internal fun TrackDetailSheet(
     onDismiss: () -> Unit,
     onSaveNote: (String) -> Unit,
     onSetUsedForRouting: (Boolean) -> Unit,
+    onExport: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -399,6 +402,13 @@ internal fun TrackDetailSheet(
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
+            }
+
+            // Exporting one track from the track you are already looking at. Reaching the
+            // export from the top of the screen meant asking for everything and then
+            // narrowing it down, which is backwards when you have the one in front of you.
+            OutlinedButton(onClick = onExport, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.pathlog_export_this, track.code))
             }
         }
     }
@@ -544,59 +554,108 @@ internal fun TrackListSheet(
 /**
  * Choosing what leaves the phone: which walks, and in which format.
  *
- * The same shape as the GPS point log's dialog, because it is the same decision about a
- * different measurement, and two export dialogs that behave differently would be a small
- * trap for whoever uses both.
+ * A tick beside every track, rather than the three-way "all / from the map screen / from
+ * the readout screen" filter this had. That filter answered a question nobody asks - which
+ * screen was I holding while I walked it - while the question everybody asks, "just this
+ * one please", had no answer at all. So the dialog read as though exporting meant
+ * exporting everything, which is exactly how it was described back.
  */
 @Composable
 internal fun TrackExportDialog(
-    trackCount: Int,
-    filter: TrackCaptureMode?,
-    onFilterChange: (TrackCaptureMode?) -> Unit,
+    tracks: List<TrackLog>,
+    selectedIds: Set<String>,
+    onToggle: (String) -> Unit,
+    onSelectAll: () -> Unit,
+    onClearAll: () -> Unit,
     onGeoJson: () -> Unit,
     onCsv: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.pathlog_export_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.pathlog_export_explain, trackCount))
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 380.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 Text(
-                    text = stringResource(R.string.gpslog_export_filter),
-                    style = MaterialTheme.typography.titleSmall,
+                    text = stringResource(
+                        R.string.pathlog_export_selected,
+                        selectedIds.size,
+                        tracks.size,
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ExportFilterChip(null, filter, onFilterChange)
-                    ExportFilterChip(TrackCaptureMode.MAP, filter, onFilterChange)
-                    ExportFilterChip(TrackCaptureMode.READOUT, filter, onFilterChange)
+                    TextButton(onClick = onSelectAll) {
+                        Text(stringResource(R.string.pathlog_export_select_all))
+                    }
+                    TextButton(onClick = onClearAll) {
+                        Text(stringResource(R.string.pathlog_export_select_none))
+                    }
                 }
+
+                tracks.forEach { track ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onToggle(track.id) }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Checkbox(
+                            checked = track.id in selectedIds,
+                            onCheckedChange = { onToggle(track.id) },
+                        )
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                text = track.note.ifBlank {
+                                    stringResource(R.string.pathlog_unnamed)
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Text(
+                                text = stringResource(
+                                    R.string.pathlog_list_item_summary,
+                                    track.code,
+                                    Formats.distance(context, track.lengthMeters),
+                                    track.averageAccuracyMeters,
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+
+                Text(
+                    text = stringResource(R.string.pathlog_export_explain),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
             }
         },
         confirmButton = {
-            TextButton(onClick = onGeoJson) {
+            TextButton(onClick = onGeoJson, enabled = selectedIds.isNotEmpty()) {
                 Text(stringResource(R.string.gpslog_export_geojson))
             }
         },
         dismissButton = {
-            TextButton(onClick = onCsv) { Text(stringResource(R.string.gpslog_export_csv)) }
+            TextButton(onClick = onCsv, enabled = selectedIds.isNotEmpty()) {
+                Text(stringResource(R.string.gpslog_export_csv))
+            }
         },
     )
 }
 
-@Composable
-private fun ExportFilterChip(
-    mode: TrackCaptureMode?,
-    selected: TrackCaptureMode?,
-    onSelect: (TrackCaptureMode?) -> Unit,
-) {
-    FilterChip(
-        selected = mode == selected,
-        onClick = { onSelect(mode) },
-        label = { Text(stringResource(mode.filterLabelRes)) },
-    )
-}
 
 // --------------------------------------------------------------------------------------
 // Small shared pieces
@@ -647,13 +706,6 @@ internal val GpsFixQuality.labelRes: Int
         GpsFixQuality.GOOD -> R.string.gpslog_quality_good
         GpsFixQuality.FAIR -> R.string.gpslog_quality_fair
         GpsFixQuality.POOR -> R.string.gpslog_quality_poor
-    }
-
-internal val TrackCaptureMode?.filterLabelRes: Int
-    get() = when (this) {
-        null -> R.string.gpslog_export_filter_all
-        TrackCaptureMode.MAP -> R.string.gpslog_export_filter_map
-        TrackCaptureMode.READOUT -> R.string.gpslog_export_filter_readout
     }
 
 /** Short local date and time; the exported file keeps the unambiguous ISO form. */

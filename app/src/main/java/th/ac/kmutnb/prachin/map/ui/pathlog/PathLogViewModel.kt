@@ -305,17 +305,18 @@ class PathLogViewModel(
     // Export
     // ----------------------------------------------------------------------------------
 
+    /** @param ids exactly the tracks to write; never null, so nothing leaves by accident. */
     fun export(
         target: Uri,
         format: PathLogExportFormat,
-        mode: TrackCaptureMode?,
+        ids: Set<String>,
         onResult: (Boolean) -> Unit,
     ) {
         viewModelScope.launch {
             val ok = runCatching {
                 val text = when (format) {
-                    PathLogExportFormat.GEOJSON -> container.trackLogRepository.exportGeoJson(mode)
-                    PathLogExportFormat.CSV -> container.trackLogRepository.exportCsv(mode)
+                    PathLogExportFormat.GEOJSON -> container.trackLogRepository.exportGeoJson(ids)
+                    PathLogExportFormat.CSV -> container.trackLogRepository.exportCsv(ids)
                 }
                 withContext(Dispatchers.IO) {
                     application.contentResolver.openOutputStream(target)?.use { stream ->

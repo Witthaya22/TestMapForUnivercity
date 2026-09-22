@@ -103,18 +103,18 @@ class TrackLogRepository(private val trackLogDao: TrackLogDao) {
     suspend fun deleteAll() = trackLogDao.deleteAll()
 
     /**
-     * @param mode null to export everything, or one capture mode to export only what that
-     * screen recorded. Both screens write to one log, so this is how a file of only the
-     * walks made with the map in front of the surveyor can still be produced.
+     * @param ids the tracks to write, in the order they were walked. Null exports every
+     * one; an empty set exports nothing, which is what an export with nothing ticked
+     * should do rather than quietly meaning "all of them".
      */
-    suspend fun exportGeoJson(mode: TrackCaptureMode? = null): String =
-        withContext(Dispatchers.Default) { TrackLogExporter.writeGeoJson(all(mode)) }
+    suspend fun exportGeoJson(ids: Set<String>? = null): String =
+        withContext(Dispatchers.Default) { TrackLogExporter.writeGeoJson(chosen(ids)) }
 
-    suspend fun exportCsv(mode: TrackCaptureMode? = null): String =
-        withContext(Dispatchers.Default) { TrackLogExporter.writeCsv(all(mode)) }
+    suspend fun exportCsv(ids: Set<String>? = null): String =
+        withContext(Dispatchers.Default) { TrackLogExporter.writeCsv(chosen(ids)) }
 
-    private suspend fun all(mode: TrackCaptureMode?): List<TrackLog> =
-        all().filter { mode == null || it.captureMode == mode }
+    private suspend fun chosen(ids: Set<String>?): List<TrackLog> =
+        all().filter { ids == null || it.id in ids }
 
     private companion object {
         const val CODE_PREFIX = "T"

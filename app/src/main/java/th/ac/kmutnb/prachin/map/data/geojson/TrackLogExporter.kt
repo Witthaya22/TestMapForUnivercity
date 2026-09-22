@@ -180,15 +180,27 @@ object TrackLogExporter {
         return format.format(Date(millis))
     }
 
-    /** `tracks_20260920_1432.geojson` - the export's own provenance. */
+    /**
+     * `tracks_20260920_1432.geojson`, or `track_T002_20260920_1432.geojson` when the file
+     * holds one named track - the export's own provenance, in its name.
+     *
+     * @param code the single track's code, when exactly one is being written. Naming the
+     * file after it is what stops a folder of exports becoming indistinguishable.
+     */
     fun defaultFileName(
         extension: String,
+        code: String? = null,
         millis: Long = System.currentTimeMillis(),
         timeZone: TimeZone = TimeZone.getDefault(),
     ): String {
         val format = SimpleDateFormat(FILE_STAMP_PATTERN, Locale.US)
         format.timeZone = timeZone
-        return "tracks_${format.format(Date(millis))}.$extension"
+        val stamp = format.format(Date(millis))
+        return if (code.isNullOrBlank()) {
+            "tracks_$stamp.$extension"
+        } else {
+            "track_${code}_$stamp.$extension"
+        }
     }
 
     private fun round(value: Double, decimals: Int): BigDecimal =

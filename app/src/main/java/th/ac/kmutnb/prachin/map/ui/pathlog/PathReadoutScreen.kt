@@ -77,7 +77,12 @@ fun PathReadoutScreen(
     val scope = rememberCoroutineScope()
 
     var showExportDialog by rememberSaveable { mutableStateOf(false) }
-    var exportFilter by rememberSaveable { mutableStateOf<TrackCaptureMode?>(null) }
+    // Exactly which tracks the next export writes. Held here rather than in the dialog so
+    // that opening it from one track's detail sheet can arrive with that one ticked.
+    var exportIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    // Names the file after the track when there is only one, so a folder of exports stays
+    // tellable apart.
+    val exportCode = state.tracks.singleOrNull { it.id in exportIds }?.code
     var confirmDeleteAll by rememberSaveable { mutableStateOf(false) }
 
     fun report(success: Boolean) {
@@ -92,13 +97,13 @@ fun PathReadoutScreen(
     val exportGeoJsonLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/geo+json"),
     ) { uri ->
-        uri?.let { viewModel.export(it, PathLogExportFormat.GEOJSON, exportFilter, ::report) }
+        uri?.let { viewModel.export(it, PathLogExportFormat.GEOJSON, exportIds, ::report) }
     }
 
     val exportCsvLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri ->
-        uri?.let { viewModel.export(it, PathLogExportFormat.CSV, exportFilter, ::report) }
+        uri?.let { viewModel.export(it, PathLogExportFormat.CSV, exportIds, ::report) }
     }
 
     Scaffold(
@@ -123,6 +128,7 @@ fun PathReadoutScreen(
                                     )
                                 }
                             } else {
+                                exportIds = state.tracks.map { it.id }.toSet()
                                 showExportDialog = true
                             }
                         },
@@ -182,6 +188,11 @@ fun PathReadoutScreen(
             onDismiss = viewModel::dismissSelection,
             onSaveNote = { note -> viewModel.updateNote(track.id, note) },
             onSetUsedForRouting = { used -> viewModel.setUsedForRouting(track.id, used) },
+            onExport = {
+                exportIds = setOf(track.id)
+                viewModel.dismissSelection()
+                showExportDialog = true
+            },
             onDelete = { viewModel.delete(track.id) },
         )
     }
@@ -207,16 +218,22 @@ fun PathReadoutScreen(
 
     if (showExportDialog) {
         TrackExportDialog(
-            trackCount = state.tracks.size,
-            filter = exportFilter,
-            onFilterChange = { exportFilter = it },
+            tracks = state.tracks,
+            selectedIds = exportIds,
+            onToggle = { id ->
+                exportIds = if (id in exportIds) exportIds - id else exportIds + id
+            },
+            onSelectAll = { exportIds = state.tracks.map { it.id }.toSet() },
+            onClearAll = { exportIds = emptySet() },
             onGeoJson = {
                 showExportDialog = false
-                exportGeoJsonLauncher.launch(TrackLogExporter.defaultFileName("geojson"))
+                exportGeoJsonLauncher.launch(
+                    TrackLogExporter.defaultFileName("geojson", exportCode),
+                )
             },
             onCsv = {
                 showExportDialog = false
-                exportCsvLauncher.launch(TrackLogExporter.defaultFileName("csv"))
+                exportCsvLauncher.launch(TrackLogExporter.defaultFileName("csv", exportCode))
             },
             onDismiss = { showExportDialog = false },
         )
