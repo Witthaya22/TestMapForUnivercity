@@ -29,6 +29,7 @@ data class SettingsUiState(
     val surveyedPathCount: Int = 0,
     val hazardAlerts: Boolean = true,
     val hazardVoice: Boolean = true,
+    val hazardSound: Boolean = true,
     val debugUnlocked: Boolean = false,
     val versionName: String = "",
 )
@@ -84,9 +85,16 @@ class SettingsViewModel(
             combine(
                 container.preferences.hazardAlerts,
                 container.preferences.hazardVoice,
-            ) { alerts, voice -> alerts to voice }
-                .collect { (alerts, voice) ->
-                    _uiState.update { it.copy(hazardAlerts = alerts, hazardVoice = voice) }
+                container.preferences.hazardSound,
+            ) { alerts, voice, sound -> Triple(alerts, voice, sound) }
+                .collect { (alerts, voice, sound) ->
+                    _uiState.update {
+                        it.copy(
+                            hazardAlerts = alerts,
+                            hazardVoice = voice,
+                            hazardSound = sound,
+                        )
+                    }
                 }
         }
 
@@ -132,6 +140,10 @@ class SettingsViewModel(
 
     fun setHazardVoice(enabled: Boolean) {
         viewModelScope.launch { container.preferences.setHazardVoice(enabled) }
+    }
+
+    fun setHazardSound(enabled: Boolean) {
+        viewModelScope.launch { container.preferences.setHazardSound(enabled) }
     }
 
     /** Seven taps on the logo reveals the GPS debug screen, as the brief specifies. */

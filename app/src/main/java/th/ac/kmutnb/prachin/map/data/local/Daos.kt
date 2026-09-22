@@ -159,6 +159,22 @@ interface HazardPointDao {
 }
 
 @Dao
+interface HazardSoundDao {
+
+    @Query("SELECT * FROM hazard_sound ORDER BY addedAt ASC")
+    fun observeAll(): Flow<List<HazardSoundEntity>>
+
+    @Query("SELECT * FROM hazard_sound WHERE id = :id")
+    suspend fun findById(id: String): HazardSoundEntity?
+
+    @Upsert
+    suspend fun upsert(sound: HazardSoundEntity)
+
+    @Query("DELETE FROM hazard_sound WHERE id = :id")
+    suspend fun deleteById(id: String)
+}
+
+@Dao
 interface RouteHistoryDao {
 
     @Query("SELECT * FROM route_history ORDER BY completedAt DESC LIMIT :limit")

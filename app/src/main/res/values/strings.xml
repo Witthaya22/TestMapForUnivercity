@@ -209,6 +209,8 @@
     <string name="settings_hazard_alerts_desc">แสดงข้อความเตือนเมื่อเดินเข้าใกล้จุดที่มีคนปักไว้ว่าอันตราย</string>
     <string name="settings_hazard_voice">เตือนด้วยเสียงพูดภาษาไทย</string>
     <string name="settings_hazard_voice_desc">อ่านคำเตือนออกเสียง จะได้ไม่ต้องก้มดูจอตอนเดิน (ใช้เสียงในเครื่อง ไม่ต้องต่อเน็ต)</string>
+    <string name="settings_hazard_sound">ส่งเสียงเตือนก่อนพูด</string>
+    <string name="settings_hazard_sound_desc">ส่งเสียงสั้น ๆ นำก่อนคำเตือน ได้ยินทันแม้อยู่ริมถนน และยังเตือนได้แม้เครื่องไม่มีเสียงพูดภาษาไทย</string>
     <string name="settings_gpslog">เก็บพิกัด GPS (บันทึกค่าดิบ + ส่งออก)</string>
     <string name="settings_gpsreadout">เก็บพิกัด GPS (โหมดตัวเลข ไม่มีแผนที่)</string>
     <string name="settings_gps_debug">ข้อมูล GPS (Debug)</string>
@@ -313,6 +315,24 @@
     <string name="hazard_export">ส่งออกไฟล์</string>
     <string name="hazard_import">นำเข้าไฟล์</string>
     <string name="hazard_import_result">นำเข้า %1$d จุด · ข้าม %2$d จุด</string>
+
+    <!-- Hazard alert sounds -->
+    <string name="hazard_sound_chime">เสียงเตือนเบา (สองจังหวะ)</string>
+    <string name="hazard_sound_alert">เสียงเตือนด่วน (สามจังหวะ)</string>
+    <string name="hazard_sound_field">เสียงเตือน</string>
+    <string name="hazard_sound_default">ตามระดับความอันตราย</string>
+    <string name="hazard_sound_none">ไม่ต้องมีเสียง</string>
+    <string name="hazard_sound_unnamed">เสียงที่นำเข้า</string>
+    <string name="hazard_sound_hint">เสียงจะดังสั้น ๆ ก่อนคำเตือน ค่าเริ่มต้นคือ %1$s ตามระดับที่เลือกไว้</string>
+    <string name="hazard_sound_preview">ลองฟัง</string>
+    <string name="hazard_sound_import">นำเข้าเสียงจากเครื่อง</string>
+    <string name="hazard_sound_delete">ลบเสียงนี้</string>
+    <string name="hazard_sound_imported">เพิ่มเสียง \"%1$s\" แล้ว</string>
+    <string name="hazard_sound_deleted">ลบเสียงแล้ว จุดที่เคยใช้เสียงนี้จะกลับไปใช้เสียงตามระดับความอันตราย</string>
+    <string name="hazard_sound_reject_unreadable">อ่านไฟล์เสียงนี้ไม่ได้ ลองเลือกไฟล์อื่น</string>
+    <string name="hazard_sound_reject_too_large">ไฟล์ใหญ่เกิน 2 MB เสียงเตือนควรเป็นไฟล์สั้น ๆ</string>
+    <string name="hazard_sound_reject_not_playable">เครื่องนี้เล่นไฟล์นี้ไม่ได้ ลองใช้ไฟล์ .mp3, .ogg หรือ .wav</string>
+    <string name="hazard_sound_reject_too_long">เสียงยาวเกิน 5 วินาที ถ้านำหน้าคำเตือนนานกว่านี้ จะเตือนไม่ทัน</string>
 
     <!-- ข้อความเตือน (ทั้งบนจอและเสียงพูด) -->
     <string name="hazard_alert_title">เตือนจุดอันตราย</string>

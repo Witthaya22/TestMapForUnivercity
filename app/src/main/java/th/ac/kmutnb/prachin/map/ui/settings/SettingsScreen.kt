@@ -201,6 +201,17 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
+            SwitchRow(
+                title = stringResource(R.string.settings_hazard_sound),
+                checked = state.hazardSound && state.hazardAlerts,
+                onCheckedChange = viewModel::setHazardSound,
+            )
+            Text(
+                text = stringResource(R.string.settings_hazard_sound_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_admin))

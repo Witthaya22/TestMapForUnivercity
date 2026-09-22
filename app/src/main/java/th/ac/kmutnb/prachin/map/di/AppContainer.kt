@@ -11,10 +11,12 @@ import th.ac.kmutnb.prachin.map.data.prefs.AppPreferences
 import th.ac.kmutnb.prachin.map.data.repository.CampusRepository
 import th.ac.kmutnb.prachin.map.data.repository.GpsPointRepository
 import th.ac.kmutnb.prachin.map.data.repository.HazardRepository
+import th.ac.kmutnb.prachin.map.data.repository.HazardSoundRepository
 import th.ac.kmutnb.prachin.map.data.repository.OfflineMapRepository
 import th.ac.kmutnb.prachin.map.data.repository.PoiRepository
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetworkRepository
 import th.ac.kmutnb.prachin.map.data.repository.WalkPathRepository
+import th.ac.kmutnb.prachin.map.core.sound.HazardSoundPlayer
 import th.ac.kmutnb.prachin.map.core.speech.SpeechAnnouncer
 import th.ac.kmutnb.prachin.map.location.GpsLocationSource
 import th.ac.kmutnb.prachin.map.map.MapStyleProvider
@@ -53,6 +55,8 @@ class AppContainer(context: Context) {
 
     val hazardRepository = HazardRepository(database.hazardPointDao())
 
+    val hazardSoundRepository = HazardSoundRepository(appContext, database.hazardSoundDao())
+
     val routeNetworkRepository = RouteNetworkRepository(
         campusRepository = campusRepository,
         poiRepository = poiRepository,
@@ -76,4 +80,10 @@ class AppContainer(context: Context) {
      * warning is actually spoken, so switching voice warnings off costs nothing at all.
      */
     val speechAnnouncer = SpeechAnnouncer(appContext)
+
+    /**
+     * Plays the tone that goes in front of a spoken warning. Like the announcer it holds
+     * nothing until something is actually played.
+     */
+    val hazardSoundPlayer = HazardSoundPlayer(appContext)
 }

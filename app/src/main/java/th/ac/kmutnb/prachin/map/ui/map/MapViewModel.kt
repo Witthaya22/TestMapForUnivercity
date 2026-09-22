@@ -27,6 +27,8 @@ import th.ac.kmutnb.prachin.map.data.config.ConfigProblem
 import th.ac.kmutnb.prachin.map.data.local.RouteHistoryEntity
 import th.ac.kmutnb.prachin.map.data.model.HazardPoint
 import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
+import th.ac.kmutnb.prachin.map.data.model.HazardSound
+import th.ac.kmutnb.prachin.map.data.model.resolveHazardSound
 import th.ac.kmutnb.prachin.map.data.model.Poi
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetwork
@@ -143,6 +145,14 @@ class MapViewModel(
 
     private var hazardAlertsEnabled = true
     private var hazardVoiceEnabled = true
+    private var hazardSoundEnabled = true
+
+    /**
+     * The sound catalogue, held here rather than read per warning: resolving a tone has to
+     * be arithmetic on a list, not a database round trip, at the moment somebody is
+     * walking into a road.
+     */
+    private var hazardSounds: List<HazardSound> = HazardSound.bundled
 
     /** Told the user once that this phone has no Thai voice; saying it twice helps nobody. */
     private var reportedMissingVoice = false
@@ -184,6 +194,7 @@ class MapViewModel(
                 if (!enabled) {
                     hazardMonitor.reset()
                     container.speechAnnouncer.stop()
+                    container.hazardSoundPlayer.release()
                     _uiState.update { it.copy(hazardAlerts = emptyList()) }
                 }
             }
@@ -193,6 +204,19 @@ class MapViewModel(
             container.preferences.hazardVoice.collect { enabled ->
                 hazardVoiceEnabled = enabled
                 if (!enabled) container.speechAnnouncer.stop()
+            }
+        }
+
+        viewModelScope.launch {
+            container.preferences.hazardSound.collect { enabled ->
+                hazardSoundEnabled = enabled
+                if (!enabled) container.hazardSoundPlayer.release()
+            }
+        }
+
+        viewModelScope.launch {
+            container.hazardSoundRepository.sounds.collect { sounds ->
+                hazardSounds = sounds
             }
         }
 
@@ -315,23 +339,48 @@ class MapViewModel(
         // Only the most urgent is spoken. Reading out three hazards at a junction takes
         // longer than walking through it, and the walker acts on the first one anyway.
         val worst = newAlerts.first()
-        if (hazardVoiceEnabled) {
-            container.speechAnnouncer.speak(
-                text = HazardWording.spokenText(application, worst),
-                interrupt = HazardWording.interrupts(worst),
-            )
-            // Thai voice data is missing on plenty of budget phones. Say so once, so the
-            // silence reads as a device limitation rather than as a broken warning.
-            if (container.speechAnnouncer.isUnavailable && !reportedMissingVoice) {
-                reportedMissingVoice = true
-                viewModelScope.launch {
-                    effectChannel.send(MapEffect.Message(R.string.hazard_voice_unavailable))
-                }
-            }
-        }
+        announce(worst)
         if (worst.hazard.severity == HazardSeverity.DANGER && !worst.isRepeat) {
             viewModelScope.launch { effectChannel.send(MapEffect.HazardDanger(worst)) }
         }
+    }
+
+    /**
+     * Sounds the warning: the hazard's tone, then the sentence.
+     *
+     * In that order and not together, because they say different things and a sentence
+     * under a tone is neither. The tone arrives first because it arrives fastest - it
+     * needs no synthesis, carries over traffic, and is understood before the first word;
+     * the sentence then says which hazard and how far.
+     *
+     * Called only from the monitor's transitions, so the tone follows exactly the same
+     * frequency rules as the voice. Anything that made it fire more often would be the
+     * quickest way to get the whole warning system switched off - see `docs/HAZARDS.md`.
+     */
+    private fun announce(alert: HazardAlert) {
+        val speak = {
+            if (hazardVoiceEnabled) {
+                container.speechAnnouncer.speak(
+                    text = HazardWording.spokenText(application, alert),
+                    interrupt = HazardWording.interrupts(alert),
+                )
+                // Thai voice data is missing on plenty of budget phones. Say so once, so
+                // the silence reads as a device limitation rather than a broken warning.
+                if (container.speechAnnouncer.isUnavailable && !reportedMissingVoice) {
+                    reportedMissingVoice = true
+                    viewModelScope.launch {
+                        effectChannel.send(MapEffect.Message(R.string.hazard_voice_unavailable))
+                    }
+                }
+            }
+        }
+
+        val sound = if (hazardSoundEnabled) {
+            resolveHazardSound(alert.hazard, hazardSounds)
+        } else {
+            null
+        }
+        if (sound == null) speak() else container.hazardSoundPlayer.play(sound, onFinished = speak)
     }
 
     /** Recomputes which hazards the current route runs into. */
@@ -495,6 +544,7 @@ class MapViewModel(
     fun stopNavigation(showMessage: Boolean = true) {
         engine = null
         container.speechAnnouncer.stop()
+        container.hazardSoundPlayer.release()
         locationInterval.value = IDLE_INTERVAL_MS
         _uiState.update { it.copy(isNavigating = false, progress = null, isOffRoute = false) }
         if (showMessage) {

@@ -56,6 +56,16 @@ class AppPreferences(context: Context) {
      */
     val hazardVoice: Flow<Boolean> = store.data.map { it[KEY_HAZARD_VOICE] ?: true }
 
+    /**
+     * Play a short tone before the warning is spoken.
+     *
+     * Its own flag rather than part of [hazardVoice], because the tone is the half that
+     * still works on a phone with no Thai voice data and the half that gets through
+     * traffic noise. Someone who turns the talking off usually wants to keep being
+     * warned, not to walk in silence.
+     */
+    val hazardSound: Flow<Boolean> = store.data.map { it[KEY_HAZARD_SOUND] ?: true }
+
     suspend fun setOfflineMapReady(ready: Boolean, downloadedAt: Long = System.currentTimeMillis()) {
         store.edit {
             it[KEY_OFFLINE_READY] = ready
@@ -118,6 +128,10 @@ class AppPreferences(context: Context) {
         store.edit { it[KEY_HAZARD_VOICE] = enabled }
     }
 
+    suspend fun setHazardSound(enabled: Boolean) {
+        store.edit { it[KEY_HAZARD_SOUND] = enabled }
+    }
+
     private companion object {
         val KEY_OFFLINE_READY = booleanPreferencesKey("offline_map_ready")
         val KEY_OFFLINE_DOWNLOADED_AT = longPreferencesKey("offline_map_downloaded_at")
@@ -130,5 +144,6 @@ class AppPreferences(context: Context) {
         val KEY_KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         val KEY_HAZARD_ALERTS = booleanPreferencesKey("hazard_alerts")
         val KEY_HAZARD_VOICE = booleanPreferencesKey("hazard_voice")
+        val KEY_HAZARD_SOUND = booleanPreferencesKey("hazard_sound")
     }
 }

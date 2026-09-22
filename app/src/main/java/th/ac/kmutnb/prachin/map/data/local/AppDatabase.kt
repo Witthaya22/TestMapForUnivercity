@@ -13,9 +13,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         WalkPathEntity::class,
         GpsPointEntity::class,
         HazardPointEntity::class,
+        HazardSoundEntity::class,
         RouteHistoryEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,6 +28,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gpsPointDao(): GpsPointDao
 
     abstract fun hazardPointDao(): HazardPointDao
+
+    abstract fun hazardSoundDao(): HazardSoundDao
 
     abstract fun routeHistoryDao(): RouteHistoryDao
 
@@ -138,6 +141,29 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Gives each hazard a tone, and catalogues the sounds the user imported.
+         *
+         * `soundId` is added nullable rather than with a default, and null is not "no
+         * sound": it means the tone follows the hazard's severity. Every row that exists
+         * at this point was marked before sounds did, by someone who never chose one, so
+         * that is what they meant - and it keeps a warning that used to be spoken from
+         * turning silent because of a schema change.
+         */
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `hazard_point` ADD COLUMN `soundId` TEXT")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `hazard_sound` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL, " +
+                        "`fileName` TEXT NOT NULL, " +
+                        "`addedAt` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -146,7 +172,13 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 NAME,
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build().also { instance = it }
+            ).addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+            ).build().also { instance = it }
         }
     }
 }

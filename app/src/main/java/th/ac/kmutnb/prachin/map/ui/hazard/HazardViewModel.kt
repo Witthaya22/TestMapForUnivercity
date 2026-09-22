@@ -22,8 +22,11 @@ import th.ac.kmutnb.prachin.map.data.config.CampusConfigException
 import th.ac.kmutnb.prachin.map.data.config.ConfigProblem
 import th.ac.kmutnb.prachin.map.data.model.HazardPoint
 import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
+import th.ac.kmutnb.prachin.map.data.model.HazardSound
 import th.ac.kmutnb.prachin.map.data.model.HazardType
+import th.ac.kmutnb.prachin.map.data.model.resolveHazardSound
 import th.ac.kmutnb.prachin.map.data.repository.HazardImportResult
+import th.ac.kmutnb.prachin.map.data.repository.HazardSoundImport
 import th.ac.kmutnb.prachin.map.di.AppContainer
 import th.ac.kmutnb.prachin.map.location.LocationState
 import th.ac.kmutnb.prachin.map.location.SatelliteInfo
@@ -42,6 +45,11 @@ data class HazardDraft(
     val severity: HazardSeverity = HazardSeverity.WARNING,
     val radiusMeters: Double = HazardPoint.DEFAULT_RADIUS_M,
     val description: String = "",
+    /**
+     * The chosen tone. Null is not "silent" but "whatever suits the severity", which is
+     * what the picker shows as the default and what a draft starts as.
+     */
+    val soundId: String? = null,
     /** Accuracy of the fix it was marked from; null when placed by tapping the map. */
     val gpsAccuracy: Float? = null,
 ) {
@@ -55,6 +63,8 @@ data class HazardUiState(
 
     val locationState: LocationState = LocationState.Searching(null, SatelliteInfo.UNKNOWN, null),
     val hazards: List<HazardPoint> = emptyList(),
+    /** Bundled tones plus whatever has been imported, for the editor's sound picker. */
+    val sounds: List<HazardSound> = HazardSound.bundled,
 
     /** Open editor, or null when just looking at the map. */
     val draft: HazardDraft? = null,
@@ -98,6 +108,7 @@ class HazardViewModel(
     init {
         loadConfig()
         observeHazards()
+        observeSounds()
         startLocationUpdates()
     }
 
@@ -128,6 +139,14 @@ class HazardViewModel(
                         selected = hazards.firstOrNull { it.id == state.selected?.id },
                     )
                 }
+            }
+        }
+    }
+
+    private fun observeSounds() {
+        viewModelScope.launch {
+            container.hazardSoundRepository.sounds.collect { sounds ->
+                _uiState.update { it.copy(sounds = sounds) }
             }
         }
     }
@@ -178,6 +197,7 @@ class HazardViewModel(
                     severity = hazard.severity,
                     radiusMeters = hazard.radiusMeters,
                     description = hazard.description,
+                    soundId = hazard.soundId,
                     gpsAccuracy = hazard.gpsAccuracy,
                 ),
                 selected = null,
@@ -201,6 +221,7 @@ class HazardViewModel(
                     point = draft.point,
                     radiusMeters = draft.radiusMeters,
                     description = draft.description.trim(),
+                    soundId = draft.soundId,
                     gpsAccuracy = draft.gpsAccuracy,
                 )
             } else {
@@ -210,6 +231,7 @@ class HazardViewModel(
                     severity = draft.severity,
                     radiusMeters = draft.radiusMeters,
                     description = draft.description.trim(),
+                    soundId = draft.soundId,
                 )
             }
             _uiState.update { it.copy(draft = null) }
@@ -233,6 +255,52 @@ class HazardViewModel(
     fun delete(id: String) {
         viewModelScope.launch { container.hazardRepository.delete(id) }
         _uiState.update { it.copy(selected = null) }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Alert sounds
+    // ----------------------------------------------------------------------------------
+
+    /**
+     * Plays what the draft would sound like on approach.
+     *
+     * Worth a button of its own: a tone chosen in a quiet room and never heard again is a
+     * tone nobody has actually checked can be heard next to a road.
+     */
+    fun previewDraftSound() {
+        val draft = _uiState.value.draft ?: return
+        val sounds = _uiState.value.sounds
+        // Resolved through the same function the warning uses, so what is previewed is
+        // what will play - including the fall back to the severity's tone.
+        val sound = resolveHazardSound(draft.toPreviewHazard(), sounds) ?: return
+        container.hazardSoundPlayer.play(sound)
+    }
+
+    fun importSound(source: Uri, onResult: (HazardSoundImport) -> Unit) {
+        viewModelScope.launch {
+            val result = container.hazardSoundRepository.import(source)
+            // Selecting it straight away saves the one step everybody would take next.
+            if (result is HazardSoundImport.Added) {
+                _uiState.update { state ->
+                    state.copy(draft = state.draft?.copy(soundId = result.sound.id))
+                }
+            }
+            onResult(result)
+        }
+    }
+
+    /** Removes an imported sound. Bundled tones are part of the build and cannot go. */
+    fun deleteSound(id: String, onDeleted: () -> Unit) {
+        viewModelScope.launch {
+            container.hazardSoundRepository.delete(id)
+            _uiState.update { state ->
+                val draft = state.draft
+                state.copy(
+                    draft = if (draft?.soundId == id) draft.copy(soundId = null) else draft,
+                )
+            }
+            onDeleted()
+        }
     }
 
     // ----------------------------------------------------------------------------------
@@ -269,6 +337,8 @@ class HazardViewModel(
 
     override fun onCleared() {
         locationJob?.cancel()
+        // A preview still playing when the screen closes has nobody left to hear it.
+        container.hazardSoundPlayer.release()
         super.onCleared()
     }
 
@@ -284,3 +354,18 @@ class HazardViewModel(
         }
     }
 }
+
+/** A throwaway hazard, so a draft can be resolved by the same rules a real one is. */
+private fun HazardDraft.toPreviewHazard(): HazardPoint = HazardPoint(
+    id = id ?: "draft",
+    type = type,
+    severity = severity,
+    point = point,
+    radiusMeters = radiusMeters,
+    description = description,
+    soundId = soundId,
+    isActive = true,
+    gpsAccuracy = gpsAccuracy,
+    createdAt = 0L,
+    updatedAt = 0L,
+)

@@ -33,6 +33,10 @@ object HazardGeoJson {
                 addProperty("radiusMeters", hazard.radiusMeters)
                 addProperty("description", hazard.description)
                 addProperty("isActive", hazard.isActive)
+                // Only written when it was chosen: an absent key means "whatever suits
+                // the severity", which is what most hazards want and what a reader of
+                // the file should not have to interpret.
+                hazard.soundId?.let { addProperty("soundId", it) }
                 hazard.gpsAccuracy?.let { addProperty("gpsAccuracy", it) }
                 addProperty("createdAt", hazard.createdAt)
                 addProperty("updatedAt", hazard.updatedAt)
@@ -132,6 +136,11 @@ object HazardGeoJson {
                 radiusMeters = (properties.optDouble("radiusMeters") ?: HazardPoint.DEFAULT_RADIUS_M)
                     .coerceIn(HazardPoint.MIN_RADIUS_M, HazardPoint.MAX_RADIUS_M),
                 description = properties.optString("description").orEmpty(),
+                // Kept even when this device has no such sound. The id belongs to the
+                // person who marked the hazard, and it becomes right again the moment
+                // they import the same file on the phone they meant it for; until then
+                // resolveHazardSound falls back to the severity's tone.
+                soundId = properties.optString("soundId")?.takeIf { it.isNotBlank() },
                 isActive = properties.optBoolean("isActive") ?: true,
                 gpsAccuracy = properties.optDouble("gpsAccuracy")?.toFloat(),
                 createdAt = properties.optLong("createdAt") ?: now,

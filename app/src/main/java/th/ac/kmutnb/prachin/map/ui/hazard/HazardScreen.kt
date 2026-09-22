@@ -65,13 +65,19 @@ import org.maplibre.android.maps.Style
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.config.CampusConfig
+import th.ac.kmutnb.prachin.map.data.model.HAZARD_SOUND_NONE
 import th.ac.kmutnb.prachin.map.data.model.HazardPoint
 import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
+import th.ac.kmutnb.prachin.map.data.model.HazardSound
 import th.ac.kmutnb.prachin.map.data.model.HazardType
 import th.ac.kmutnb.prachin.map.data.model.approachMeters
+import th.ac.kmutnb.prachin.map.data.model.defaultSound
+import th.ac.kmutnb.prachin.map.data.model.resolveHazardSound
+import th.ac.kmutnb.prachin.map.data.repository.HazardSoundImport
 import th.ac.kmutnb.prachin.map.map.GpsLogLayerManager
 import th.ac.kmutnb.prachin.map.map.HazardLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
+import th.ac.kmutnb.prachin.map.ui.common.displayName
 import th.ac.kmutnb.prachin.map.ui.common.labelRes
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
 import java.text.SimpleDateFormat
@@ -137,6 +143,28 @@ fun HazardScreen(
                         result.imported,
                         result.skipped,
                     )
+                },
+            )
+        }
+    }
+
+    // Narrowed to audio, because the picker is reached from a field that says "warning
+    // sound" and offering every file on the phone there helps nobody.
+    val soundImportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        viewModel.importSound(uri) { result ->
+            toast(
+                when (result) {
+                    is HazardSoundImport.Added -> context.getString(
+                        R.string.hazard_sound_imported,
+                        result.sound.name.ifBlank {
+                            context.getString(R.string.hazard_sound_unnamed)
+                        },
+                    )
+
+                    is HazardSoundImport.Rejected -> context.getString(result.reason.messageRes)
                 },
             )
         }
@@ -265,7 +293,15 @@ fun HazardScreen(
     state.draft?.let { draft ->
         HazardEditorSheet(
             draft = draft,
+            sounds = state.sounds,
             onChange = viewModel::updateDraft,
+            onPreviewSound = viewModel::previewDraftSound,
+            onImportSound = { soundImportLauncher.launch(arrayOf("audio/*")) },
+            onDeleteSound = { id ->
+                viewModel.deleteSound(id) {
+                    toast(context.getString(R.string.hazard_sound_deleted))
+                }
+            },
             onSave = viewModel::saveDraft,
             onDismiss = viewModel::cancelDraft,
         )
@@ -274,6 +310,7 @@ fun HazardScreen(
     state.selected?.let { hazard ->
         HazardDetailSheet(
             hazard = hazard,
+            sounds = state.sounds,
             onDismiss = viewModel::dismissSelection,
             onEdit = viewModel::editSelected,
             onSetActive = { active -> viewModel.setActive(hazard.id, active) },
@@ -384,7 +421,11 @@ private fun HazardMapView(
 @Composable
 private fun HazardEditorSheet(
     draft: HazardDraft,
+    sounds: List<HazardSound>,
     onChange: ((HazardDraft) -> HazardDraft) -> Unit,
+    onPreviewSound: () -> Unit,
+    onImportSound: () -> Unit,
+    onDeleteSound: (String) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -473,6 +514,16 @@ private fun HazardEditorSheet(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            HazardSoundPicker(
+                sounds = sounds,
+                selectedId = draft.soundId,
+                severity = draft.severity,
+                onSelect = { id -> onChange { it.copy(soundId = id) } },
+                onPreview = onPreviewSound,
+                onImport = onImportSound,
+                onDelete = onDeleteSound,
+            )
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onSave, modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.action_save))
@@ -480,6 +531,80 @@ private fun HazardEditorSheet(
                 OutlinedButton(onClick = onDismiss) {
                     Text(stringResource(R.string.action_cancel))
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Chooses the tone that plays just before the spoken warning.
+ *
+ * Three kinds of choice in one row of chips, because to the person marking a hazard they
+ * are one question: leave it to the severity, silence it, or pick a sound. The default
+ * comes first and is what a new mark starts on - most hazards want the tone that matches
+ * how bad they are, and nobody should have to decide otherwise to get a sensible warning.
+ *
+ * Preview is not a nicety. A tone chosen in a quiet room is a tone nobody has checked can
+ * be heard next to a road, which is where it has to work.
+ */
+@Composable
+private fun HazardSoundPicker(
+    sounds: List<HazardSound>,
+    selectedId: String?,
+    severity: HazardSeverity,
+    onSelect: (String?) -> Unit,
+    onPreview: () -> Unit,
+    onImport: () -> Unit,
+    onDelete: (String) -> Unit,
+) {
+    val selected = sounds.firstOrNull { it.id == selectedId }
+    val isSilent = selectedId == HAZARD_SOUND_NONE
+    val defaultName = sounds.firstOrNull { it.id == severity.defaultSound.id }?.displayName()
+        ?: stringResource(severity.defaultSound.labelRes)
+
+    Text(
+        text = stringResource(R.string.hazard_sound_field),
+        style = MaterialTheme.typography.titleSmall,
+    )
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = selectedId == null,
+            onClick = { onSelect(null) },
+            label = { Text(stringResource(R.string.hazard_sound_default)) },
+        )
+        FilterChip(
+            selected = isSilent,
+            onClick = { onSelect(HAZARD_SOUND_NONE) },
+            label = { Text(stringResource(R.string.hazard_sound_none)) },
+        )
+        sounds.forEach { sound ->
+            FilterChip(
+                selected = sound.id == selectedId,
+                onClick = { onSelect(sound.id) },
+                label = { Text(sound.displayName()) },
+            )
+        }
+    }
+    Text(
+        text = stringResource(R.string.hazard_sound_hint, defaultName),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TextButton(onClick = onPreview, enabled = !isSilent) {
+            Text(stringResource(R.string.hazard_sound_preview))
+        }
+        TextButton(onClick = onImport) {
+            Text(stringResource(R.string.hazard_sound_import))
+        }
+        // Only imported sounds can go. The bundled two are part of the build, and a
+        // campus with no warning tone left at all is not a state worth reaching.
+        if (selected != null && !selected.isBundled) {
+            TextButton(onClick = { onDelete(selected.id) }) {
+                Text(
+                    text = stringResource(R.string.hazard_sound_delete),
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }
@@ -493,6 +618,7 @@ private fun HazardEditorSheet(
 @Composable
 private fun HazardDetailSheet(
     hazard: HazardPoint,
+    sounds: List<HazardSound>,
     onDismiss: () -> Unit,
     onEdit: () -> Unit,
     onSetActive: (Boolean) -> Unit,
@@ -543,6 +669,11 @@ private fun HazardDetailSheet(
             DetailRow(
                 stringResource(R.string.hazard_alert_radius),
                 stringResource(R.string.hazard_meters, hazard.alertRadiusMeters.roundToInt()),
+            )
+            DetailRow(
+                stringResource(R.string.hazard_sound_field),
+                resolveHazardSound(hazard, sounds)?.displayName()
+                    ?: stringResource(R.string.hazard_sound_none),
             )
             DetailRow(
                 stringResource(R.string.hazard_marked_source),
