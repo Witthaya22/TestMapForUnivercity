@@ -9,6 +9,7 @@ import th.ac.kmutnb.prachin.map.data.geojson.GeoJsonIssue
 import th.ac.kmutnb.prachin.map.data.model.BundledHazardSound
 import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
 import th.ac.kmutnb.prachin.map.data.model.HazardSound
+import th.ac.kmutnb.prachin.map.data.model.HazardSoundOrigin
 import th.ac.kmutnb.prachin.map.data.model.HazardType
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.data.repository.HazardSoundRejection
@@ -99,14 +100,14 @@ val BundledHazardSound.labelRes: Int
 /**
  * What to call a sound in the picker.
  *
- * A bundled tone is named by a Thai string resource; an imported one by the file the user
- * picked, falling back to a placeholder when the provider would not say what it was
- * called. Only place that distinction is made, so the picker and the detail sheet cannot
- * name the same sound differently.
+ * A generated tone is named by a Thai string resource; a dropped-in asset and an imported
+ * file are named by their own file name, which is the only name anybody gave them. Only
+ * place that distinction is made, so the picker and the detail sheet cannot name the same
+ * sound differently.
  */
 @Composable
 fun HazardSound.displayName(): String = when {
-    isBundled -> BundledHazardSound.fromId(id)
+    origin == HazardSoundOrigin.BUNDLED -> BundledHazardSound.fromId(id)
         ?.let { stringResource(it.labelRes) }
         ?: stringResource(R.string.hazard_sound_unnamed)
 

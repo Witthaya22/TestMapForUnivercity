@@ -597,9 +597,10 @@ private fun HazardSoundPicker(
         TextButton(onClick = onImport) {
             Text(stringResource(R.string.hazard_sound_import))
         }
-        // Only imported sounds can go. The bundled two are part of the build, and a
-        // campus with no warning tone left at all is not a state worth reaching.
-        if (selected != null && !selected.isBundled) {
+        // Only imported sounds can go. The generated tones and anything shipped in
+        // assets/sounds/ are part of the build, and a campus with no warning tone left at
+        // all is not a state worth reaching.
+        if (selected != null && selected.isRemovable) {
             TextButton(onClick = { onDelete(selected.id) }) {
                 Text(
                     text = stringResource(R.string.hazard_sound_delete),

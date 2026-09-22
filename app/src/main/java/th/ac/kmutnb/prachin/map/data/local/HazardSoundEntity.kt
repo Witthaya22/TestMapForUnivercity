@@ -3,13 +3,14 @@ package th.ac.kmutnb.prachin.map.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import th.ac.kmutnb.prachin.map.data.model.HazardSound
+import th.ac.kmutnb.prachin.map.data.model.HazardSoundOrigin
 
 /**
  * A sound file the user imported, as catalogued on the device.
  *
- * Only imported sounds have rows here. The bundled tones are part of the build and would
- * be a copy of the APK's own contents in a table that can then disagree with it - see
- * [HazardSound.bundled].
+ * Only imported sounds have rows here. The generated tones and anything dropped into
+ * `assets/sounds/` are part of the build, and cataloguing them would be a copy of the
+ * APK's own contents in a table that can then disagree with it - see [HazardSound].
  *
  * The audio itself is not stored here. Room holds the name and the file name; the bytes
  * live in the app's own storage under `hazard_sounds/`, because a blob column would be
@@ -28,7 +29,7 @@ data class HazardSoundEntity(
 fun HazardSoundEntity.toHazardSound(): HazardSound = HazardSound(
     id = id,
     name = name,
-    isBundled = false,
+    origin = HazardSoundOrigin.IMPORTED,
     fileName = fileName,
     addedAt = addedAt,
 )

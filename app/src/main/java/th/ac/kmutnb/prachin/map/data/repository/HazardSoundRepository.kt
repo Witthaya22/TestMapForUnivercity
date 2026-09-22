@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import th.ac.kmutnb.prachin.map.data.assets.AssetPaths
+import th.ac.kmutnb.prachin.map.data.assets.AssetReader
 import th.ac.kmutnb.prachin.map.data.local.HazardSoundDao
 import th.ac.kmutnb.prachin.map.data.local.HazardSoundEntity
 import th.ac.kmutnb.prachin.map.data.local.toHazardSound
@@ -40,9 +42,14 @@ sealed interface HazardSoundImport {
 /**
  * The sounds available to play in front of a hazard warning.
  *
- * [sounds] is the bundled tones followed by whatever the user imported, in one list,
- * because that is the order the picker shows and there is nothing else to sort by: a
- * catalogue this size is read whole or not at all.
+ * [sounds] is the two generated tones, then whatever audio was dropped into
+ * `assets/sounds/` before the build, then whatever the user imported on this phone - one
+ * list in picker order, because a catalogue this size is read whole or not at all.
+ *
+ * Dropping a file into `assets/sounds/` is the way to give everyone the same warning
+ * sounds: no code to edit, and the id it gets (`asset:siren.mp3`) means the same thing on
+ * every phone running the build, so a shared `hazards.geojson` that names it still works.
+ * An imported file cannot do that - it never leaves the phone it was picked on.
  *
  * Imported audio is **copied** into the app's own storage rather than referenced by the
  * content URI it was picked from. A URI is a loan - it survives neither a reboot nor the
@@ -53,15 +60,28 @@ sealed interface HazardSoundImport {
 class HazardSoundRepository(
     context: Context,
     private val hazardSoundDao: HazardSoundDao,
+    private val assetReader: AssetReader,
 ) {
 
     private val appContext = context.applicationContext
 
-    val sounds: Flow<List<HazardSound>> = hazardSoundDao.observeAll().map { rows ->
-        HazardSound.bundled + rows.map { it.toHazardSound() }
+    /**
+     * What was shipped in `assets/sounds/`.
+     *
+     * Read once: the folder is part of the APK and cannot change while the app runs, and
+     * this list is rebuilt on every change to the imported ones.
+     */
+    private val assetSounds: List<HazardSound> by lazy {
+        assetReader.list(AssetPaths.HAZARD_SOUNDS_DIR)
+            .sorted()
+            .mapNotNull { HazardSound.fromAssetFileName(it) }
     }
 
-    /** Where an imported sound's audio lives. Bundled tones are raw resources instead. */
+    val sounds: Flow<List<HazardSound>> = hazardSoundDao.observeAll().map { rows ->
+        HazardSound.bundled + assetSounds + rows.map { it.toHazardSound() }
+    }
+
+    /** Where an imported sound's audio lives. The other origins live inside the APK. */
     fun fileFor(sound: HazardSound): File = File(soundsDir(appContext), sound.fileName)
 
     /**

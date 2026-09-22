@@ -6,8 +6,10 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import th.ac.kmutnb.prachin.map.R
+import th.ac.kmutnb.prachin.map.data.assets.AssetPaths
 import th.ac.kmutnb.prachin.map.data.model.BundledHazardSound
 import th.ac.kmutnb.prachin.map.data.model.HazardSound
+import th.ac.kmutnb.prachin.map.data.model.HazardSoundOrigin
 import th.ac.kmutnb.prachin.map.data.repository.HazardSoundRepository
 import java.io.File
 
@@ -54,12 +56,6 @@ class HazardSoundPlayer(context: Context) {
      * sentence has been superseded too.
      */
     fun play(sound: HazardSound, onFinished: () -> Unit = {}) {
-        val uri = uriFor(sound)
-        if (uri == null) {
-            onFinished()
-            return
-        }
-
         release()
         var finished = false
         val player = MediaPlayer()
@@ -78,7 +74,7 @@ class HazardSoundPlayer(context: Context) {
 
         runCatching {
             player.setAudioAttributes(NAVIGATION_GUIDANCE)
-            player.setDataSource(appContext, uri)
+            setSource(player, sound)
             player.setOnPreparedListener { it.start() }
             player.setOnCompletionListener { finish(); done(it) }
             player.setOnErrorListener { it, what, extra ->
@@ -108,20 +104,44 @@ class HazardSoundPlayer(context: Context) {
     }
 
     /**
-     * Where the audio actually is: a raw resource for a bundled tone, a file in the app's
-     * own storage for an imported one.
+     * Points the player at wherever this sound's audio actually is.
      *
-     * Null when an imported sound's file has gone - which should not happen, since the app
-     * owns that directory, but a missing file must mean "speak without a tone" rather than
-     * an exception thrown while someone walks towards a road.
+     * Three places, one per origin. An asset is opened as a file descriptor into the APK
+     * rather than through a URI, which is why `assets/sounds/` only accepts the formats
+     * Android leaves uncompressed - `openFd` cannot open a compressed entry.
+     *
+     * Throws if the audio has gone. The caller treats that the same as a failure to play:
+     * the warning is still spoken, because losing the sentence over a missing tone would
+     * trade the informative half of the warning for the decorative one.
      */
-    private fun uriFor(sound: HazardSound): Uri? {
-        if (sound.isBundled) {
-            val tone = BundledHazardSound.fromId(sound.id) ?: return null
-            return Uri.parse("android.resource://${appContext.packageName}/${tone.rawResId}")
+    private fun setSource(player: MediaPlayer, sound: HazardSound) {
+        when (sound.origin) {
+            HazardSoundOrigin.BUNDLED -> {
+                val tone = requireNotNull(BundledHazardSound.fromId(sound.id)) {
+                    "no bundled tone with id ${sound.id}"
+                }
+                val uri = Uri.parse("android.resource://${appContext.packageName}/${tone.rawResId}")
+                player.setDataSource(appContext, uri)
+            }
+
+            HazardSoundOrigin.ASSET -> {
+                appContext.assets
+                    .openFd("${AssetPaths.HAZARD_SOUNDS_DIR}/${sound.fileName}")
+                    .use { descriptor ->
+                        player.setDataSource(
+                            descriptor.fileDescriptor,
+                            descriptor.startOffset,
+                            descriptor.length,
+                        )
+                    }
+            }
+
+            HazardSoundOrigin.IMPORTED -> {
+                val file = File(HazardSoundRepository.soundsDir(appContext), sound.fileName)
+                require(file.exists()) { "imported sound ${sound.fileName} has gone" }
+                player.setDataSource(appContext, Uri.fromFile(file))
+            }
         }
-        val file = File(HazardSoundRepository.soundsDir(appContext), sound.fileName)
-        return if (file.exists()) Uri.fromFile(file) else null
     }
 
     private companion object {

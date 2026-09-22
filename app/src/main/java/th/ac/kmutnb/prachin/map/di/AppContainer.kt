@@ -55,7 +55,7 @@ class AppContainer(context: Context) {
 
     val hazardRepository = HazardRepository(database.hazardPointDao())
 
-    val hazardSoundRepository = HazardSoundRepository(appContext, database.hazardSoundDao())
+    val hazardSoundRepository = HazardSoundRepository(appContext, database.hazardSoundDao(), assetReader)
 
     val routeNetworkRepository = RouteNetworkRepository(
         campusRepository = campusRepository,
