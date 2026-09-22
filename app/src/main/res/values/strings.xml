@@ -93,6 +93,9 @@
     <string name="map_searching_gps_accuracy">กำลังหาสัญญาณดาวเทียม… (ความแม่นยำ %1$d ม.)</string>
     <string name="map_gps_disabled">GPS ปิดอยู่ กรุณาเปิดการเข้าถึงตำแหน่งในตั้งค่าเครื่อง</string>
     <string name="map_gps_weak">สัญญาณ GPS อ่อน ตำแหน่งอาจคลาดเคลื่อน</string>
+    <string name="map_accuracy_warning">⚠ GPS คลาดเคลื่อนมาก (± %1$.0f ม.) ตำแหน่งบนแผนที่อาจไม่ตรงกับที่ยืนจริง โปรดดูทางด้วยตาด้วย</string>
+    <string name="map_off_route_warning">⚠ คุณออกนอกเส้นทางแล้ว ห่างจากเส้นทาง %1$d ม. — เดินกลับเข้าเส้นทาง หรือกดคำนวณเส้นทางใหม่</string>
+    <string name="map_distance_from_route">ห่างจากเส้นทาง %1$.1f ม.</string>
     <string name="map_gps_indoor_hint">ถ้าอยู่ในอาคาร GPS จะใช้ไม่ได้ กรุณาออกมากลางแจ้ง</string>
     <string name="map_no_offline_data">ยังไม่มีแผนที่ออฟไลน์ในเครื่อง</string>
 
