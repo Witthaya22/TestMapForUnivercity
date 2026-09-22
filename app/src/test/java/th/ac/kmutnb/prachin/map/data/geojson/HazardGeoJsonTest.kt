@@ -2,6 +2,8 @@ package th.ac.kmutnb.prachin.map.data.geojson
 
 import com.google.gson.JsonParser
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
@@ -21,6 +23,7 @@ class HazardGeoJsonTest {
         severity: HazardSeverity = HazardSeverity.DANGER,
         radius: Double = 25.0,
         active: Boolean = true,
+        soundId: String? = null,
     ) = HazardPoint(
         id = id,
         type = type,
@@ -28,6 +31,7 @@ class HazardGeoJsonTest {
         point = GeoPoint(lat = 14.1610243, lon = 101.3529617),
         radiusMeters = radius,
         description = "หมาเฝ้าอยู่ 3 ตัว",
+        soundId = soundId,
         isActive = active,
         gpsAccuracy = 4.5f,
         createdAt = 1_789_889_525_000L,
@@ -124,6 +128,41 @@ class HazardGeoJsonTest {
         val parsed = HazardGeoJson.parse(json)
         assertTrue(parsed.items.isEmpty())
         assertEquals(GeoJsonIssue.Reason.OUT_OF_DEGREE_RANGE, parsed.issues.single().reason)
+    }
+
+    @Test
+    fun `a chosen alert sound survives the round trip`() {
+        val original = hazard(soundId = "sound_recorded_by_hand")
+        val parsed = HazardGeoJson.parse(HazardGeoJson.write(listOf(original)))
+
+        assertEquals(original, parsed.items.single())
+    }
+
+    @Test
+    fun `a hazard that never chose a sound writes no soundId at all`() {
+        val properties = JsonParser.parseString(HazardGeoJson.write(listOf(hazard())))
+            .asJsonObject
+            .getAsJsonArray("features")[0].asJsonObject
+            .getAsJsonObject("properties")
+
+        // Absent rather than null: an absent key reads as "whatever suits the severity",
+        // and a file full of explicit nulls invites a reader to treat it as "silent".
+        assertFalse(properties.has("soundId"))
+        assertNull(HazardGeoJson.parse(HazardGeoJson.write(listOf(hazard()))).items.single().soundId)
+    }
+
+    @Test
+    fun `a file written before sounds existed still reads`() {
+        val json = """
+            {"type":"FeatureCollection","features":[
+              {"type":"Feature",
+               "geometry":{"type":"Point","coordinates":[101.35,14.16]},
+               "properties":{"id":"h1","type":"dog","severity":"danger",
+                             "radiusMeters":20.0,"description":"","isActive":true}}
+            ]}
+        """.trimIndent()
+
+        assertNull(HazardGeoJson.parse(json).items.single().soundId)
     }
 
     @Test
