@@ -139,9 +139,27 @@ class TrackLogExporterTest {
 
     @Test
     fun `the file name carries when the export was made`() {
-        val name = TrackLogExporter.defaultFileName("geojson", 1_789_889_525_000L, bangkok)
+        val name = TrackLogExporter.defaultFileName(
+            extension = "geojson",
+            millis = 1_789_889_525_000L,
+            timeZone = bangkok,
+        )
 
         assertEquals("tracks_20260920_1432.geojson", name)
+    }
+
+    @Test
+    fun `a file holding one track is named after it`() {
+        // Otherwise a folder of single-track exports is a row of identical names, and the
+        // whole point of exporting one track is to be able to find it again.
+        val name = TrackLogExporter.defaultFileName(
+            extension = "csv",
+            code = "T002",
+            millis = 1_789_889_525_000L,
+            timeZone = bangkok,
+        )
+
+        assertEquals("track_T002_20260920_1432.csv", name)
     }
 
     /** Minimal RFC 4180 splitter, enough to check what this writer produces. */
