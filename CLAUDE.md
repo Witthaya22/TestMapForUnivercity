@@ -27,10 +27,12 @@
 7. vector tile ใน MBTiles ถูก gzip ไว้ → ต้องตั้ง header `Content-Encoding: gzip` ไม่งั้นจอขาว
 8. String ที่ผู้ใช้เห็นต้องอยู่ใน `res/values/strings.xml` เป็นภาษาไทยทั้งหมด
    โค้ดและคอมเมนต์เป็นภาษาอังกฤษ
-9. **ระบบเก็บพิกัด GPS (`ui/gpslog/`) กับ POI (`ui/survey/`) ต้องแยกกัน**
-   ไฟล์ที่ export จากหน้าเก็บพิกัด GPS ต้องมีเฉพาะ**ค่าที่วัดได้** (พิกัด ความคลาดเคลื่อน
-   ดาวเทียม จำนวนครั้งที่วัด เวลา) ห้ามใส่ชื่อสถานที่ / หมวดหมู่ / คณะ / อาคาร ลงไป
-   และจุดที่เก็บต้องไม่เข้ากราฟ routing — อ่าน `docs/GPS_LOGGING.md` ก่อนแก้
+9. **ระบบที่เก็บ "ค่าที่วัดได้" กับระบบที่เก็บ "ข้อมูลสถานที่" ต้องแยกกัน**
+   `ui/gpslog/` (จุด) และ `ui/pathlog/` (เส้นทาง) เก็บเฉพาะ**ค่าที่วัดได้** (พิกัด
+   ความคลาดเคลื่อน ดาวเทียม จำนวน fix เวลา) ห้ามใส่ชื่อสถานที่ / หมวดหมู่ / คณะ / อาคาร
+   ลงไป ของพวกนั้นเป็นของ POI (`ui/survey/`) — อ่าน `docs/GPS_LOGGING.md`
+   และ `docs/PATH_LOGGING.md` ก่อนแก้
+   จุด GPS **ไม่เข้า**กราฟ routing · เส้นทางเข้าได้เฉพาะเส้นที่เปิดสวิตช์ `isUsedForRouting`
 10. **คำเตือนจุดอันตรายห้ามเตือนถี่ขึ้นกว่านี้** กติกาทั้งหมดอยู่ที่ `navigation/HazardMonitor.kt`
    ที่เดียว (เตือนครั้งเดียวตอนเข้าเขต + ต้องออกไปไกลกว่าระยะเตือน 15 ม. ถึงเตือนใหม่ได้)
    ระบบที่เตือนบ่อยเกินไปจะโดนปิดเสียงทิ้ง แล้วจะไม่เตือนใครอีกเลย — อ่าน `docs/HAZARDS.md`
@@ -61,7 +63,7 @@
 |---|---|
 | `app/src/main/assets/config/campus_config.json` | bbox / center / zoom / styleUrl — กรอกแล้วจากข้อมูล OSM |
 | `app/src/main/assets/data/pois.geojson` | จุดต่าง ๆ ในมอ (ตั้งต้นจาก OSM) |
-| `app/src/main/assets/data/paths.geojson` | โครงข่ายเส้นทาง **ถนน + ทางเดิน** (กราฟ routing + ตรวจปักจุดผิดทาง) |
+| `app/src/main/assets/data/paths.geojson` | โครงข่ายเส้นทางตั้งต้นจาก OSM **ถนน + ทางเดิน** (ปิดได้ด้วย "ใช้เฉพาะเส้นทางที่สำรวจเอง") |
 | `tools/osm_import.py` | ดึง bbox / POI / เส้นทาง จาก OpenStreetMap มาเขียนไฟล์ 3 ตัวข้างบน |
 | `core/geo/GeoUtils.kt` | สูตรระยะทางทั้งหมด — แก้ที่นี่ที่เดียว |
 | `navigation/AStarRouter.kt` | หาเส้นทาง |
@@ -72,6 +74,12 @@
 | `ui/gpslog/GpsLogScreen.kt` | หน้าเก็บพิกัด GPS **โหมดแผนที่** (เห็นตัวเองเดิน + เก็บจุด + ส่งออก) |
 | `ui/gpslog/GpsReadoutScreen.kt` | หน้าเก็บพิกัด GPS **โหมดตัวเลข** (ไม่มีแผนที่) — ชุดข้อมูลเดียวกัน ต่างกันที่ `captureMode` |
 | `ui/gpslog/GpsLogComponents.kt` | UI ที่สองหน้าจอใช้ร่วมกัน — เพิ่มหน้าจอเก็บค่าใหม่ให้ใช้ซ้ำจากที่นี่ ห้ามก๊อป |
+| `ui/pathlog/PathLogScreen.kt` | เดินเก็บ**เส้นทาง** โหมดแผนที่ (เห็นเส้นที่เก็บไว้ทุกเส้น) |
+| `ui/pathlog/PathReadoutScreen.kt` | เดินเก็บเส้นทาง โหมดตัวเลข — ชุดข้อมูลเดียวกัน ต่างกันที่ `captureMode` |
+| `ui/pathlog/PathLogComponents.kt` | UI ที่สองหน้าจอเส้นทางใช้ร่วมกัน ห้ามก๊อป |
+| `survey/TrackRecorder.kt` | กรองระยะห่าง 3 ม. + ลดจุด Douglas-Peucker + สถิติของการเดิน |
+| `data/model/TrackLog.kt` | เส้นทางที่เดินเก็บ + `toWalkPath()` แปลงเข้ากราฟ routing |
+| `data/geojson/TrackLogExporter.kt` | เขียนไฟล์ `tracks_*.geojson` / `.csv` (CSV มี WKT) |
 | `data/geojson/GpsPointExporter.kt` | เขียนไฟล์ GeoJSON / CSV ของค่าที่วัดได้ — ชื่อฟิลด์ต้องตรงกับ `data/model/GpsPoint.kt` |
 | `data/model/HazardPoint.kt` | จุดอันตราย: ประเภท / ระดับ / รัศมี — `alertRadiusMeters` คือระยะที่เริ่มเตือน |
 | `navigation/HazardMonitor.kt` | กติกาการเตือนจุดอันตรายทั้งหมด (pure Kotlin, unit test ครบ) |
@@ -81,7 +89,7 @@
 | `core/sound/HazardSoundPlayer.kt` | เล่นเสียงเตือนนำ แล้วค่อยให้ `SpeechAnnouncer` พูด |
 | `tools/make_alert_sounds.py` | gen ไฟล์เสียงตัวอย่างใน `res/raw/` (ไม่ได้โหลดมาจากไหน) |
 | `ui/hazard/HazardScreen.kt` | หน้าปักและจัดการจุดอันตราย |
-| `data/local/AppDatabase.kt` | Room version **6** (`poi`, `walk_path`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/local/AppDatabase.kt` | Room version **7** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
@@ -104,7 +112,8 @@ python3 tools/make_alert_sounds.py # gen เสียงเตือนจุด
 | พิกัดไม่ตรง / ความแม่นยำ GPS | `docs/ACCURACY.md` |
 | รูปแบบไฟล์ GeoJSON และ config | `docs/DATA_FORMAT.md` |
 | กลไกออฟไลน์ / จอขาว | `docs/OFFLINE.md` |
-| ระบบเก็บพิกัด GPS + ไฟล์ที่ส่งออก | `docs/GPS_LOGGING.md` |
+| ระบบเก็บพิกัด GPS (จุด) + ไฟล์ที่ส่งออก | `docs/GPS_LOGGING.md` |
+| เดินเก็บเส้นทาง (เส้น) + ไฟล์ที่ส่งออก | `docs/PATH_LOGGING.md` |
 | จุดอันตราย + การแจ้งเตือน (ข้อความ/เสียง) | `docs/HAZARDS.md` |
 
 ## เรื่องพิกัดไม่ตรง (อ่าน `docs/ACCURACY.md` ก่อนแก้)
