@@ -35,6 +35,8 @@
    ที่เดียว (เตือนครั้งเดียวตอนเข้าเขต + ต้องออกไปไกลกว่าระยะเตือน 15 ม. ถึงเตือนใหม่ได้)
    ระบบที่เตือนบ่อยเกินไปจะโดนปิดเสียงทิ้ง แล้วจะไม่เตือนใครอีกเลย — อ่าน `docs/HAZARDS.md`
 11. เสียงพูดต้องเป็น `android.speech.tts` (สังเคราะห์ในเครื่อง) ห้ามใช้ TTS ที่ต้องต่อเน็ต
+   ส่วนเสียงเตือนจุดอันตรายต้องเป็นไฟล์ในเครื่อง (`res/raw/` หรือไฟล์ที่ผู้ใช้นำเข้ามาแล้ว)
+   และต้อง**ดังตอนเดียวกับที่พูดเท่านั้น** ห้ามมีเงื่อนไขการดังของตัวเอง — อ่าน `docs/HAZARDS.md` §6
 12. ห้าม import `androidx.compose.material.icons.*` — `material-icons-core` หยุดที่ 1.7.8
    และไม่อยู่ใน Compose BOM ที่โปรเจกต์นี้ใช้แล้ว ให้ใช้ vector drawable ใน `res/drawable/`
    ผ่าน `painterResource(R.drawable.ic_*)` แทน
@@ -74,8 +76,12 @@
 | `data/model/HazardPoint.kt` | จุดอันตราย: ประเภท / ระดับ / รัศมี — `alertRadiusMeters` คือระยะที่เริ่มเตือน |
 | `navigation/HazardMonitor.kt` | กติกาการเตือนจุดอันตรายทั้งหมด (pure Kotlin, unit test ครบ) |
 | `core/speech/SpeechAnnouncer.kt` | เสียงพูดไทยในเครื่อง (AOSP TTS ไม่ต้องต่อเน็ต) |
+| `data/model/HazardSound.kt` | เสียงเตือน: 2 เสียงที่มากับแอป + กติกาว่าจุดไหนใช้เสียงอะไร |
+| `data/repository/HazardSoundRepository.kt` | คลังเสียง: นำเข้า / ตรวจ / ลบ ไฟล์เสียงของผู้ใช้ |
+| `core/sound/HazardSoundPlayer.kt` | เล่นเสียงเตือนนำ แล้วค่อยให้ `SpeechAnnouncer` พูด |
+| `tools/make_alert_sounds.py` | gen ไฟล์เสียงตัวอย่างใน `res/raw/` (ไม่ได้โหลดมาจากไหน) |
 | `ui/hazard/HazardScreen.kt` | หน้าปักและจัดการจุดอันตราย |
-| `data/local/AppDatabase.kt` | Room version **5** (`poi`, `walk_path`, `gps_point`, `hazard_point`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/local/AppDatabase.kt` | Room version **6** (`poi`, `walk_path`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
@@ -85,6 +91,7 @@
 python3 tools/osm_import.py        # ดึงข้อมูลจาก OSM มาเขียน config + pois + paths ใหม่
 python3 tools/geojson_validate.py  # ตรวจไฟล์พิกัดก่อน commit
 bash tools/build_tiles.sh          # สร้าง MBTiles ใหม่ (โหมด BUNDLED)
+python3 tools/make_alert_sounds.py # gen เสียงเตือนจุดอันตรายใหม่ลง res/raw/
 ```
 
 > บนเครื่องนี้ Gradle จะเลือก JRE ของ VS Code (ไม่มี `jlink`) แล้ว `compileDebugJavaWithJavac` พัง
