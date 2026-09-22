@@ -84,7 +84,8 @@
 | `data/model/HazardPoint.kt` | จุดอันตราย: ประเภท / ระดับ / รัศมี — `alertRadiusMeters` คือระยะที่เริ่มเตือน |
 | `navigation/HazardMonitor.kt` | กติกาการเตือนจุดอันตรายทั้งหมด (pure Kotlin, unit test ครบ) |
 | `core/speech/SpeechAnnouncer.kt` | เสียงพูดไทยในเครื่อง (AOSP TTS ไม่ต้องต่อเน็ต) |
-| `data/model/HazardSound.kt` | เสียงเตือน: 2 เสียงที่มากับแอป + กติกาว่าจุดไหนใช้เสียงอะไร |
+| `data/model/HazardSound.kt` | เสียงเตือน 3 แหล่ง: gen มากับแอป / วางใน assets / ผู้ใช้นำเข้า |
+| `app/src/main/assets/sounds/` | วางไฟล์ mp3 ตรงนี้แล้ว build = เพิ่มเสียงให้ทุกคน ไม่ต้องแก้โค้ด |
 | `data/repository/HazardSoundRepository.kt` | คลังเสียง: นำเข้า / ตรวจ / ลบ ไฟล์เสียงของผู้ใช้ |
 | `core/sound/HazardSoundPlayer.kt` | เล่นเสียงเตือนนำ แล้วค่อยให้ `SpeechAnnouncer` พูด |
 | `tools/make_alert_sounds.py` | gen ไฟล์เสียงตัวอย่างใน `res/raw/` (ไม่ได้โหลดมาจากไหน) |
