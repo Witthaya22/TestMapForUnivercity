@@ -123,3 +123,24 @@ val HazardSoundRejection.messageRes: Int
         HazardSoundRejection.NOT_PLAYABLE -> R.string.hazard_sound_reject_not_playable
         HazardSoundRejection.TOO_LONG -> R.string.hazard_sound_reject_too_long
     }
+
+/**
+ * The short phrase the voice says for a hazard type, as opposed to [labelRes], which is
+ * what the screen shows.
+ *
+ * Kept apart because they are read under different conditions. On screen there is time to
+ * read "รถ / ทางข้ามอันตราย"; out loud, three times, beside the traffic it is warning
+ * about, the phrase has to be short enough to land whole however much of it you catch.
+ */
+@get:StringRes
+val HazardType.voiceLabelRes: Int
+    get() = when (this) {
+        HazardType.DOG -> R.string.hazard_voice_type_dog
+        HazardType.TRAFFIC -> R.string.hazard_voice_type_traffic
+        HazardType.FLOOD -> R.string.hazard_voice_type_flood
+        HazardType.DARK -> R.string.hazard_voice_type_dark
+        HazardType.CONSTRUCTION -> R.string.hazard_voice_type_construction
+        HazardType.BROKEN_PATH -> R.string.hazard_voice_type_broken_path
+        HazardType.ANIMAL -> R.string.hazard_voice_type_animal
+        HazardType.OTHER -> R.string.hazard_voice_type_other
+    }

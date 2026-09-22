@@ -324,21 +324,31 @@
     <string name="hazard_sound_delete_confirm">ลบเสียงนี้? จุดที่เคยใช้เสียงนี้จะกลับไปใช้เสียงตามระดับความอันตราย</string>
     <string name="hazard_sound_where_used">เลือกเสียงให้จุดไหนเป็นพิเศษได้ตอนปักจุด หรือตอนแก้ไขจุดนั้น — ถ้าไม่เลือก จะใช้เสียงเริ่มต้นตามระดับความอันตราย</string>
     <string name="hazard_sound_open_manager">เพิ่ม / ลองฟังเสียงทั้งหมด</string>
+    <string name="hazard_voice_list_title">คำที่พูดออกเสียง</string>
+    <string name="hazard_voice_list_hint">เวลาเตือนจริง จะพูดคำสั้น ๆ ซ้ำ %1$d ครั้ง ไม่บอกระยะทาง เพราะคนเดินริมถนนมักได้ยินแค่ท่อนกลางของประโยค · ระยะทางยังขึ้นบนแบนเนอร์ตามเดิม</string>
+    <string name="hazard_voice_try_full">ลองฟังคำเตือนจริง (เสียง + คำพูด)</string>
+    <string name="hazard_voice_unavailable_here">เครื่องนี้ยังไม่มีเสียงพูดภาษาไทย จะเตือนด้วยเสียงและข้อความอย่างเดียว (ติดตั้งเสียงไทยได้ในตั้งค่าระบบ)</string>
     <string name="hazard_sound_delete">ลบเสียงนี้</string>
     <string name="hazard_sound_imported">เพิ่มเสียง \"%1$s\" แล้ว</string>
     <string name="hazard_sound_deleted">ลบเสียงแล้ว จุดที่เคยใช้เสียงนี้จะกลับไปใช้เสียงตามระดับความอันตราย</string>
     <string name="hazard_sound_reject_unreadable">อ่านไฟล์เสียงนี้ไม่ได้ ลองเลือกไฟล์อื่น</string>
     <string name="hazard_sound_reject_too_large">ไฟล์ใหญ่เกิน 2 MB เสียงเตือนควรเป็นไฟล์สั้น ๆ</string>
     <string name="hazard_sound_reject_not_playable">เครื่องนี้เล่นไฟล์นี้ไม่ได้ ลองใช้ไฟล์ .mp3, .ogg หรือ .wav</string>
-    <string name="hazard_sound_reject_too_long">เสียงยาวเกิน 5 วินาที ถ้านำหน้าคำเตือนนานกว่านี้ จะเตือนไม่ทัน</string>
+    <string name="hazard_sound_reject_too_long">เสียงยาวเกิน 10 วินาที ถ้านำหน้าคำเตือนนานกว่านี้ จะเตือนไม่ทัน</string>
 
     <!-- ข้อความเตือน (ทั้งบนจอและเสียงพูด) -->
     <string name="hazard_alert_title">เตือนจุดอันตราย</string>
     <string name="hazard_alert_ahead">%1$s ข้างหน้า %2$d เมตร</string>
     <string name="hazard_alert_here">%1$s อยู่ตรงนี้</string>
-    <string name="hazard_voice_ahead">ระวัง %1$s ข้างหน้า %2$d เมตร</string>
-    <string name="hazard_voice_danger_ahead">อันตราย %1$s ข้างหน้า %2$d เมตร</string>
-    <string name="hazard_voice_repeat">ยังอยู่ใกล้จุดอันตราย %1$s</string>
+    <!-- คำที่พูดออกเสียง สั้น ๆ พูดซ้ำ 3 ครั้ง (ดู HazardWording.spokenText) -->
+    <string name="hazard_voice_type_dog">เขตสุนัขอันตราย</string>
+    <string name="hazard_voice_type_traffic">เขตถนนอันตราย</string>
+    <string name="hazard_voice_type_flood">เขตพื้นลื่น</string>
+    <string name="hazard_voice_type_dark">เขตไม่มีไฟ</string>
+    <string name="hazard_voice_type_construction">เขตก่อสร้าง</string>
+    <string name="hazard_voice_type_broken_path">เขตทางชำรุด</string>
+    <string name="hazard_voice_type_animal">เขตสัตว์อันตราย</string>
+    <string name="hazard_voice_type_other">เขตอันตราย</string>
     <string name="hazard_alert_more">และอีก %1$d จุดใกล้ ๆ</string>
     <string name="hazard_dialog_title">อันตรายข้างหน้า</string>
     <string name="hazard_dialog_acknowledge">รับทราบ</string>

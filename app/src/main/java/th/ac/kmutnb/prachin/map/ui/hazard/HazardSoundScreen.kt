@@ -46,8 +46,10 @@ import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
 import th.ac.kmutnb.prachin.map.data.model.HazardSound
 import th.ac.kmutnb.prachin.map.data.model.HazardSoundOrigin
+import th.ac.kmutnb.prachin.map.data.model.HazardType
 import th.ac.kmutnb.prachin.map.data.repository.HazardSoundImport
 import th.ac.kmutnb.prachin.map.data.repository.HazardSoundRepository
+import th.ac.kmutnb.prachin.map.ui.common.HazardWording
 import th.ac.kmutnb.prachin.map.ui.common.displayName
 import th.ac.kmutnb.prachin.map.ui.common.labelRes
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
@@ -169,6 +171,74 @@ fun HazardSoundScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(12.dp),
                 )
+            }
+
+            // ---- the words -----------------------------------------------------------
+            HorizontalDivider()
+
+            Text(
+                text = stringResource(R.string.hazard_voice_list_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(
+                    R.string.hazard_voice_list_hint,
+                    HazardWording.SPOKEN_REPEATS,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            // The whole warning as it really arrives: tone first, then the words.
+            Button(
+                onClick = {
+                    viewModel.previewFullWarning(
+                        sound = state.sounds.firstOrNull {
+                            it.id == state.defaults[HazardSeverity.DANGER]
+                        },
+                        text = HazardWording.spokenPhrase(context, HazardType.TRAFFIC),
+                    )
+                    if (viewModel.isVoiceUnavailable()) {
+                        toast(context.getString(R.string.hazard_voice_unavailable_here))
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.hazard_voice_try_full))
+            }
+
+            HazardType.entries.forEach { type ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(type.labelRes),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            // Shown exactly as it is spoken, repeats and all, so nobody
+                            // has to guess what three times sounds like.
+                            text = HazardWording.spokenPhrase(context, type),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    AssistChip(
+                        onClick = {
+                            viewModel.previewSpeech(HazardWording.spokenPhrase(context, type))
+                            if (viewModel.isVoiceUnavailable()) {
+                                toast(context.getString(R.string.hazard_voice_unavailable_here))
+                            }
+                        },
+                        label = { Text(stringResource(R.string.hazard_sound_preview)) },
+                    )
+                }
+                HorizontalDivider()
             }
         }
     }

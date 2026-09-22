@@ -4,6 +4,7 @@ import android.content.Context
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.model.HazardPoint
 import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
+import th.ac.kmutnb.prachin.map.data.model.HazardType
 import th.ac.kmutnb.prachin.map.navigation.HazardAlert
 import kotlin.math.roundToInt
 
@@ -42,33 +43,43 @@ object HazardWording {
     }
 
     /**
-     * The sentence the phone speaks.
+     * What the phone says out loud: a short phrase, said [SPOKEN_REPEATS] times.
      *
-     * Deliberately not the banner text: read aloud, a distance rounded to the metre sounds
-     * like precision the fix does not have, and by the time the sentence finishes the
-     * walker has moved. Distances are rounded to five metres, and a repeat drops the number
-     * altogether - someone who is still inside a hazard does not need it measured.
+     * Deliberately not the banner text. A sentence has to be listened to from the start to
+     * mean anything, and a walker beside a road hears the middle of it - "…ข้างหน้า 20
+     * เมตร" on its own is no warning at all. A phrase short enough to land whole, repeated,
+     * is understood however much of it you catch, and the repetition is what carries over a
+     * passing engine.
+     *
+     * The distance is gone from the voice for the same reason. It was rounded to five
+     * metres to avoid sounding more precise than the fix, and by the time it was spoken the
+     * walker had moved past it anyway; the banner still shows it to the metre for anyone
+     * who looks.
+     *
+     * The marker's own description stays on the banner and out of the voice: "หมา 3 ตัว
+     * เฝ้ารถอยู่หน้าโรงอาหาร" is worth reading and far too long to hear three times.
      */
-    fun spokenText(context: Context, alert: HazardAlert): String {
-        val subject = subject(context, alert.hazard)
-        if (alert.isRepeat) {
-            return context.getString(R.string.hazard_voice_repeat, subject)
-        }
-        val metres = roundToFive(alert.distanceMeters)
-        val template = if (alert.hazard.severity == HazardSeverity.DANGER) {
-            R.string.hazard_voice_danger_ahead
-        } else {
-            R.string.hazard_voice_ahead
-        }
-        return context.getString(template, subject, metres)
+    fun spokenText(context: Context, alert: HazardAlert): String =
+        spokenPhrase(context, alert.hazard.type)
+
+    /** The phrase for a hazard type, repeated, exactly as a warning would say it. */
+    fun spokenPhrase(context: Context, type: HazardType): String {
+        val phrase = context.getString(type.voiceLabelRes)
+        return List(SPOKEN_REPEATS) { phrase }.joinToString(SPOKEN_SEPARATOR)
     }
 
     /** A real danger cuts off whatever is being said; a caution waits its turn. */
     fun interrupts(alert: HazardAlert): Boolean =
         alert.hazard.severity == HazardSeverity.DANGER && !alert.isRepeat
 
-    private fun roundToFive(meters: Double): Int =
-        ((meters / 5.0).roundToInt() * 5).coerceAtLeast(5)
+    /**
+     * Three, because two can be missed as a stutter and four is long enough that the
+     * walker has reached the hazard before it finishes.
+     */
+    const val SPOKEN_REPEATS = 3
+
+    /** A comma, so the engine puts a beat between them instead of running them together. */
+    private const val SPOKEN_SEPARATOR = ", "
 
     /** Closer than this and "ahead" is the wrong word; the walker is in it. */
     private const val AT_THE_SPOT_METERS = 5

@@ -198,9 +198,10 @@ class HazardSoundRepository(
         const val MAX_BYTES = 2L * 1024 * 1024
 
         /**
-         * A tone plays *before* the sentence that carries the information. Five seconds of
-         * it would push the warning past the point where the walker could act on it.
+         * A tone plays *before* the spoken warning, so its whole length is delay on the
+         * words that say what the hazard is. Ten seconds is generous for that and still
+         * far short of somebody picking a song by mistake, which is what this catches.
          */
-        const val MAX_DURATION_MS = 5_000L
+        const val MAX_DURATION_MS = 10_000L
     }
 }

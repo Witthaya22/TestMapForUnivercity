@@ -71,6 +71,27 @@ class HazardSoundViewModel(private val container: AppContainer) : ViewModel() {
 
     fun preview(sound: HazardSound) = container.hazardSoundPlayer.play(sound)
 
+    /** Says a phrase, so the walker can hear the words before meeting them on a road. */
+    fun previewSpeech(text: String) = container.speechAnnouncer.speak(text, interrupt = true)
+
+    /**
+     * Plays the tone and then the words, in the order and with the gap a real warning has.
+     *
+     * Worth its own button: the two are configured separately, and whether they work
+     * together on this phone - with its own speaker, its own missing Thai voice data - is
+     * not something either preview on its own answers.
+     */
+    fun previewFullWarning(sound: HazardSound?, text: String) {
+        if (sound == null) {
+            previewSpeech(text)
+        } else {
+            container.hazardSoundPlayer.play(sound) { previewSpeech(text) }
+        }
+    }
+
+    /** True once the engine has been tried and cannot speak Thai. */
+    fun isVoiceUnavailable(): Boolean = container.speechAnnouncer.isUnavailable
+
     fun import(source: Uri, onResult: (HazardSoundImport) -> Unit) {
         viewModelScope.launch {
             val result = container.hazardSoundRepository.import(source)
@@ -90,6 +111,7 @@ class HazardSoundViewModel(private val container: AppContainer) : ViewModel() {
 
     override fun onCleared() {
         container.hazardSoundPlayer.release()
+        container.speechAnnouncer.stop()
         super.onCleared()
     }
 
