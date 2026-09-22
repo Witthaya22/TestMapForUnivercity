@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -59,6 +60,7 @@ import th.ac.kmutnb.prachin.map.data.model.TrackCaptureMode
 import th.ac.kmutnb.prachin.map.map.PathLogLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
+import th.ac.kmutnb.prachin.map.ui.common.BottomSheetCardMaxHeight
 
 /**
  * Making a path by walking it, with the map underneath (F11c).
@@ -211,45 +213,53 @@ fun PathLogScreen(
                     .padding(12.dp),
             )
 
-            FloatingActionButton(
-                onClick = {
-                    viewModel.setFollowUser(true)
-                    state.currentPoint?.let { point ->
-                        mapLibreMap?.animateCamera(
-                            CameraUpdateFactory.newLatLng(LatLng(point.lat, point.lon)),
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(12.dp),
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_my_location),
-                    stringResource(R.string.map_recenter),
-                )
-            }
-
-            RecordCard(
-                state = state,
-                onStart = viewModel::startRecording,
-                onStop = {
-                    if (!viewModel.stopRecording()) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                context.getString(R.string.pathlog_discarded_too_short),
-                            )
-                        }
-                    }
-                },
-                onCancel = viewModel::cancelRecording,
-                onSave = viewModel::savePending,
-                onDiscard = viewModel::discardPending,
+            // One stack, so the recentre button can never end up under the card. It
+            // used to float at CenterEnd, which the save form grew past the moment a
+            // walk finished.
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(12.dp),
-            )
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.setFollowUser(true)
+                        state.currentPoint?.let { point ->
+                            mapLibreMap?.animateCamera(
+                                CameraUpdateFactory.newLatLng(LatLng(point.lat, point.lon)),
+                            )
+                        }
+                    },
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_my_location),
+                        stringResource(R.string.map_recenter),
+                    )
+                }
+
+                RecordCard(
+                    state = state,
+                    onStart = viewModel::startRecording,
+                    onStop = {
+                        if (!viewModel.stopRecording()) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    context.getString(R.string.pathlog_discarded_too_short),
+                                )
+                            }
+                        }
+                    },
+                    onCancel = viewModel::cancelRecording,
+                    onSave = viewModel::savePending,
+                    onDiscard = viewModel::discardPending,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = BottomSheetCardMaxHeight),
+                )
+            }
         }
     }
 

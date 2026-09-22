@@ -67,8 +67,12 @@ internal fun RecordCard(
     modifier: Modifier = Modifier,
 ) {
     Card(modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
+        // Scrolls once the save form outgrows the card's height cap. Without this the
+        // form pushes its own save button off the bottom of a short screen.
         Column(
-            Modifier.padding(16.dp),
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             when {

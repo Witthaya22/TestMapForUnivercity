@@ -56,6 +56,8 @@ import th.ac.kmutnb.prachin.map.map.HazardLayerManager
 import th.ac.kmutnb.prachin.map.map.MapLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
+import th.ac.kmutnb.prachin.map.ui.common.rememberOverlayHeight
+import th.ac.kmutnb.prachin.map.ui.common.reportHeightTo
 import kotlin.math.roundToInt
 
 @Composable
@@ -157,6 +159,8 @@ fun MapScreen(
             }
 
             // --- chrome ----------------------------------------------------------------
+            val bottomPanelHeight = rememberOverlayHeight()
+
             Column(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
@@ -180,11 +184,14 @@ fun MapScreen(
                 }
             }
 
+            // Lifted clear of whatever the bottom panel currently is. It was a guessed
+            // 200 dp while navigating and nothing otherwise, which left these buttons
+            // under the route plan bar - drawn, apparently tappable, doing nothing.
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(12.dp)
-                    .padding(bottom = if (state.isNavigating) 200.dp else 0.dp),
+                    .padding(bottom = bottomPanelHeight.value),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.End,
             ) {
@@ -200,7 +207,10 @@ fun MapScreen(
             }
 
             Column(
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .reportHeightTo(bottomPanelHeight),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val progress = state.progress

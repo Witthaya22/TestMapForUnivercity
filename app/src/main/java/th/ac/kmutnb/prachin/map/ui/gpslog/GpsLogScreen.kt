@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -71,6 +72,7 @@ import th.ac.kmutnb.prachin.map.data.model.GpsPoint
 import th.ac.kmutnb.prachin.map.map.GpsLogLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
 import th.ac.kmutnb.prachin.map.survey.PointSurveySession
+import th.ac.kmutnb.prachin.map.ui.common.BottomSheetCardMaxHeight
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -222,37 +224,45 @@ fun GpsLogScreen(
                     .padding(12.dp),
             )
 
-            FloatingActionButton(
-                onClick = {
-                    viewModel.setFollowUser(true)
-                    state.currentPoint?.let { point ->
-                        mapLibreMap?.animateCamera(
-                            CameraUpdateFactory.newLatLng(LatLng(point.lat, point.lon)),
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(12.dp),
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_my_location),
-                    stringResource(R.string.map_recenter),
-                )
-            }
-
-            CaptureCard(
-                state = state,
-                onStart = viewModel::startCapture,
-                onStop = viewModel::stopCapture,
-                onCancel = viewModel::cancelCapture,
-                onSave = viewModel::savePending,
-                onDiscard = viewModel::discardPending,
+            // One stack, so the recentre button can never end up under the card. It
+            // used to float at CenterEnd, which the save form grew past as soon as a
+            // measurement finished.
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(12.dp),
-            )
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.setFollowUser(true)
+                        state.currentPoint?.let { point ->
+                            mapLibreMap?.animateCamera(
+                                CameraUpdateFactory.newLatLng(LatLng(point.lat, point.lon)),
+                            )
+                        }
+                    },
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_my_location),
+                        stringResource(R.string.map_recenter),
+                    )
+                }
+
+                CaptureCard(
+                    state = state,
+                    onStart = viewModel::startCapture,
+                    onStop = viewModel::stopCapture,
+                    onCancel = viewModel::cancelCapture,
+                    onSave = viewModel::savePending,
+                    onDiscard = viewModel::discardPending,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = BottomSheetCardMaxHeight),
+                )
+            }
         }
     }
 

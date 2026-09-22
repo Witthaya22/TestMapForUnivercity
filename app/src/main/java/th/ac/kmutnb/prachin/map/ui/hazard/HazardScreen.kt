@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -77,6 +78,7 @@ import th.ac.kmutnb.prachin.map.data.repository.HazardSoundImport
 import th.ac.kmutnb.prachin.map.map.GpsLogLayerManager
 import th.ac.kmutnb.prachin.map.map.HazardLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
+import th.ac.kmutnb.prachin.map.ui.common.BottomSheetCardMaxHeight
 import th.ac.kmutnb.prachin.map.ui.common.displayName
 import th.ac.kmutnb.prachin.map.ui.common.labelRes
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
@@ -240,51 +242,58 @@ fun HazardScreen(
                 hasCentred = true
             }
 
-            FloatingActionButton(
-                onClick = {
-                    state.currentPoint?.let { point ->
-                        mapLibreMap?.animateCamera(
-                            CameraUpdateFactory.newLatLng(LatLng(point.lat, point.lon)),
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(12.dp),
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_my_location),
-                    stringResource(R.string.map_recenter),
-                )
-            }
-
-            Card(
+            // One stack, so the recentre button stays clear of the card below it
+            // however the hint text wraps.
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(
-                    Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                FloatingActionButton(
+                    onClick = {
+                        state.currentPoint?.let { point ->
+                            mapLibreMap?.animateCamera(
+                                CameraUpdateFactory.newLatLng(LatLng(point.lat, point.lon)),
+                            )
+                        }
+                    },
                 ) {
-                    Button(
-                        onClick = viewModel::markHere,
-                        enabled = state.currentPoint != null,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.hazard_add_here))
-                    }
-                    Text(
-                        text = if (state.currentPoint == null) {
-                            stringResource(R.string.hazard_wait_fix)
-                        } else {
-                            stringResource(R.string.hazard_add_hint)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Icon(
+                        painterResource(R.drawable.ic_my_location),
+                        stringResource(R.string.map_recenter),
                     )
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = BottomSheetCardMaxHeight),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                ) {
+                    Column(
+                        Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Button(
+                            onClick = viewModel::markHere,
+                            enabled = state.currentPoint != null,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.hazard_add_here))
+                        }
+                        Text(
+                            text = if (state.currentPoint == null) {
+                                stringResource(R.string.hazard_wait_fix)
+                            } else {
+                                stringResource(R.string.hazard_add_hint)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
