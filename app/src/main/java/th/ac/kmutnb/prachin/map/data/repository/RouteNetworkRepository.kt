@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.model.Poi
+import th.ac.kmutnb.prachin.map.data.model.toWalkPath
 import th.ac.kmutnb.prachin.map.data.prefs.AppPreferences
 import th.ac.kmutnb.prachin.map.navigation.RouteGraph
 import th.ac.kmutnb.prachin.map.navigation.RouteGraphBuilder
@@ -88,16 +89,20 @@ data class RouteNetwork(
 class RouteNetworkRepository(
     private val campusRepository: CampusRepository,
     poiRepository: PoiRepository,
-    walkPathRepository: WalkPathRepository,
+    trackLogRepository: TrackLogRepository,
     preferences: AppPreferences,
     scope: CoroutineScope,
 ) {
 
     val network: Flow<RouteNetwork> = combine(
         poiRepository.pois,
-        walkPathRepository.paths,
+        // Only the tracks switched on for routing. A survey accumulates walks that were
+        // wrong, and the record of them is worth keeping without guiding anyone along them.
+        trackLogRepository.routableTracks,
         preferences.surveyedPathsOnly,
-    ) { pois, surveyed, surveyedOnly -> Triple(pois, surveyed, surveyedOnly) }
+    ) { pois, tracks, surveyedOnly ->
+        Triple(pois, tracks.map { it.toWalkPath() }, surveyedOnly)
+    }
         .map { (pois, surveyed, surveyedOnly) -> build(pois, surveyed, surveyedOnly) }
         .flowOn(Dispatchers.Default)
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), RouteNetwork.EMPTY)

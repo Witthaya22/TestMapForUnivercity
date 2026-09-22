@@ -13,6 +13,8 @@ import th.ac.kmutnb.prachin.map.ui.hazard.HazardScreen
 import th.ac.kmutnb.prachin.map.ui.map.MapScreen
 import th.ac.kmutnb.prachin.map.ui.map.MapViewModel
 import th.ac.kmutnb.prachin.map.ui.onboarding.OnboardingScreen
+import th.ac.kmutnb.prachin.map.ui.pathlog.PathLogScreen
+import th.ac.kmutnb.prachin.map.ui.pathlog.PathReadoutScreen
 import th.ac.kmutnb.prachin.map.ui.poi.PoiListScreen
 import th.ac.kmutnb.prachin.map.ui.settings.OfflineMapManagerScreen
 import th.ac.kmutnb.prachin.map.ui.settings.SettingsScreen
@@ -27,6 +29,8 @@ object Routes {
     const val SURVEY = "survey"
     const val GPS_LOG = "gps_log"
     const val GPS_READOUT = "gps_readout"
+    const val PATH_LOG = "path_log"
+    const val PATH_READOUT = "path_readout"
     const val HAZARDS = "hazards"
     const val GPS_DEBUG = "gps_debug"
 }
@@ -74,6 +78,8 @@ fun AppNavHost(
                 onOpenSurvey = { navController.navigate(Routes.SURVEY) },
                 onOpenGpsLog = { navController.navigate(Routes.GPS_LOG) },
                 onOpenGpsReadout = { navController.navigate(Routes.GPS_READOUT) },
+                onOpenPathLog = { navController.navigate(Routes.PATH_LOG) },
+                onOpenPathReadout = { navController.navigate(Routes.PATH_READOUT) },
                 onOpenHazards = { navController.navigate(Routes.HAZARDS) },
                 onOpenGpsDebug = { navController.navigate(Routes.GPS_DEBUG) },
             )
@@ -97,6 +103,14 @@ fun AppNavHost(
 
         composable(Routes.GPS_LOG) {
             GpsLogScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.PATH_LOG) {
+            PathLogScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.PATH_READOUT) {
+            PathReadoutScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.GPS_DEBUG) {

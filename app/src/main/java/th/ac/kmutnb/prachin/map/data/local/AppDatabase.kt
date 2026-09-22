@@ -10,20 +10,20 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [
         PoiEntity::class,
-        WalkPathEntity::class,
+        TrackLogEntity::class,
         GpsPointEntity::class,
         HazardPointEntity::class,
         HazardSoundEntity::class,
         RouteHistoryEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun poiDao(): PoiDao
 
-    abstract fun walkPathDao(): WalkPathDao
+    abstract fun trackLogDao(): TrackLogDao
 
     abstract fun gpsPointDao(): GpsPointDao
 
@@ -164,6 +164,65 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Replaces `walk_path` with `track_log`.
+         *
+         * The old table described a path (a name, a type, whether it was lit or covered)
+         * and recorded nothing about the walk that produced it. That is backwards for a
+         * survey: the description was four guesses typed while standing in the rain, and
+         * the one thing nobody could reconstruct afterwards - how good the signal was -
+         * was never stored at all.
+         *
+         * Every existing row is copied over rather than dropped. A recorded path is
+         * somebody's afternoon, and its geometry is still exactly as good as it was; only
+         * the measurements are unknown, which is honest, because they were never taken.
+         * The old name becomes the note, and every copied track stays in the routing
+         * graph, because it was in it before this migration ran.
+         */
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `track_log` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`code` TEXT NOT NULL, " +
+                        "`encodedPoints` TEXT NOT NULL, " +
+                        "`lengthMeters` REAL NOT NULL, " +
+                        "`averageAccuracyMeters` REAL NOT NULL, " +
+                        "`worstAccuracyMeters` REAL NOT NULL, " +
+                        "`satellitesUsed` INTEGER NOT NULL, " +
+                        "`satellitesVisible` INTEGER NOT NULL, " +
+                        "`fixCount` INTEGER NOT NULL, " +
+                        "`rejectedCount` INTEGER NOT NULL, " +
+                        "`durationSeconds` INTEGER NOT NULL, " +
+                        "`note` TEXT NOT NULL, " +
+                        "`isUsedForRouting` INTEGER NOT NULL, " +
+                        "`recordedAt` INTEGER NOT NULL, " +
+                        "`captureMode` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_track_log_isUsedForRouting`" +
+                        " ON `track_log` (`isUsedForRouting`)"
+                )
+                // Numbered by walking order with a correlated count rather than a window
+                // function: SQLite on API 24 predates OVER().
+                db.execSQL(
+                    "INSERT INTO `track_log` (`id`, `code`, `encodedPoints`, `lengthMeters`," +
+                        " `averageAccuracyMeters`, `worstAccuracyMeters`, `satellitesUsed`," +
+                        " `satellitesVisible`, `fixCount`, `rejectedCount`, `durationSeconds`," +
+                        " `note`, `isUsedForRouting`, `recordedAt`, `captureMode`) " +
+                        "SELECT w.`id`," +
+                        " 'T' || substr('000' || (1 + (SELECT COUNT(*) FROM `walk_path` e" +
+                        "   WHERE e.`createdAt` < w.`createdAt`)), -3)," +
+                        " w.`encodedPoints`, w.`lengthMeters`," +
+                        " COALESCE(w.`gpsAccuracy`, 0.0), COALESCE(w.`gpsAccuracy`, 0.0)," +
+                        " 0, 0, 0, 0, 0, COALESCE(w.`name`, ''), 1, w.`createdAt`, 'map' " +
+                        "FROM `walk_path` w"
+                )
+                db.execSQL("DROP TABLE IF EXISTS `walk_path`")
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -178,6 +237,7 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_3_4,
                 MIGRATION_4_5,
                 MIGRATION_5_6,
+                MIGRATION_6_7,
             ).build().also { instance = it }
         }
     }

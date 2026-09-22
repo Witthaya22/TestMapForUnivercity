@@ -200,7 +200,7 @@
     <string name="settings_tile_source_bundled_unavailable">ยังไม่มีไฟล์แผนที่ฝังในแอป (ดู SETUP.md ข้อ 4)</string>
     <string name="settings_auto_recalculate">คำนวณเส้นทางใหม่อัตโนมัติเมื่อออกนอกทาง</string>
     <string name="settings_keep_screen_on">เปิดหน้าจอค้างไว้ขณะนำทาง</string>
-    <string name="settings_surveyor">โหมดสำรวจพิกัด (สำหรับผู้ดูแล)</string>
+    <string name="settings_surveyor">โหมดสำรวจพิกัด — เก็บจุดสถานที่ (สำหรับผู้ดูแล)</string>
     <string name="settings_export_pois">ส่งออกจุดเป็นไฟล์ GeoJSON</string>
     <string name="settings_import_pois">นำเข้าจุดจากไฟล์ GeoJSON</string>
     <string name="settings_section_hazard">การเตือนจุดอันตราย</string>
@@ -213,6 +213,8 @@
     <string name="settings_hazard_sound_desc">ส่งเสียงสั้น ๆ นำก่อนคำเตือน ได้ยินทันแม้อยู่ริมถนน และยังเตือนได้แม้เครื่องไม่มีเสียงพูดภาษาไทย</string>
     <string name="settings_gpslog">เก็บพิกัด GPS (บันทึกค่าดิบ + ส่งออก)</string>
     <string name="settings_gpsreadout">เก็บพิกัด GPS (โหมดตัวเลข ไม่มีแผนที่)</string>
+    <string name="settings_pathlog">เดินเก็บเส้นทาง (มีแผนที่)</string>
+    <string name="settings_pathreadout">เดินเก็บเส้นทาง (โหมดตัวเลข ไม่มีแผนที่)</string>
     <string name="settings_gps_debug">ข้อมูล GPS (Debug)</string>
     <string name="settings_version">เวอร์ชัน %1$s</string>
     <string name="settings_map_attribution">ข้อมูลแผนที่ © OpenStreetMap contributors (ODbL)</string>
@@ -231,8 +233,6 @@
     <!-- โหมดสำรวจพิกัด -->
     <string name="survey_title">โหมดสำรวจพิกัด</string>
     <string name="survey_intro">เดินไปยืนที่จุดจริงกลางแจ้ง รอให้ความแม่นยำต่ำกว่า 10 ม. แล้วกดเริ่มเก็บพิกัด</string>
-    <string name="survey_tab_point">เก็บพิกัดจุด</string>
-    <string name="survey_tab_track">บันทึกเส้นทาง</string>
     <string name="survey_start">เริ่มเก็บพิกัด</string>
     <string name="survey_stop">หยุด</string>
     <string name="survey_collecting">กำลังเก็บพิกัด %1$d / %2$d</string>
@@ -249,29 +249,16 @@
     <string name="survey_export_paths">ส่งออกเส้นทางที่บันทึก</string>
 
     <!-- บันทึกเส้นทาง -->
-    <string name="track_start">เริ่มบันทึก</string>
-    <string name="track_stop">หยุดบันทึก</string>
-    <string name="track_recording">กำลังบันทึก… %1$d จุด · %2$s</string>
-    <string name="track_simplified">ลดจุดจาก %1$d เหลือ %2$d จุด</string>
-    <string name="track_name">ชื่อเส้นทาง</string>
-    <string name="track_type">ประเภทเส้นทาง</string>
     <string name="track_type_footway">ทางเดินเท้า</string>
     <string name="track_type_road">ถนน</string>
     <string name="track_type_crossing">ทางข้าม</string>
     <string name="track_type_stairs">บันได</string>
-    <string name="track_too_short">เส้นทางสั้นเกินไป ต้องเดินอย่างน้อย 10 เมตร</string>
-    <string name="track_saved">บันทึกเส้นทางแล้ว</string>
-    <string name="track_saved_count">สำรวจแล้ว %1$d เส้น · %2$s — ใช้นำทางได้ทันที</string>
-    <string name="track_recorded_list">เส้นทางที่สำรวจไว้</string>
-    <string name="track_delete_confirm">ลบเส้นทาง \"%1$s\" ที่เดินเก็บไว้?</string>
-    <string name="track_unnamed">เส้นทางไม่มีชื่อ</string>
-    <string name="track_item_summary">%1$s · %2$d จุด</string>
     <string name="settings_restore_seeded">กู้คืนจุดที่มากับแอป</string>
     <string name="settings_restore_seeded_result">กู้คืนแล้ว %1$d จุด</string>
     <string name="settings_restore_seeded_none">ไม่มีจุดที่หายไป ครบอยู่แล้ว</string>
     <string name="settings_surveyed_only">ใช้เฉพาะเส้นทางที่สำรวจเอง</string>
-    <string name="settings_surveyed_only_desc">ปิดเส้นทางที่มากับแอป (จาก OpenStreetMap) แล้วใช้เฉพาะเส้นที่เดินเก็บเอง เหมาะกับตอนที่ต้องการ map ทั้งมอด้วยตัวเอง</string>
-    <string name="settings_surveyed_only_empty">ยังไม่มีเส้นทางที่สำรวจเอง ถ้าเปิดตัวเลือกนี้จะนำทางไม่ได้เลย</string>
+    <string name="settings_surveyed_only_desc">ปิดเส้นทางที่มากับแอป (จาก OpenStreetMap) แล้วใช้เฉพาะเส้นที่เดินเก็บเอง เหมาะกับการทำแผนที่พื้นที่ที่ยังไม่มีข้อมูลเลย</string>
+    <string name="settings_surveyed_only_empty">ยังไม่มีเส้นทางที่เดินเก็บและเปิดใช้นำทางไว้ ถ้าเปิดตัวเลือกนี้จะนำทางไม่ได้เลย</string>
 
     <!-- จุดอันตราย -->
     <string name="hazard_title">จุดอันตราย</string>
@@ -413,6 +400,45 @@
     <string name="gpsreadout_field_fix_age">อายุ fix ล่าสุด</string>
     <string name="gpsreadout_fix_age_value">%1$d วินาทีที่แล้ว</string>
     <string name="gpsreadout_field_rejected_live">fix ที่ถูกทิ้งไปแล้ว</string>
+
+    <!-- เดินเก็บเส้นทาง -->
+    <string name="pathlog_title">เดินเก็บเส้นทาง</string>
+    <string name="pathreadout_title">เดินเก็บเส้นทาง (โหมดตัวเลข)</string>
+    <string name="pathreadout_intro">โหมดนี้ไม่แสดงแผนที่ เปิดเร็วกว่าและกินแบตน้อยกว่า เหมาะกับการเดินเก็บยาว ๆ ในที่ที่รู้ทางอยู่แล้ว — เก็บลงชุดข้อมูลเดียวกับโหมดแผนที่ แล้วส่งออกไฟล์เดียวกันได้</string>
+    <string name="pathlog_record_start">เริ่มเดินเก็บเส้นทาง</string>
+    <string name="pathlog_record_stop">หยุดแล้วใช้เส้นนี้</string>
+    <string name="pathlog_recording">กำลังเดินเก็บ… %1$s</string>
+    <string name="pathlog_hint">เดินตามทางที่ต้องการให้เป็นเส้นทาง แล้วกดหยุดเมื่อถึงปลายทาง · เส้นสีบนแผนที่คือเส้นที่เก็บไว้แล้ว</string>
+    <string name="pathlog_wait_fix">รอให้จับสัญญาณ GPS ได้ก่อน จึงจะเริ่มเดินเก็บได้</string>
+    <string name="pathlog_rejected">ทิ้งไป %1$d fix (คลาดเคลื่อนเกิน %2$d ม.)</string>
+    <string name="pathlog_too_short">ยังสั้นเกินไป ต้องเดินอย่างน้อย %1$d เมตร</string>
+    <string name="pathlog_discarded_too_short">เส้นทางสั้นเกินไป ไม่ได้บันทึก</string>
+    <string name="pathlog_result_title">เส้นทาง %1$s</string>
+    <string name="pathlog_note">เรียกเส้นนี้ว่าอะไร เช่น ทางไปน้ำตก</string>
+    <string name="pathlog_unnamed">เส้นทางที่ยังไม่ได้ตั้งชื่อ</string>
+    <string name="pathlog_save">บันทึกเส้นทางนี้</string>
+    <string name="pathlog_use_for_routing">ใช้เส้นนี้นำทาง</string>
+    <string name="pathlog_use_for_routing_desc">เปิดไว้ = เส้นนี้เข้าระบบนำทางทันที · ปิด = ยังเก็บไว้เป็นข้อมูล แต่ไม่พาใครเดินไปตามนี้</string>
+    <string name="pathlog_not_routing">ปิดการนำทางบนเส้นนี้อยู่</string>
+    <string name="pathlog_field_length">ระยะที่เดิน</string>
+    <string name="pathlog_field_vertices">จำนวนจุดหักของเส้น</string>
+    <string name="pathlog_field_worst_accuracy">คลาดเคลื่อนมากสุดที่เจอ</string>
+    <string name="pathlog_field_fixes">fix ที่ใช้</string>
+    <string name="pathlog_fixes_value">%1$d ครั้ง</string>
+    <string name="pathlog_field_duration">เวลาที่เดิน</string>
+    <string name="pathlog_seconds_value">%1$d วินาที</string>
+    <string name="pathlog_tracks_count">เก็บแล้ว %1$d เส้น</string>
+    <string name="pathlog_list_title">เส้นทางที่เดินเก็บไว้</string>
+    <string name="pathlog_list_summary">ทั้งหมด %1$d เส้น · ใช้นำทาง %2$d เส้น · รวม %3$s</string>
+    <string name="pathlog_list_item_summary">%1$s · %2$s · ± %3$.1f ม.</string>
+    <string name="pathlog_list_empty">ยังไม่มีเส้นทาง — เดินไปตามทางที่ต้องการแล้วกด \"เริ่มเดินเก็บเส้นทาง\"</string>
+    <string name="pathlog_delete_confirm">ลบเส้นทาง %1$s ทิ้ง? ถ้าแค่ไม่อยากให้นำทางตามเส้นนี้ ให้ปิด \"ใช้เส้นนี้นำทาง\" แทน</string>
+    <string name="pathlog_delete_all">ลบเส้นทางทั้งหมด</string>
+    <string name="pathlog_delete_all_confirm">ลบเส้นทางที่เดินเก็บไว้ทั้งหมด %1$d เส้น? กู้คืนไม่ได้ ควรส่งออกไฟล์เก็บไว้ก่อน</string>
+    <string name="pathlog_export_title">ส่งออกเส้นทาง</string>
+    <string name="pathlog_export_explain">ส่งออกเส้นทางที่เดินเก็บ %1$d เส้น — มีเฉพาะพิกัดของเส้นและค่าที่วัดได้ (ระยะ ความคลาดเคลื่อน ดาวเทียม เวลา) ไม่มีชื่ออาคารหรือคณะปนมา</string>
+    <string name="pathlog_export_empty">ยังไม่มีเส้นทางให้ส่งออก</string>
+    <string name="survey_paths_moved">การเดินเก็บเส้นทางย้ายไปอยู่ที่ \"เดินเก็บเส้นทาง\" แล้ว (ตั้งค่า → สำหรับผู้ดูแล) เพราะเส้นทางเป็นค่าที่วัดได้ ไม่ใช่สถานที่</string>
 
     <!-- หน้า Debug GPS -->
     <string name="gps_debug_title">ข้อมูล GPS</string>

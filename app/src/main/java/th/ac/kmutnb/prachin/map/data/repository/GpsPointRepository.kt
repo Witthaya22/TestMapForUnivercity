@@ -16,10 +16,10 @@ import java.util.UUID
 /**
  * The GPS point log: coordinates measured in the field, kept as measurements.
  *
- * Sibling of [PoiRepository] and [WalkPathRepository] but deliberately not connected to
+ * Sibling of [PoiRepository] and [TrackLogRepository] but deliberately not connected to
  * either. A logged point never becomes a place on the map by itself and never joins the
  * routing graph - it is raw evidence, and the value of the export is that it stays that
- * way. Turning one into a POI is a separate, explicit act in the surveyor screens.
+ * way. Turning one into a POI is a separate, explicit act in the surveyor screen.
  */
 class GpsPointRepository(private val gpsPointDao: GpsPointDao) {
 

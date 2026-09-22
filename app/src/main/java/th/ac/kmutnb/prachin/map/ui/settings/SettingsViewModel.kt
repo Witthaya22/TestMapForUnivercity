@@ -25,7 +25,7 @@ data class SettingsUiState(
     val autoRecalculate: Boolean = true,
     val keepScreenOn: Boolean = true,
     val surveyedPathsOnly: Boolean = false,
-    /** How many paths the user has walked; zero makes [surveyedPathsOnly] a trap. */
+    /** How many walked tracks are switched on for routing; zero makes [surveyedPathsOnly] a trap. */
     val surveyedPathCount: Int = 0,
     val hazardAlerts: Boolean = true,
     val hazardVoice: Boolean = true,
@@ -98,9 +98,11 @@ class SettingsViewModel(
                 }
         }
 
+        // Counts only the tracks the router may use: that is what decides whether
+        // "surveyed paths only" leaves anything to route over.
         viewModelScope.launch {
-            container.walkPathRepository.paths.collect { paths ->
-                _uiState.update { it.copy(surveyedPathCount = paths.size) }
+            container.trackLogRepository.routableTracks.collect { tracks ->
+                _uiState.update { it.copy(surveyedPathCount = tracks.size) }
             }
         }
     }

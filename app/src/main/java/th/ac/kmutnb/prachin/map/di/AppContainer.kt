@@ -15,7 +15,7 @@ import th.ac.kmutnb.prachin.map.data.repository.HazardSoundRepository
 import th.ac.kmutnb.prachin.map.data.repository.OfflineMapRepository
 import th.ac.kmutnb.prachin.map.data.repository.PoiRepository
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetworkRepository
-import th.ac.kmutnb.prachin.map.data.repository.WalkPathRepository
+import th.ac.kmutnb.prachin.map.data.repository.TrackLogRepository
 import th.ac.kmutnb.prachin.map.core.sound.HazardSoundPlayer
 import th.ac.kmutnb.prachin.map.core.speech.SpeechAnnouncer
 import th.ac.kmutnb.prachin.map.location.GpsLocationSource
@@ -49,7 +49,7 @@ class AppContainer(context: Context) {
 
     val routeHistoryDao = database.routeHistoryDao()
 
-    val walkPathRepository = WalkPathRepository(database.walkPathDao())
+    val trackLogRepository = TrackLogRepository(database.trackLogDao())
 
     val gpsPointRepository = GpsPointRepository(database.gpsPointDao())
 
@@ -60,7 +60,7 @@ class AppContainer(context: Context) {
     val routeNetworkRepository = RouteNetworkRepository(
         campusRepository = campusRepository,
         poiRepository = poiRepository,
-        walkPathRepository = walkPathRepository,
+        trackLogRepository = trackLogRepository,
         preferences = preferences,
         scope = applicationScope,
     )

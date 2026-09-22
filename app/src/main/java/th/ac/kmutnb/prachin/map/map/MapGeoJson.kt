@@ -113,6 +113,8 @@ object MapGeoJson {
 
     internal fun pointGeometry(point: GeoPoint): JsonObject = point(point)
 
+    internal fun lineGeometry(points: List<GeoPoint>): JsonObject = lineString(points)
+
     // ----------------------------------------------------------------------------------
 
     private fun coordinates(point: GeoPoint) = JsonArray().apply {

@@ -64,30 +64,46 @@ interface PoiDao {
 }
 
 @Dao
-interface WalkPathDao {
+interface TrackLogDao {
 
-    @Query("SELECT * FROM walk_path ORDER BY createdAt ASC")
-    fun observeAll(): Flow<List<WalkPathEntity>>
+    @Query("SELECT * FROM track_log ORDER BY recordedAt ASC")
+    fun observeAll(): Flow<List<TrackLogEntity>>
 
-    @Query("SELECT * FROM walk_path ORDER BY createdAt ASC")
-    suspend fun getAll(): List<WalkPathEntity>
+    /**
+     * Only the tracks the router may use.
+     *
+     * A separate query rather than filtering in Kotlin: this one is collected for as long
+     * as the routing graph lives and is re-read on every change, while the full list is
+     * only opened when someone is managing their survey.
+     */
+    @Query("SELECT * FROM track_log WHERE isUsedForRouting = 1 ORDER BY recordedAt ASC")
+    fun observeRoutable(): Flow<List<TrackLogEntity>>
 
-    @Query("SELECT COUNT(*) FROM walk_path")
+    @Query("SELECT * FROM track_log ORDER BY recordedAt ASC")
+    suspend fun getAll(): List<TrackLogEntity>
+
+    @Query("SELECT * FROM track_log WHERE id = :id")
+    suspend fun findById(id: String): TrackLogEntity?
+
+    @Query("SELECT COUNT(*) FROM track_log")
     suspend fun count(): Int
 
     @Upsert
-    suspend fun upsert(path: WalkPathEntity)
+    suspend fun upsert(track: TrackLogEntity)
 
     @Upsert
-    suspend fun upsertAll(paths: List<WalkPathEntity>)
+    suspend fun upsertAll(tracks: List<TrackLogEntity>)
 
-    @Query("UPDATE walk_path SET name = :name, type = :type, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateDetails(id: String, name: String?, type: String, updatedAt: Long)
+    @Query("UPDATE track_log SET note = :note WHERE id = :id")
+    suspend fun updateNote(id: String, note: String)
 
-    @Query("DELETE FROM walk_path WHERE id = :id")
+    @Query("UPDATE track_log SET isUsedForRouting = :used WHERE id = :id")
+    suspend fun setUsedForRouting(id: String, used: Boolean)
+
+    @Query("DELETE FROM track_log WHERE id = :id")
     suspend fun deleteById(id: String)
 
-    @Query("DELETE FROM walk_path")
+    @Query("DELETE FROM track_log")
     suspend fun deleteAll()
 }
 

@@ -24,8 +24,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -80,10 +78,6 @@ fun SurveyorScreen(
         ActivityResultContracts.CreateDocument("application/geo+json"),
     ) { uri -> uri?.let { viewModel.exportPois(it, ::report) } }
 
-    val exportTracksLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/geo+json"),
-    ) { uri -> uri?.let { viewModel.exportTracks(it, ::report) } }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -106,51 +100,26 @@ fun SurveyorScreen(
                 .padding(insets)
                 .verticalScroll(rememberScrollState()),
         ) {
-            TabRow(selectedTabIndex = state.tab.ordinal) {
-                Tab(
-                    selected = state.tab == SurveyTab.POINT,
-                    onClick = { viewModel.selectTab(SurveyTab.POINT) },
-                    text = { Text(stringResource(R.string.survey_tab_point)) },
-                )
-                Tab(
-                    selected = state.tab == SurveyTab.TRACK,
-                    onClick = { viewModel.selectTab(SurveyTab.TRACK) },
-                    text = { Text(stringResource(R.string.survey_tab_track)) },
-                )
-            }
-
             Column(
                 Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 AccuracyCard(state)
 
-                when (state.tab) {
-                    SurveyTab.POINT -> PointSurveySection(
-                        state = state,
-                        onStart = viewModel::startPointSurvey,
-                        onStop = viewModel::stopPointSurvey,
-                        onDiscard = viewModel::discardPointResult,
-                        onSave = viewModel::savePoint,
-                        onExport = { exportPoisLauncher.launch("pois_surveyed.geojson") },
-                    )
+                PointSurveySection(
+                    state = state,
+                    onStart = viewModel::startPointSurvey,
+                    onStop = viewModel::stopPointSurvey,
+                    onDiscard = viewModel::discardPointResult,
+                    onSave = viewModel::savePoint,
+                    onExport = { exportPoisLauncher.launch("pois_surveyed.geojson") },
+                )
 
-                    SurveyTab.TRACK -> TrackSection(
-                        state = state,
-                        onStart = viewModel::startTrackRecording,
-                        onStop = viewModel::stopTrackRecording,
-                        onCancel = viewModel::cancelTrackRecording,
-                        onExport = { exportTracksLauncher.launch("paths_surveyed.geojson") },
-                        onDeleteTrack = viewModel::deleteTrack,
-                        onTooShort = {
-                            scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    context.getString(R.string.track_too_short),
-                                )
-                            }
-                        },
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.survey_paths_moved),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -296,167 +265,6 @@ private fun SaveSurveyedPointForm(
         }
         OutlinedButton(onClick = onDiscard, modifier = Modifier.weight(1f)) {
             Text(stringResource(R.string.survey_discard))
-        }
-    }
-}
-
-@Composable
-private fun TrackSection(
-    state: SurveyUiState,
-    onStart: () -> Unit,
-    onStop: (String, PathType) -> Boolean,
-    onCancel: () -> Unit,
-    onExport: () -> Unit,
-    onTooShort: () -> Unit,
-    onDeleteTrack: (String) -> Unit,
-) {
-    val context = LocalContext.current
-    var name by rememberSaveable { mutableStateOf("") }
-    var type by remember { mutableStateOf(PathType.FOOTWAY) }
-
-    if (state.isRecordingTrack) {
-        Text(
-            text = stringResource(
-                R.string.track_recording,
-                state.trackPointCount,
-                Formats.distance(context, state.trackLengthMeters),
-            ),
-            style = MaterialTheme.typography.titleMedium,
-        )
-
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text(stringResource(R.string.track_name)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        PathTypePicker(selected = type, onSelected = { type = it })
-
-        Button(
-            onClick = { if (!onStop(name.trim(), type)) onTooShort() },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(R.string.track_stop))
-        }
-        OutlinedButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.action_cancel))
-        }
-        return
-    }
-
-    if (state.simplifiedCount > 0) {
-        Text(
-            text = stringResource(
-                R.string.track_simplified,
-                state.trackPointCount,
-                state.simplifiedCount,
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
-    Text(
-        text = stringResource(
-            R.string.track_saved_count,
-            state.recordedTracks.size,
-            Formats.distance(context, state.surveyedLengthMeters),
-        ),
-        style = MaterialTheme.typography.bodySmall,
-    )
-
-    Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.track_start))
-    }
-    OutlinedButton(
-        onClick = onExport,
-        enabled = state.recordedTracks.isNotEmpty(),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(stringResource(R.string.survey_export_paths))
-    }
-
-    if (state.recordedTracks.isNotEmpty()) {
-        HorizontalDivider(Modifier.padding(vertical = 4.dp))
-        Text(
-            text = stringResource(R.string.track_recorded_list),
-            style = MaterialTheme.typography.titleSmall,
-        )
-        // Listed newest first: the one just walked is the one most likely to be wrong and
-        // wanted gone.
-        state.recordedTracks.asReversed().forEach { path ->
-            RecordedTrackRow(path = path, onDelete = { onDeleteTrack(path.id) })
-        }
-    }
-}
-
-@Composable
-private fun RecordedTrackRow(path: WalkPath, onDelete: () -> Unit) {
-    var confirming by rememberSaveable(path.id) { mutableStateOf(false) }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = path.name ?: stringResource(R.string.track_unnamed),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = stringResource(
-                    R.string.track_item_summary,
-                    stringResource(path.type.labelRes),
-                    path.points.size,
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        TextButton(onClick = { confirming = true }) {
-            Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
-        }
-    }
-
-    if (confirming) {
-        AlertDialog(
-            onDismissRequest = { confirming = false },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.track_delete_confirm,
-                        path.name ?: stringResource(R.string.track_unnamed),
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { confirming = false; onDelete() }) {
-                    Text(stringResource(R.string.action_delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirming = false }) {
-                    Text(stringResource(R.string.action_cancel))
-                }
-            },
-        )
-    }
-}
-
-@Composable
-private fun PathTypePicker(selected: PathType, onSelected: (PathType) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            text = stringResource(R.string.track_type),
-            style = MaterialTheme.typography.titleSmall,
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PathType.entries.forEach { pathType ->
-                FilterChip(
-                    selected = pathType == selected,
-                    onClick = { onSelected(pathType) },
-                    label = { Text(stringResource(pathType.labelRes)) },
-                )
-            }
         }
     }
 }

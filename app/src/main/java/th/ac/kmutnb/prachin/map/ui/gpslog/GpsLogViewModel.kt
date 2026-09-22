@@ -119,7 +119,13 @@ class GpsLogViewModel(
      * routable path, and a surveyor needs to see that they really did walk round the far
      * side of the building.
      */
-    private val trail = TrackRecorder(minSpacingMeters = TRAIL_SPACING_M)
+    private val trail = TrackRecorder(
+        minSpacingMeters = TRAIL_SPACING_M,
+        // Every fix that reached here, however coarse. The recorder's accuracy gate is
+        // there to keep bad fixes out of a routable line; this one is a breadcrumb, and
+        // dropping the poor stretches would hide exactly where the signal was poor.
+        maxAccuracyMeters = Float.MAX_VALUE,
+    )
 
     private var locationJob: Job? = null
 
@@ -176,7 +182,7 @@ class GpsLogViewModel(
         val available = location as? LocationState.Available ?: return
         val fix = available.fix
 
-        if (showsMap && trail.offer(fix.point)) {
+        if (showsMap && trail.offer(fix.point, fix.accuracyMeters, available.satellites)) {
             _uiState.update { it.copy(trail = trail.points.toList()) }
         }
 

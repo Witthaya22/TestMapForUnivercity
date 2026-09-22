@@ -48,6 +48,8 @@ fun SettingsScreen(
     onOpenSurvey: () -> Unit,
     onOpenGpsLog: () -> Unit,
     onOpenGpsReadout: () -> Unit,
+    onOpenPathLog: () -> Unit,
+    onOpenPathReadout: () -> Unit,
     onOpenHazards: () -> Unit,
     onOpenGpsDebug: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
@@ -227,6 +229,14 @@ fun SettingsScreen(
             ClickableRow(
                 title = stringResource(R.string.settings_gpsreadout),
                 onClick = onOpenGpsReadout,
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_pathlog),
+                onClick = onOpenPathLog,
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_pathreadout),
+                onClick = onOpenPathReadout,
             )
             ClickableRow(
                 title = stringResource(R.string.settings_export_pois),
