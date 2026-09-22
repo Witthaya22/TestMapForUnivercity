@@ -2,6 +2,7 @@ package th.ac.kmutnb.prachin.map.ui.pathlog
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -45,16 +46,20 @@ fun TrackShape(
     lineColour: Color = MaterialTheme.colorScheme.primary,
 ) {
     val surface = MaterialTheme.colorScheme.surfaceVariant
-    val startColour = MaterialTheme.colorScheme.tertiary
-    val endColour = MaterialTheme.colorScheme.error
+    // Fixed green and red rather than theme roles: the legend below says green and red,
+    // and this theme's tertiary is a red the start dot was being drawn in - so the
+    // picture said the walk started where it ended.
+    val startColour = Color(0xFF2E7D32)
+    val endColour = Color(0xFFC62828)
 
-    Box(
-        modifier
+    Column(modifier.fillMaxWidth()) {
+      Box(
+        Modifier
             .fillMaxWidth()
             .height(180.dp)
             .clip(RoundedCornerShape(12.dp)),
         contentAlignment = Alignment.Center,
-    ) {
+      ) {
         if (points.size < 2) {
             Text(
                 text = stringResource(R.string.pathlog_shape_empty),
@@ -117,16 +122,20 @@ fun TrackShape(
             drawCircle(endColour, radius = 7.dp.toPx(), center = project(points.lastIndex))
         }
 
-        Text(
-            text = stringResource(
-                R.string.pathlog_shape_legend,
-                GeoUtils.haversineMeters(points.first(), points.last()).toInt(),
-            ),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(8.dp),
-        )
+      }
+
+        // Below the drawing rather than over it: an end point that lands in the corner
+        // was sitting on top of the words explaining what an end point looks like.
+        if (points.size >= 2) {
+            Text(
+                text = stringResource(
+                    R.string.pathlog_shape_legend,
+                    GeoUtils.haversineMeters(points.first(), points.last()).toInt(),
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
     }
 }
