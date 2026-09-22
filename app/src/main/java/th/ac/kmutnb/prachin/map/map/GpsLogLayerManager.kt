@@ -34,6 +34,15 @@ class GpsLogLayerManager {
 
     private var style: Style? = null
 
+    /**
+     * The last content pushed in, replayed the moment a style arrives.
+     *
+     * Content comes from the database and the style from the map, in whichever order the
+     * two happen to finish. Without this, anything already stored when the screen opened
+     * could arrive before there was anywhere to put it and be dropped silently.
+     */
+    private val pending = HashMap<String, String>()
+
     val isAttached: Boolean get() = style != null
 
     fun attach(style: Style) {
@@ -95,6 +104,11 @@ class GpsLogLayerManager {
                 PropertyFactory.circleStrokeColor(Color.WHITE),
             ),
         )
+
+        // Whatever the screen pushed while there was no style yet.
+        pending.forEach { (sourceId, geoJson) ->
+            style.getSourceAs<GeoJsonSource>(sourceId)?.setGeoJson(geoJson)
+        }
     }
 
     fun detach() {
@@ -116,8 +130,7 @@ class GpsLogLayerManager {
     fun setPoints(points: List<GpsPoint>) = setGeoJson(SOURCE_POINTS, pointsGeoJson(points))
 
     private fun setGeoJson(sourceId: String, geoJson: String) {
-        // A style reload drops every source; ignore updates that arrive in that window,
-        // since the next attach() repopulates everything anyway.
+        pending[sourceId] = geoJson
         style?.getSourceAs<GeoJsonSource>(sourceId)?.setGeoJson(geoJson)
     }
 

@@ -21,16 +21,10 @@ import th.ac.kmutnb.prachin.map.data.model.PoiCategory
 import th.ac.kmutnb.prachin.map.di.AppContainer
 import th.ac.kmutnb.prachin.map.location.LocationState
 import th.ac.kmutnb.prachin.map.location.SatelliteInfo
-import th.ac.kmutnb.prachin.map.navigation.model.PathType
-import th.ac.kmutnb.prachin.map.navigation.model.WalkPath
 import th.ac.kmutnb.prachin.map.survey.PointSurveySession
 import th.ac.kmutnb.prachin.map.survey.SurveyedPoint
-import th.ac.kmutnb.prachin.map.survey.TrackRecorder
-
-enum class SurveyTab { POINT, TRACK }
 
 data class SurveyUiState(
-    val tab: SurveyTab = SurveyTab.POINT,
     val locationState: LocationState = LocationState.Searching(null, SatelliteInfo.UNKNOWN, null),
 
     val isCollectingPoint: Boolean = false,
@@ -39,15 +33,6 @@ data class SurveyUiState(
     val rejectedSamples: Int = 0,
     val averageAccuracyMeters: Float = 0f,
     val pointResult: SurveyedPoint? = null,
-
-    val isRecordingTrack: Boolean = false,
-    val trackPointCount: Int = 0,
-    val trackLengthMeters: Double = 0.0,
-    val simplifiedCount: Int = 0,
-    /** Everything recorded so far, live from the database. */
-    val recordedTracks: List<WalkPath> = emptyList(),
-    /** Total metres walked while recording them. */
-    val surveyedLengthMeters: Double = 0.0,
 ) {
     val currentAccuracy: Float?
         get() = when (val location = locationState) {
@@ -58,10 +43,15 @@ data class SurveyUiState(
 }
 
 /**
- * Drives the surveyor tools that produce `pois.geojson` and `paths.geojson`.
+ * Drives the POI surveyor, which produces `pois.geojson`.
  *
  * The whole point is that coordinates come from the same receiver that will later navigate
  * with them, so whatever offset that receiver has cancels out - see `docs/ACCURACY.md` A1.
+ *
+ * Paths used to be recorded here too, on a second tab. They are not any more: a walked
+ * path is a measurement, and sharing a screen with a form that asks for a building's name
+ * and faculty meant a survey of somewhere with no buildings kept being asked about them.
+ * It lives in `ui/pathlog/` now - see `docs/PATH_LOGGING.md`.
  */
 class SurveyorViewModel(
     private val application: Application,
@@ -72,30 +62,10 @@ class SurveyorViewModel(
     val uiState: StateFlow<SurveyUiState> = _uiState.asStateFlow()
 
     private var session: PointSurveySession? = null
-    private var recorder: TrackRecorder? = null
     private var locationJob: Job? = null
 
     init {
         startLocationUpdates()
-        observeRecordedTracks()
-    }
-
-    /**
-     * Mirrors the stored paths into the UI state.
-     *
-     * Read back from the database rather than kept in a list here, so what the screen counts
-     * is what the router will actually use, and so a path recorded, then deleted, then
-     * recorded again cannot drift apart from the map.
-     */
-    private fun observeRecordedTracks() {
-        viewModelScope.launch {
-            container.walkPathRepository.paths.collect { paths ->
-                val metres = container.walkPathRepository.totalLengthMeters()
-                _uiState.update {
-                    it.copy(recordedTracks = paths, surveyedLengthMeters = metres)
-                }
-            }
-        }
     }
 
     private fun startLocationUpdates() {
@@ -132,20 +102,7 @@ class SurveyorViewModel(
             }
             if (active.isComplete) finishPointSurvey()
         }
-
-        recorder?.let { active ->
-            if (active.offer(fix.point)) {
-                _uiState.update {
-                    it.copy(
-                        trackPointCount = active.pointCount,
-                        trackLengthMeters = active.lengthMeters,
-                    )
-                }
-            }
-        }
     }
-
-    fun selectTab(tab: SurveyTab) = _uiState.update { it.copy(tab = tab) }
 
     // ----------------------------------------------------------------------------------
     // Point survey
@@ -189,77 +146,11 @@ class SurveyorViewModel(
     }
 
     // ----------------------------------------------------------------------------------
-    // Track recording
-    // ----------------------------------------------------------------------------------
-
-    fun startTrackRecording() {
-        recorder = TrackRecorder()
-        _uiState.update {
-            it.copy(
-                isRecordingTrack = true,
-                trackPointCount = 0,
-                trackLengthMeters = 0.0,
-                simplifiedCount = 0,
-            )
-        }
-    }
-
-    /** Returns false when the walk was too short to be worth keeping. */
-    fun stopTrackRecording(name: String, type: PathType): Boolean {
-        val active = recorder ?: return false
-        recorder = null
-        val rawCount = active.pointCount
-        val simplified = active.simplified()
-
-        if (simplified.size < 2 || active.lengthMeters < TrackRecorder.MIN_USABLE_LENGTH_M) {
-            _uiState.update { it.copy(isRecordingTrack = false) }
-            return false
-        }
-
-        val path = WalkPath(
-            id = "surveyed_${System.currentTimeMillis()}",
-            type = type,
-            points = simplified,
-            name = name.ifBlank { null },
-        )
-        // Stored immediately rather than held for export: the point of walking a path is to
-        // be able to route over it, and waiting for a file round-trip and a rebuild would
-        // make the survey useless until someone got back to a computer.
-        viewModelScope.launch {
-            container.walkPathRepository.save(
-                path = path,
-                lengthMeters = active.lengthMeters,
-                gpsAccuracy = _uiState.value.currentAccuracy,
-            )
-        }
-        _uiState.update {
-            it.copy(
-                isRecordingTrack = false,
-                trackPointCount = rawCount,
-                simplifiedCount = simplified.size,
-            )
-        }
-        return true
-    }
-
-    fun cancelTrackRecording() {
-        recorder = null
-        _uiState.update { it.copy(isRecordingTrack = false, trackPointCount = 0) }
-    }
-
-    // ----------------------------------------------------------------------------------
     // Export
     // ----------------------------------------------------------------------------------
 
     fun exportPois(target: Uri, onResult: (Boolean) -> Unit) =
         writeDocument(target, onResult) { container.poiRepository.exportGeoJson() }
-
-    fun deleteTrack(id: String) {
-        viewModelScope.launch { container.walkPathRepository.delete(id) }
-    }
-
-    fun exportTracks(target: Uri, onResult: (Boolean) -> Unit) =
-        writeDocument(target, onResult) { container.walkPathRepository.exportGeoJson() }
 
     private fun writeDocument(
         target: Uri,

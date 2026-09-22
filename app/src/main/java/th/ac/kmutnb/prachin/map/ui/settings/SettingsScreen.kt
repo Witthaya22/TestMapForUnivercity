@@ -48,7 +48,10 @@ fun SettingsScreen(
     onOpenSurvey: () -> Unit,
     onOpenGpsLog: () -> Unit,
     onOpenGpsReadout: () -> Unit,
+    onOpenPathLog: () -> Unit,
+    onOpenPathReadout: () -> Unit,
     onOpenHazards: () -> Unit,
+    onOpenHazardSounds: () -> Unit,
     onOpenGpsDebug: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
@@ -201,6 +204,21 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
+            SwitchRow(
+                title = stringResource(R.string.settings_hazard_sound),
+                checked = state.hazardSound && state.hazardAlerts,
+                onCheckedChange = viewModel::setHazardSound,
+            )
+            Text(
+                text = stringResource(R.string.settings_hazard_sound_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_hazard_sound_manage),
+                onClick = onOpenHazardSounds,
+            )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_admin))
@@ -216,6 +234,14 @@ fun SettingsScreen(
             ClickableRow(
                 title = stringResource(R.string.settings_gpsreadout),
                 onClick = onOpenGpsReadout,
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_pathlog),
+                onClick = onOpenPathLog,
+            )
+            ClickableRow(
+                title = stringResource(R.string.settings_pathreadout),
+                onClick = onOpenPathReadout,
             )
             ClickableRow(
                 title = stringResource(R.string.settings_export_pois),

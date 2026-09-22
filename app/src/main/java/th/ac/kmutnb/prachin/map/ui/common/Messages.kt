@@ -1,12 +1,18 @@
 package th.ac.kmutnb.prachin.map.ui.common
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.config.ConfigProblem
 import th.ac.kmutnb.prachin.map.data.geojson.GeoJsonIssue
+import th.ac.kmutnb.prachin.map.data.model.BundledHazardSound
 import th.ac.kmutnb.prachin.map.data.model.HazardSeverity
+import th.ac.kmutnb.prachin.map.data.model.HazardSound
+import th.ac.kmutnb.prachin.map.data.model.HazardSoundOrigin
 import th.ac.kmutnb.prachin.map.data.model.HazardType
 import th.ac.kmutnb.prachin.map.data.model.PoiCategory
+import th.ac.kmutnb.prachin.map.data.repository.HazardSoundRejection
 import th.ac.kmutnb.prachin.map.navigation.model.PathType
 
 /**
@@ -82,4 +88,59 @@ val HazardSeverity.labelRes: Int
         HazardSeverity.CAUTION -> R.string.hazard_severity_caution
         HazardSeverity.WARNING -> R.string.hazard_severity_warning
         HazardSeverity.DANGER -> R.string.hazard_severity_danger
+    }
+
+@get:StringRes
+val BundledHazardSound.labelRes: Int
+    get() = when (this) {
+        BundledHazardSound.CHIME -> R.string.hazard_sound_chime
+        BundledHazardSound.ALERT -> R.string.hazard_sound_alert
+    }
+
+/**
+ * What to call a sound in the picker.
+ *
+ * A generated tone is named by a Thai string resource; a dropped-in asset and an imported
+ * file are named by their own file name, which is the only name anybody gave them. Only
+ * place that distinction is made, so the picker and the detail sheet cannot name the same
+ * sound differently.
+ */
+@Composable
+fun HazardSound.displayName(): String = when {
+    origin == HazardSoundOrigin.BUNDLED -> BundledHazardSound.fromId(id)
+        ?.let { stringResource(it.labelRes) }
+        ?: stringResource(R.string.hazard_sound_unnamed)
+
+    name.isNotBlank() -> name
+    else -> stringResource(R.string.hazard_sound_unnamed)
+}
+
+@get:StringRes
+val HazardSoundRejection.messageRes: Int
+    get() = when (this) {
+        HazardSoundRejection.UNREADABLE -> R.string.hazard_sound_reject_unreadable
+        HazardSoundRejection.TOO_LARGE -> R.string.hazard_sound_reject_too_large
+        HazardSoundRejection.NOT_PLAYABLE -> R.string.hazard_sound_reject_not_playable
+        HazardSoundRejection.TOO_LONG -> R.string.hazard_sound_reject_too_long
+    }
+
+/**
+ * The short phrase the voice says for a hazard type, as opposed to [labelRes], which is
+ * what the screen shows.
+ *
+ * Kept apart because they are read under different conditions. On screen there is time to
+ * read "รถ / ทางข้ามอันตราย"; out loud, three times, beside the traffic it is warning
+ * about, the phrase has to be short enough to land whole however much of it you catch.
+ */
+@get:StringRes
+val HazardType.voiceLabelRes: Int
+    get() = when (this) {
+        HazardType.DOG -> R.string.hazard_voice_type_dog
+        HazardType.TRAFFIC -> R.string.hazard_voice_type_traffic
+        HazardType.FLOOD -> R.string.hazard_voice_type_flood
+        HazardType.DARK -> R.string.hazard_voice_type_dark
+        HazardType.CONSTRUCTION -> R.string.hazard_voice_type_construction
+        HazardType.BROKEN_PATH -> R.string.hazard_voice_type_broken_path
+        HazardType.ANIMAL -> R.string.hazard_voice_type_animal
+        HazardType.OTHER -> R.string.hazard_voice_type_other
     }

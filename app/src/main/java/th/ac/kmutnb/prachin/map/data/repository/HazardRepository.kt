@@ -49,6 +49,7 @@ class HazardRepository(private val hazardPointDao: HazardPointDao) {
         point: GeoPoint,
         radiusMeters: Double = HazardPoint.DEFAULT_RADIUS_M,
         description: String = "",
+        soundId: String? = null,
         gpsAccuracy: Float? = null,
         now: Long = System.currentTimeMillis(),
     ): HazardPoint {
@@ -62,6 +63,7 @@ class HazardRepository(private val hazardPointDao: HazardPointDao) {
                 HazardPoint.MAX_RADIUS_M,
             ),
             description = description,
+            soundId = soundId,
             isActive = true,
             gpsAccuracy = gpsAccuracy,
             createdAt = now,
@@ -77,6 +79,7 @@ class HazardRepository(private val hazardPointDao: HazardPointDao) {
         severity: HazardSeverity,
         radiusMeters: Double,
         description: String,
+        soundId: String?,
     ) {
         val existing = hazardPointDao.findById(id) ?: return
         hazardPointDao.upsert(
@@ -88,6 +91,7 @@ class HazardRepository(private val hazardPointDao: HazardPointDao) {
                     HazardPoint.MAX_RADIUS_M,
                 ),
                 description = description,
+                soundId = soundId,
                 updatedAt = System.currentTimeMillis(),
             ),
         )

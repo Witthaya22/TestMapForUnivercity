@@ -28,6 +28,15 @@ class HazardLayerManager {
 
     private var style: Style? = null
 
+    /**
+     * The last content pushed in, replayed the moment a style arrives.
+     *
+     * Hazards come from the database and the style from the map, in whichever order the
+     * two happen to finish. Without this, hazards already stored when the screen opened
+     * could arrive before there was anywhere to put them and be dropped silently.
+     */
+    private val pending = HashMap<String, String>()
+
     val isAttached: Boolean get() = style != null
 
     fun attach(style: Style) {
@@ -64,6 +73,11 @@ class HazardLayerManager {
                 PropertyFactory.circleOpacity(whenActive(1.0f, 0.4f)),
             ),
         )
+
+        // Whatever the screen pushed while there was no style yet.
+        pending.forEach { (sourceId, geoJson) ->
+            style.getSourceAs<GeoJsonSource>(sourceId)?.setGeoJson(geoJson)
+        }
     }
 
     fun detach() {
@@ -87,7 +101,7 @@ class HazardLayerManager {
     }
 
     private fun setGeoJson(sourceId: String, geoJson: String) {
-        // A style reload drops every source; the next attach() repopulates them.
+        pending[sourceId] = geoJson
         style?.getSourceAs<GeoJsonSource>(sourceId)?.setGeoJson(geoJson)
     }
 

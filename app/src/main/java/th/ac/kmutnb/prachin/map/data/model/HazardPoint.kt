@@ -87,6 +87,14 @@ data class HazardPoint(
     /** What exactly is wrong, in the marker's own words. May be empty. */
     val description: String,
     /**
+     * The tone played just before the spoken warning.
+     *
+     * Null means "whatever suits [severity]", which is what every hazard marked before
+     * sounds existed means as well; [HAZARD_SOUND_NONE] means speech with no tone. See
+     * [resolveHazardSound].
+     */
+    val soundId: String? = null,
+    /**
      * False for a hazard that has been dealt with - the building work finished, the drain
      * was fixed. Kept rather than deleted, because "there used to be a hole here" is worth
      * something when it reappears, and because deleting is how a record of a real incident

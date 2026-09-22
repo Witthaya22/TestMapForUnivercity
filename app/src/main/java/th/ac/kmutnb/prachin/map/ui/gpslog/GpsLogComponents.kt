@@ -91,10 +91,18 @@ internal fun CaptureCard(
     onSave: (String) -> Unit,
     onDiscard: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * True only when the card floats over a map with a capped height. False on the readout
+     * screen, whose own column scrolls - nesting the two is measured with unbounded height
+     * and Compose throws rather than guessing.
+     */
+    scrollable: Boolean = false,
 ) {
     Card(modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
         Column(
-            Modifier.padding(16.dp),
+            Modifier
+                .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val pending = state.pendingResult

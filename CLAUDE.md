@@ -13,6 +13,28 @@
 - minSdk 24 · targetSdk 36 · compileSdk 36.1 · AGP 9.2.1 · Kotlin 2.2.10 · Gradle 9.4.1
 - AGP 9 มี **built-in Kotlin support** → ไม่ต้องใส่ปลั๊กอิน `org.jetbrains.kotlin.android`
 
+## วิธีทำงานร่วมกัน (อ่านก่อนเริ่มทุกครั้ง)
+
+> **เปิด session ใหม่ให้อ่าน `docs/STATUS.md` ก่อนเป็นอันดับแรก**
+> ไฟล์นั้นบอกว่าตอนนี้อยู่ branch ไหน ทำอะไรไปแล้ว อะไรยังพังอยู่ และถ้าพังต้องทำยังไง
+
+**ทุกครั้งที่ทำงานเสร็จ ต้องทำ 3 อย่างนี้เสมอ ไม่ต้องรอให้สั่ง:**
+
+1. **อธิบายเป็นภาษาไทยว่าทำอะไรไป** — ทำอะไร ทำไมถึงทำแบบนั้น มีอะไรที่ต้องรู้ตัวไว้
+   ถ้าตัดอะไรออกไปหรือมีผลข้างเคียงต้องบอกตรง ๆ ไม่ใช่เงียบไว้
+2. **commit แยกเป็นส่วน ๆ** ไม่ใช่ก้อนเดียวจบ อย่างน้อยแยก **ฟีเจอร์ / test / เอกสาร**
+   และแยกคนละฟีเจอร์ออกจากกัน เพื่อให้ `git revert` ทีละส่วนได้จริงตอนมีอะไรพัง
+   ถ้ามีไฟล์ที่สองฟีเจอร์แก้ร่วมกัน ให้ย้อนสถานะแล้ว build ผ่านก่อนค่อย commit ทีละชุด
+3. **อัปเดต `docs/STATUS.md`** — commit ที่เพิ่มเข้ามา สถานะล่าสุด อะไรที่ยังพัง
+
+**ก่อน commit ทุกครั้ง:** `./gradlew.bat assembleDebug` ผ่าน และ `./gradlew.bat test` เขียว
+ถ้าเครื่องต่ออยู่ให้ `installDebug` แล้วเปิดดูของจริงด้วย อย่าเชื่อว่าคอมไพล์ผ่านแล้วจะใช้งานได้
+
+**branch:** ทำงานบน branch ของฟีเจอร์ แล้ว merge เข้า `master` แบบ **ไม่ลบ branch ทิ้ง**
+และ **ไม่ใช้ `--squash` หรือ rebase ทับประวัติ** เพราะประวัติที่แยกเป็นส่วน ๆ คือของที่มีค่าตอนย้อน
+
+---
+
 ## กฎที่ห้ามละเมิด
 1. ห้ามเพิ่ม dependency ที่เสียเงินหรือต้องมี API key — โดยเฉพาะ Google Maps SDK / Places / Directions
 2. ห้ามใช้ `com.google.android.gms:play-services-location` — ใช้ `android.location.LocationManager` เท่านั้น
@@ -27,14 +49,18 @@
 7. vector tile ใน MBTiles ถูก gzip ไว้ → ต้องตั้ง header `Content-Encoding: gzip` ไม่งั้นจอขาว
 8. String ที่ผู้ใช้เห็นต้องอยู่ใน `res/values/strings.xml` เป็นภาษาไทยทั้งหมด
    โค้ดและคอมเมนต์เป็นภาษาอังกฤษ
-9. **ระบบเก็บพิกัด GPS (`ui/gpslog/`) กับ POI (`ui/survey/`) ต้องแยกกัน**
-   ไฟล์ที่ export จากหน้าเก็บพิกัด GPS ต้องมีเฉพาะ**ค่าที่วัดได้** (พิกัด ความคลาดเคลื่อน
-   ดาวเทียม จำนวนครั้งที่วัด เวลา) ห้ามใส่ชื่อสถานที่ / หมวดหมู่ / คณะ / อาคาร ลงไป
-   และจุดที่เก็บต้องไม่เข้ากราฟ routing — อ่าน `docs/GPS_LOGGING.md` ก่อนแก้
+9. **ระบบที่เก็บ "ค่าที่วัดได้" กับระบบที่เก็บ "ข้อมูลสถานที่" ต้องแยกกัน**
+   `ui/gpslog/` (จุด) และ `ui/pathlog/` (เส้นทาง) เก็บเฉพาะ**ค่าที่วัดได้** (พิกัด
+   ความคลาดเคลื่อน ดาวเทียม จำนวน fix เวลา) ห้ามใส่ชื่อสถานที่ / หมวดหมู่ / คณะ / อาคาร
+   ลงไป ของพวกนั้นเป็นของ POI (`ui/survey/`) — อ่าน `docs/GPS_LOGGING.md`
+   และ `docs/PATH_LOGGING.md` ก่อนแก้
+   จุด GPS **ไม่เข้า**กราฟ routing · เส้นทางเข้าได้เฉพาะเส้นที่เปิดสวิตช์ `isUsedForRouting`
 10. **คำเตือนจุดอันตรายห้ามเตือนถี่ขึ้นกว่านี้** กติกาทั้งหมดอยู่ที่ `navigation/HazardMonitor.kt`
    ที่เดียว (เตือนครั้งเดียวตอนเข้าเขต + ต้องออกไปไกลกว่าระยะเตือน 15 ม. ถึงเตือนใหม่ได้)
    ระบบที่เตือนบ่อยเกินไปจะโดนปิดเสียงทิ้ง แล้วจะไม่เตือนใครอีกเลย — อ่าน `docs/HAZARDS.md`
 11. เสียงพูดต้องเป็น `android.speech.tts` (สังเคราะห์ในเครื่อง) ห้ามใช้ TTS ที่ต้องต่อเน็ต
+   ส่วนเสียงเตือนจุดอันตรายต้องเป็นไฟล์ในเครื่อง (`res/raw/` หรือไฟล์ที่ผู้ใช้นำเข้ามาแล้ว)
+   และต้อง**ดังตอนเดียวกับที่พูดเท่านั้น** ห้ามมีเงื่อนไขการดังของตัวเอง — อ่าน `docs/HAZARDS.md` §6
 12. ห้าม import `androidx.compose.material.icons.*` — `material-icons-core` หยุดที่ 1.7.8
    และไม่อยู่ใน Compose BOM ที่โปรเจกต์นี้ใช้แล้ว ให้ใช้ vector drawable ใน `res/drawable/`
    ผ่าน `painterResource(R.drawable.ic_*)` แทน
@@ -59,7 +85,7 @@
 |---|---|
 | `app/src/main/assets/config/campus_config.json` | bbox / center / zoom / styleUrl — กรอกแล้วจากข้อมูล OSM |
 | `app/src/main/assets/data/pois.geojson` | จุดต่าง ๆ ในมอ (ตั้งต้นจาก OSM) |
-| `app/src/main/assets/data/paths.geojson` | โครงข่ายเส้นทาง **ถนน + ทางเดิน** (กราฟ routing + ตรวจปักจุดผิดทาง) |
+| `app/src/main/assets/data/paths.geojson` | โครงข่ายเส้นทางตั้งต้นจาก OSM **ถนน + ทางเดิน** (ปิดได้ด้วย "ใช้เฉพาะเส้นทางที่สำรวจเอง") |
 | `tools/osm_import.py` | ดึง bbox / POI / เส้นทาง จาก OpenStreetMap มาเขียนไฟล์ 3 ตัวข้างบน |
 | `core/geo/GeoUtils.kt` | สูตรระยะทางทั้งหมด — แก้ที่นี่ที่เดียว |
 | `navigation/AStarRouter.kt` | หาเส้นทาง |
@@ -70,12 +96,23 @@
 | `ui/gpslog/GpsLogScreen.kt` | หน้าเก็บพิกัด GPS **โหมดแผนที่** (เห็นตัวเองเดิน + เก็บจุด + ส่งออก) |
 | `ui/gpslog/GpsReadoutScreen.kt` | หน้าเก็บพิกัด GPS **โหมดตัวเลข** (ไม่มีแผนที่) — ชุดข้อมูลเดียวกัน ต่างกันที่ `captureMode` |
 | `ui/gpslog/GpsLogComponents.kt` | UI ที่สองหน้าจอใช้ร่วมกัน — เพิ่มหน้าจอเก็บค่าใหม่ให้ใช้ซ้ำจากที่นี่ ห้ามก๊อป |
+| `ui/pathlog/PathLogScreen.kt` | เดินเก็บ**เส้นทาง** โหมดแผนที่ (เห็นเส้นที่เก็บไว้ทุกเส้น) |
+| `ui/pathlog/PathReadoutScreen.kt` | เดินเก็บเส้นทาง โหมดตัวเลข — ชุดข้อมูลเดียวกัน ต่างกันที่ `captureMode` |
+| `ui/pathlog/PathLogComponents.kt` | UI ที่สองหน้าจอเส้นทางใช้ร่วมกัน ห้ามก๊อป |
+| `survey/TrackRecorder.kt` | กรองระยะห่าง 3 ม. + ลดจุด Douglas-Peucker + สถิติของการเดิน |
+| `data/model/TrackLog.kt` | เส้นทางที่เดินเก็บ + `toWalkPath()` แปลงเข้ากราฟ routing |
+| `data/geojson/TrackLogExporter.kt` | เขียนไฟล์ `tracks_*.geojson` / `.csv` (CSV มี WKT) |
 | `data/geojson/GpsPointExporter.kt` | เขียนไฟล์ GeoJSON / CSV ของค่าที่วัดได้ — ชื่อฟิลด์ต้องตรงกับ `data/model/GpsPoint.kt` |
 | `data/model/HazardPoint.kt` | จุดอันตราย: ประเภท / ระดับ / รัศมี — `alertRadiusMeters` คือระยะที่เริ่มเตือน |
 | `navigation/HazardMonitor.kt` | กติกาการเตือนจุดอันตรายทั้งหมด (pure Kotlin, unit test ครบ) |
 | `core/speech/SpeechAnnouncer.kt` | เสียงพูดไทยในเครื่อง (AOSP TTS ไม่ต้องต่อเน็ต) |
+| `data/model/HazardSound.kt` | เสียงเตือน 3 แหล่ง: gen มากับแอป / วางใน assets / ผู้ใช้นำเข้า |
+| `app/src/main/assets/sounds/` | วางไฟล์ mp3 ตรงนี้แล้ว build = เพิ่มเสียงให้ทุกคน ไม่ต้องแก้โค้ด |
+| `data/repository/HazardSoundRepository.kt` | คลังเสียง: นำเข้า / ตรวจ / ลบ ไฟล์เสียงของผู้ใช้ |
+| `core/sound/HazardSoundPlayer.kt` | เล่นเสียงเตือนนำ แล้วค่อยให้ `SpeechAnnouncer` พูด |
+| `tools/make_alert_sounds.py` | gen ไฟล์เสียงตัวอย่างใน `res/raw/` (ไม่ได้โหลดมาจากไหน) |
 | `ui/hazard/HazardScreen.kt` | หน้าปักและจัดการจุดอันตราย |
-| `data/local/AppDatabase.kt` | Room version **5** (`poi`, `walk_path`, `gps_point`, `hazard_point`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/local/AppDatabase.kt` | Room version **7** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
@@ -85,6 +122,7 @@
 python3 tools/osm_import.py        # ดึงข้อมูลจาก OSM มาเขียน config + pois + paths ใหม่
 python3 tools/geojson_validate.py  # ตรวจไฟล์พิกัดก่อน commit
 bash tools/build_tiles.sh          # สร้าง MBTiles ใหม่ (โหมด BUNDLED)
+python3 tools/make_alert_sounds.py # gen เสียงเตือนจุดอันตรายใหม่ลง res/raw/
 ```
 
 > บนเครื่องนี้ Gradle จะเลือก JRE ของ VS Code (ไม่มี `jlink`) แล้ว `compileDebugJavaWithJavac` พัง
@@ -94,10 +132,13 @@ bash tools/build_tiles.sh          # สร้าง MBTiles ใหม่ (โ�
 ## เอกสารที่ต้องอ่านก่อนแก้เรื่องนั้น ๆ
 | หัวข้อ | อ่าน |
 |---|---|
+| **สถานะล่าสุด / branch / อะไรพังอยู่** | **`docs/STATUS.md` — อ่านก่อนเป็นอันดับแรก** |
 | พิกัดไม่ตรง / ความแม่นยำ GPS | `docs/ACCURACY.md` |
 | รูปแบบไฟล์ GeoJSON และ config | `docs/DATA_FORMAT.md` |
 | กลไกออฟไลน์ / จอขาว | `docs/OFFLINE.md` |
-| ระบบเก็บพิกัด GPS + ไฟล์ที่ส่งออก | `docs/GPS_LOGGING.md` |
+| ระบบเก็บพิกัด GPS (จุด) + ไฟล์ที่ส่งออก | `docs/GPS_LOGGING.md` |
+| เดินเก็บเส้นทาง (เส้น) + ไฟล์ที่ส่งออก | `docs/PATH_LOGGING.md` |
+| เพิ่มเสียง mp3 เข้าไปในตัวแอป | `app/src/main/assets/sounds/README.md` |
 | จุดอันตราย + การแจ้งเตือน (ข้อความ/เสียง) | `docs/HAZARDS.md` |
 
 ## เรื่องพิกัดไม่ตรง (อ่าน `docs/ACCURACY.md` ก่อนแก้)

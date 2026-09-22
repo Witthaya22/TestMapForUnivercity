@@ -30,6 +30,8 @@ data class HazardPointEntity(
     val description: String,
     val isActive: Boolean,
     val gpsAccuracy: Float?,
+    /** Id of the tone played before the warning; null leaves it to [severity]. */
+    val soundId: String?,
     val createdAt: Long,
     val updatedAt: Long,
 )
@@ -43,6 +45,7 @@ fun HazardPointEntity.toHazardPoint(): HazardPoint = HazardPoint(
     description = description,
     isActive = isActive,
     gpsAccuracy = gpsAccuracy,
+    soundId = soundId,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )
@@ -57,6 +60,7 @@ fun HazardPoint.toEntity(): HazardPointEntity = HazardPointEntity(
     description = description,
     isActive = isActive,
     gpsAccuracy = gpsAccuracy,
+    soundId = soundId,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )
