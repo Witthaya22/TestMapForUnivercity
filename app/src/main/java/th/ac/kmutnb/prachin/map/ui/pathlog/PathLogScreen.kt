@@ -258,6 +258,7 @@ fun PathLogScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = BottomSheetCardMaxHeight),
+                    scrollable = true,
                 )
             }
         }

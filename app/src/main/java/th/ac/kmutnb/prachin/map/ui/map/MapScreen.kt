@@ -30,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,6 +57,7 @@ import th.ac.kmutnb.prachin.map.map.MapGeoJson
 import th.ac.kmutnb.prachin.map.map.HazardLayerManager
 import th.ac.kmutnb.prachin.map.map.MapLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
+import th.ac.kmutnb.prachin.map.data.model.GpsFixQuality
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
 import th.ac.kmutnb.prachin.map.ui.common.rememberOverlayHeight
 import th.ac.kmutnb.prachin.map.ui.common.reportHeightTo
@@ -171,6 +174,7 @@ fun MapScreen(
             ) {
                 HazardBanner(state.hazardAlerts)
                 GpsStatusBanner(state.locationState)
+                GpsAccuracyChip(state.locationState)
                 if (state.startsAtFirstStop) {
                     InfoBanner(stringResource(R.string.nav_starts_at_first_stop))
                 }
@@ -365,6 +369,56 @@ private fun CampusMapView(
  * A cold start with no network has no almanac and can take a minute and a half, so leaving
  * the map silently blank would read as a broken app.
  */
+/**
+ * How good the fix is right now, always on screen.
+ *
+ * The survey screens have shown this all along and the map has not, so the one number
+ * that says whether to trust the blue dot was only visible while deliberately collecting
+ * data. It is the same reading, banded and coloured the same way, so "แม่นยำดี" means the
+ * same thing wherever it appears.
+ */
+@Composable
+private fun GpsAccuracyChip(locationState: LocationState) {
+    val accuracy = when (locationState) {
+        is LocationState.Available -> locationState.fix.accuracyMeters
+        is LocationState.Searching -> locationState.lastAccuracyMeters
+        else -> null
+    } ?: return
+    val quality = GpsFixQuality.of(accuracy)
+    val colour = when (quality) {
+        GpsFixQuality.GOOD -> Color(0xFF2E7D32)
+        GpsFixQuality.FAIR -> Color(0xFFEF6C00)
+        GpsFixQuality.POOR -> Color(0xFFC62828)
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Row(
+            Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.gpslog_accuracy_value, accuracy),
+                style = MaterialTheme.typography.labelLarge,
+                color = colour,
+            )
+            Text(
+                text = stringResource(
+                    when (quality) {
+                        GpsFixQuality.GOOD -> R.string.gpslog_quality_good
+                        GpsFixQuality.FAIR -> R.string.gpslog_quality_fair
+                        GpsFixQuality.POOR -> R.string.gpslog_quality_poor
+                    },
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = colour,
+            )
+        }
+    }
+}
+
 @Composable
 private fun GpsStatusBanner(locationState: LocationState) {
     val text = when (locationState) {

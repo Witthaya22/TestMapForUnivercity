@@ -91,13 +91,17 @@ internal fun CaptureCard(
     onSave: (String) -> Unit,
     onDiscard: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * True only when the card floats over a map with a capped height. False on the readout
+     * screen, whose own column scrolls - nesting the two is measured with unbounded height
+     * and Compose throws rather than guessing.
+     */
+    scrollable: Boolean = false,
 ) {
     Card(modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-        // Scrolls once the save form outgrows the card's height cap. Without this the
-        // form pushes its own save button off the bottom of a short screen.
         Column(
             Modifier
-                .verticalScroll(rememberScrollState())
+                .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {

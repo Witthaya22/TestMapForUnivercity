@@ -459,6 +459,8 @@
     <string name="pathlog_export_title">ส่งออกเส้นทาง</string>
     <string name="pathlog_export_explain">ส่งออกเส้นทางที่เดินเก็บ %1$d เส้น — มีเฉพาะพิกัดของเส้นและค่าที่วัดได้ (ระยะ ความคลาดเคลื่อน ดาวเทียม เวลา) ไม่มีชื่ออาคารหรือคณะปนมา</string>
     <string name="pathlog_export_empty">ยังไม่มีเส้นทางให้ส่งออก</string>
+    <string name="pathlog_shape_empty">เส้นทางนี้สั้นเกินกว่าจะวาดรูปร่างได้</string>
+    <string name="pathlog_shape_legend">รูปร่างเส้นทางที่เดินจริง (ทิศเหนืออยู่ด้านบน) · จุดเขียว = เริ่ม · จุดแดง = จบ · หัวท้ายห่างกัน %1$d ม.</string>
     <string name="survey_paths_moved">การเดินเก็บเส้นทางย้ายไปอยู่ที่ \"เดินเก็บเส้นทาง\" แล้ว (ตั้งค่า → สำหรับผู้ดูแล) เพราะเส้นทางเป็นค่าที่วัดได้ ไม่ใช่สถานที่</string>
 
     <!-- หน้า Debug GPS -->

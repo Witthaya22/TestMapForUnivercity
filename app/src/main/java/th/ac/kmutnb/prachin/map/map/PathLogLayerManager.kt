@@ -33,6 +33,17 @@ class PathLogLayerManager {
 
     private var style: Style? = null
 
+    /**
+     * The last content pushed in, replayed the moment a style arrives.
+     *
+     * The screen reads its tracks from the database and the map finishes loading its style
+     * some time later, in whichever order the two happen to finish. Without this, a track
+     * that was already saved when the screen opened arrived before there was anywhere to
+     * put it and was simply dropped - the map stayed empty while the list said one track,
+     * which is what it did.
+     */
+    private val pending = HashMap<String, String>()
+
     val isAttached: Boolean get() = style != null
 
     fun attach(style: Style) {
@@ -92,6 +103,11 @@ class PathLogLayerManager {
                 PropertyFactory.circleStrokeColor(Color.WHITE),
             ),
         )
+
+        // Whatever the screen pushed while there was no style yet.
+        pending.forEach { (sourceId, geoJson) ->
+            style.getSourceAs<GeoJsonSource>(sourceId)?.setGeoJson(geoJson)
+        }
     }
 
     fun detach() {
@@ -114,8 +130,7 @@ class PathLogLayerManager {
     fun setTracks(tracks: List<TrackLog>) = setGeoJson(SOURCE_TRACKS, tracksGeoJson(tracks))
 
     private fun setGeoJson(sourceId: String, geoJson: String) {
-        // A style reload drops every source; ignore updates that arrive in that window,
-        // since the next attach() repopulates everything anyway.
+        pending[sourceId] = geoJson
         style?.getSourceAs<GeoJsonSource>(sourceId)?.setGeoJson(geoJson)
     }
 

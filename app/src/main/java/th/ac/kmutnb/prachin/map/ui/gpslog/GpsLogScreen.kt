@@ -261,6 +261,7 @@ fun GpsLogScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = BottomSheetCardMaxHeight),
+                    scrollable = true,
                 )
             }
         }

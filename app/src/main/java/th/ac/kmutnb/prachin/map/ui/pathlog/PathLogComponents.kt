@@ -65,13 +65,20 @@ internal fun RecordCard(
     onSave: (String, Boolean) -> Unit,
     onDiscard: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * True only when the card floats over a map with a capped height, where the save form
+     * would otherwise push its own button off the screen.
+     *
+     * It must stay false on the readout screen, whose own column already scrolls: a
+     * scrollable inside a scrollable is measured with unbounded height, and Compose throws
+     * rather than guessing - which is what took that screen down.
+     */
+    scrollable: Boolean = false,
 ) {
     Card(modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)) {
-        // Scrolls once the save form outgrows the card's height cap. Without this the
-        // form pushes its own save button off the bottom of a short screen.
         Column(
             Modifier
-                .verticalScroll(rememberScrollState())
+                .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -301,6 +308,10 @@ internal fun TrackDetailSheet(
             if (track.note.isNotBlank()) {
                 Text(track.note, style = MaterialTheme.typography.bodyMedium)
             }
+
+            // The walk itself, with nothing underneath it. The numbers below say how far
+            // and how well; only this says what shape it was.
+            TrackShape(points = track.points, modifier = Modifier.padding(vertical = 8.dp))
 
             HorizontalDivider(Modifier.padding(vertical = 6.dp))
 
