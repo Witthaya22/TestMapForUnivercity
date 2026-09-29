@@ -139,6 +139,7 @@ python3 tools/make_alert_sounds.py # gen เสียงเตือนจุด
 | ระบบเก็บพิกัด GPS (จุด) + ไฟล์ที่ส่งออก | `docs/GPS_LOGGING.md` |
 | เดินเก็บเส้นทาง (เส้น) + ไฟล์ที่ส่งออก | `docs/PATH_LOGGING.md` |
 | เพิ่มเสียง mp3 เข้าไปในตัวแอป | `app/src/main/assets/sounds/README.md` |
+| **หน้าจอทั้งหมด / เข้าจากไหน / หน้า Debug ที่ซ่อนอยู่** | `docs/SCREENS.md` |
 | จุดอันตราย + การแจ้งเตือน (ข้อความ/เสียง) | `docs/HAZARDS.md` |
 
 ## เรื่องพิกัดไม่ตรง (อ่าน `docs/ACCURACY.md` ก่อนแก้)
