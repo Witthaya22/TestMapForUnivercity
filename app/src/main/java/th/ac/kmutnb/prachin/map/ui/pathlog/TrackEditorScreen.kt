@@ -119,6 +119,8 @@ fun TrackEditorScreen(
     var fitted by remember { mutableStateOf(false) }
     var showList by rememberSaveable { mutableStateOf(false) }
     var confirmLeave by rememberSaveable { mutableStateOf(false) }
+    // Metres from the track's end when walking on was asked for too far away from it.
+    var confirmWalkGap by rememberSaveable { mutableStateOf<Double?>(null) }
 
     fun leave() {
         if (state.isDirty) confirmLeave = true else onBack()
@@ -354,7 +356,17 @@ fun TrackEditorScreen(
                                     track = draft,
                                     onToggleAccuracy = viewModel::setShowAccuracy,
                                     onAddEnd = { viewModel.startAdd() },
-                                    onWalkOn = viewModel::startWalk,
+                                    onWalkOn = {
+                                        // Starting away from the end would join the two
+                                        // with a straight line on the very first fix, before
+                                        // anyone could read a warning - so ask first.
+                                        val gap = walkGapMeters(draft, state.currentPoint)
+                                        if (gap != null && gap > WALK_GAP_WARNING_METERS) {
+                                            confirmWalkGap = gap
+                                        } else {
+                                            viewModel.startWalk()
+                                        }
+                                    },
                                     onOpenList = { showList = true },
                                 )
                         }
@@ -373,6 +385,23 @@ fun TrackEditorScreen(
                 showList = false
                 viewModel.select(index)
                 draft.points.getOrNull(index)?.let(::flyTo)
+            },
+        )
+    }
+
+    confirmWalkGap?.let { gap ->
+        AlertDialog(
+            onDismissRequest = { confirmWalkGap = null },
+            text = { Text(stringResource(R.string.trackedit_walk_gap_confirm, gap)) },
+            confirmButton = {
+                TextButton(onClick = { confirmWalkGap = null; viewModel.startWalk() }) {
+                    Text(stringResource(R.string.trackedit_walk_start_anyway))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmWalkGap = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
             },
         )
     }
@@ -755,7 +784,14 @@ private fun AddPanel(
         )
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(onClick = onAdd, enabled = crosshair != null, modifier = Modifier.weight(1f)) {
+        // Two taps without moving the map would stack two vertices on one spot.
+        val clearOfPrevious = previous == null || crosshair == null ||
+            GeoUtils.haversineMeters(previous, crosshair) >= MIN_ADD_SPACING_METERS
+        Button(
+            onClick = onAdd,
+            enabled = crosshair != null && clearOfPrevious,
+            modifier = Modifier.weight(1f),
+        ) {
             Text(stringResource(R.string.trackedit_add_here))
         }
         OutlinedButton(onClick = onDone) {
@@ -772,10 +808,10 @@ private fun WalkPanel(
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
-    val end = track.points.lastOrNull()
-    val here = state.currentPoint
-    if (state.walkPoints.isEmpty() && end != null && here != null) {
-        val gap = GeoUtils.haversineMeters(end, here)
+    // From the old end to where the walk actually began once it has, so the straight
+    // join stays on screen for the whole walk rather than vanishing with the first fix.
+    val gap = walkGapMeters(track, state.walkPoints.firstOrNull() ?: state.currentPoint)
+    if (gap != null) {
         if (gap > WALK_GAP_WARNING_METERS) {
             Text(
                 text = stringResource(R.string.trackedit_walk_gap, gap),
@@ -917,6 +953,15 @@ private const val MAX_EDIT_ZOOM = 20.5
 
 /** A gap bigger than a couple of paces is worth pointing out before it becomes a line. */
 private const val WALK_GAP_WARNING_METERS = 10.0
+
+/** Closer than this to the previous vertex, a new one would only be a duplicate. */
+private const val MIN_ADD_SPACING_METERS = 0.5
+
+/** Straight-line metres from the track's end to [from]; null when either is missing. */
+private fun walkGapMeters(track: TrackLog, from: GeoPoint?): Double? {
+    val end = track.points.lastOrNull() ?: return null
+    return from?.let { GeoUtils.haversineMeters(end, it) }
+}
 
 private val TAP_SLOP = 18.dp
 

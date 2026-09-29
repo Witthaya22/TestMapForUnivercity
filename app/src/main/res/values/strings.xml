@@ -503,6 +503,8 @@
     <string name="trackedit_done">เสร็จ</string>
     <string name="trackedit_walk_gap">ห่างปลายเส้น %1$.0f ม. ช่วงนี้จะเป็นเส้นตรง</string>
     <string name="trackedit_walk_status">เดินต่อแล้ว %1$s · %2$d จุด · ± %3$.1f ม.</string>
+    <string name="trackedit_walk_gap_confirm">ตอนนี้อยู่ห่างปลายเส้น %1$.0f ม. ถ้าเริ่มเลย ช่วงนี้จะถูกเชื่อมเป็นเส้นตรง · ควรเดินไปที่ปลายเส้นก่อน</string>
+    <string name="trackedit_walk_start_anyway">เริ่มเลย</string>
     <string name="trackedit_walk_stop">หยุดแล้วต่อเส้น</string>
     <string name="trackedit_walk_nothing">ยังไม่ได้เดินเพิ่ม จึงไม่มีอะไรต่อท้าย</string>
     <string name="trackedit_saved">บันทึกแล้ว ระบบนำทางใช้เส้นใหม่ทันที</string>
