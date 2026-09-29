@@ -1,6 +1,7 @@
 package th.ac.kmutnb.prachin.map.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import th.ac.kmutnb.prachin.map.core.geo.GeoUtils
@@ -8,6 +9,8 @@ import th.ac.kmutnb.prachin.map.data.local.toEntity
 import th.ac.kmutnb.prachin.map.data.local.toTrackLog
 import th.ac.kmutnb.prachin.map.data.model.TrackCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.TrackLog
+import th.ac.kmutnb.prachin.map.data.model.TrackVertexInfo
+import th.ac.kmutnb.prachin.map.data.model.VertexSource
 import th.ac.kmutnb.prachin.map.data.model.toWalkPath
 import th.ac.kmutnb.prachin.map.navigation.RouteGraphBuilder
 import th.ac.kmutnb.prachin.map.navigation.TestGeo.at
@@ -60,6 +63,41 @@ class TrackLogStorageTest {
                 GeoUtils.haversineMeters(before, after) < 0.01,
             )
         }
+    }
+
+    @Test
+    fun `per-vertex accuracy and hand edits survive a round trip`() {
+        val edited = walked.copy(
+            vertexInfo = listOf(
+                TrackVertexInfo.walked(4.2f),
+                TrackVertexInfo(
+                    accuracyMeters = 13.7f,
+                    source = VertexSource.MOVED,
+                    originalPoint = at(12.0, 8.0),
+                ),
+                TrackVertexInfo.PLACED,
+            ),
+        )
+
+        val restored = edited.toEntity().toTrackLog()
+
+        assertEquals(4.2f, restored.vertexInfoAt(0).accuracyMeters)
+        assertEquals(VertexSource.MOVED, restored.vertexInfoAt(1).source)
+        assertEquals(13.7f, restored.vertexInfoAt(1).accuracyMeters)
+        // Where the receiver put it is still on record, so the move is still visible.
+        assertEquals(5.0, requireNotNull(restored.movedMetersAt(1)), 0.05)
+        assertEquals(VertexSource.PLACED, restored.vertexInfoAt(2).source)
+        assertNull(restored.vertexInfoAt(2).accuracyMeters)
+        assertEquals(2, restored.editedVertexCount)
+    }
+
+    @Test
+    fun `a track saved before per-vertex accuracy reads as unknown, not as a number`() {
+        val legacy = walked.toEntity().copy(encodedVertexInfo = "").toTrackLog()
+
+        assertEquals(0, legacy.knownAccuracyCount)
+        assertEquals(0, legacy.editedVertexCount)
+        assertEquals(TrackVertexInfo.UNKNOWN, legacy.vertexInfoAt(2))
     }
 
     @Test

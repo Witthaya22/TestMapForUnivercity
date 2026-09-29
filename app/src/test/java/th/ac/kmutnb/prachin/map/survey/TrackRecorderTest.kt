@@ -130,6 +130,39 @@ class TrackRecorderTest {
     }
 
     @Test
+    fun `each surviving vertex keeps the accuracy of its own fix`() {
+        val recorder = TrackRecorder()
+        // North 50 m on good fixes, a 13 m fix exactly at the corner, then east.
+        (0..9).forEach { recorder.offer(at(it * 5.0, 0.0), 4f) }
+        recorder.offer(at(50.0, 0.0), 13f)
+        (1..10).forEach { recorder.offer(at(50.0, it * 5.0), 6f) }
+
+        val finished = requireNotNull(recorder.finish())
+
+        assertEquals(3, finished.points.size)
+        // Not the 5.x m walk average: the corner was walked under a tree, and says so.
+        assertEquals(listOf(4f, 13f, 6f), finished.vertexAccuracies)
+    }
+
+    @Test
+    fun `a continuation keeps even a single new vertex`() {
+        val recorder = TrackRecorder()
+        recorder.offer(at(0.0, 0.0), 5f)
+
+        // Far too short to save as a track of its own...
+        assertNull(recorder.finish())
+        // ...but one step past the old end is a real extension.
+        val continuation = requireNotNull(recorder.finishContinuation())
+        assertEquals(1, continuation.points.size)
+        assertEquals(listOf(5f), continuation.vertexAccuracies)
+    }
+
+    @Test
+    fun `a continuation with nothing walked is nothing`() {
+        assertNull(TrackRecorder().finishContinuation())
+    }
+
+    @Test
     fun `a walk shorter than the minimum is not worth keeping`() {
         val recorder = TrackRecorder()
         recorder.offer(at(0.0, 0.0), 5f)

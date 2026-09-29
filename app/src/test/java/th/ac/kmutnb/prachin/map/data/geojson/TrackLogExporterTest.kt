@@ -8,6 +8,8 @@ import org.junit.Test
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.model.TrackCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.TrackLog
+import th.ac.kmutnb.prachin.map.data.model.TrackVertexInfo
+import th.ac.kmutnb.prachin.map.data.model.VertexSource
 import java.util.TimeZone
 
 /**
@@ -118,6 +120,47 @@ class TrackLogExporterTest {
             "LINESTRING(101.3529617 14.1610243, 101.3531617 14.1612243)",
             row.last(),
         )
+    }
+
+    @Test
+    fun `each vertex carries its own accuracy and where it came from`() {
+        val properties = properties(
+            TrackLogExporter.writeGeoJson(
+                listOf(
+                    track().copy(
+                        vertexInfo = listOf(
+                            TrackVertexInfo.walked(4.26f),
+                            TrackVertexInfo(
+                                accuracyMeters = 12f,
+                                source = VertexSource.MOVED,
+                                originalPoint = GeoPoint(lat = 14.1612693, lon = 101.3531617),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val accuracies = properties.getAsJsonArray("vertexAccuracyMeters")
+        assertEquals(4.3, accuracies[0].asDouble, 1e-9)
+        assertEquals(12.0, accuracies[1].asDouble, 1e-9)
+        val sources = properties.getAsJsonArray("vertexSource")
+        assertEquals("walked", sources[0].asString)
+        assertEquals("moved", sources[1].asString)
+        val moved = properties.getAsJsonArray("vertexMovedMeters")
+        assertTrue(moved[0].isJsonNull)
+        assertEquals(5.0, moved[1].asDouble, 0.1)
+        assertEquals(1, properties["editedVertexCount"].asInt)
+    }
+
+    @Test
+    fun `an unknown vertex accuracy is written as null, never as a number`() {
+        // A track from before per-vertex accuracy: every entry is null, one per vertex.
+        val accuracies = properties(TrackLogExporter.writeGeoJson(listOf(track())))
+            .getAsJsonArray("vertexAccuracyMeters")
+
+        assertEquals(2, accuracies.size())
+        assertTrue(accuracies.all { it.isJsonNull })
     }
 
     @Test
