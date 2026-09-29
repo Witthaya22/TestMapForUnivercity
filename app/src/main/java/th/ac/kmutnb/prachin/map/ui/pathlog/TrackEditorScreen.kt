@@ -57,7 +57,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -81,7 +80,6 @@ import th.ac.kmutnb.prachin.map.data.model.TrackVertexInfo
 import th.ac.kmutnb.prachin.map.data.model.VertexSource
 import th.ac.kmutnb.prachin.map.map.TrackEditLayerManager
 import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
-import th.ac.kmutnb.prachin.map.survey.TrackRecorder
 import th.ac.kmutnb.prachin.map.ui.common.BottomSheetCardMaxHeight
 import th.ac.kmutnb.prachin.map.ui.common.Formats
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
@@ -573,7 +571,6 @@ private fun SummaryChip(track: TrackLog, isDirty: Boolean, modifier: Modifier = 
                 text = stringResource(
                     R.string.trackedit_summary,
                     track.vertexCount,
-                    track.knownAccuracyCount,
                     track.editedVertexCount,
                 ),
                 style = MaterialTheme.typography.labelMedium,
@@ -598,39 +595,38 @@ private fun OverviewPanel(
     onWalkOn: () -> Unit,
     onOpenList: () -> Unit,
 ) {
-    Text(
-        text = track.note.ifBlank { stringResource(R.string.pathlog_unnamed) },
-        style = MaterialTheme.typography.titleMedium,
-    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = track.note.ifBlank { stringResource(R.string.pathlog_unnamed) },
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onOpenList) { Text(stringResource(R.string.trackedit_list)) }
+    }
+    // Only said when it matters: a track from before per-vertex accuracy is all grey,
+    // and without this line the grey would read as "something is broken".
     if (track.knownAccuracyCount == 0) {
         Text(
-            text = stringResource(
-                R.string.trackedit_legacy_note,
-                track.averageAccuracyMeters,
-                track.worstAccuracyMeters,
-            ),
+            text = stringResource(R.string.trackedit_legacy_short),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
         )
     }
-    Hint(stringResource(R.string.trackedit_hint_view))
-    Hint(stringResource(R.string.trackedit_legend))
-
     Row(
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = stringResource(R.string.trackedit_show_accuracy),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f),
-        )
+        LegendDot(colourOf(GpsFixQuality.GOOD), stringResource(R.string.trackedit_legend_good))
+        LegendDot(colourOf(GpsFixQuality.FAIR), stringResource(R.string.trackedit_legend_fair))
+        LegendDot(colourOf(GpsFixQuality.POOR), stringResource(R.string.trackedit_legend_poor))
+        LegendDot(PLACED_COLOUR, stringResource(R.string.trackedit_source_placed))
+        Box(Modifier.weight(1f))
         Switch(checked = state.showAccuracy, onCheckedChange = onToggleAccuracy)
     }
-
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = onAddEnd, modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.trackedit_add_end))
+            Text(stringResource(R.string.trackedit_add))
         }
         OutlinedButton(
             onClick = onWalkOn,
@@ -640,9 +636,14 @@ private fun OverviewPanel(
             Text(stringResource(R.string.trackedit_walk_on))
         }
     }
-    if (!state.canWalk) Hint(stringResource(R.string.trackedit_walk_wait_fix))
-    TextButton(onClick = onOpenList) { Text(stringResource(R.string.trackedit_list)) }
-    Hint(stringResource(R.string.trackedit_basemap_note))
+}
+
+@Composable
+private fun LegendDot(colour: Color, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("●", color = colour, style = MaterialTheme.typography.labelMedium)
+        Text(label, style = MaterialTheme.typography.labelSmall)
+    }
 }
 
 @Composable
@@ -656,9 +657,7 @@ private fun VertexPanel(
     onInsertAfter: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val context = LocalContext.current
     val info = track.vertexInfoAt(index)
-    val point = track.points[index]
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -670,32 +669,13 @@ private fun VertexPanel(
             Icon(painterResource(R.drawable.ic_close), stringResource(R.string.action_close))
         }
     }
-
-    Hint(stringResource(R.string.trackedit_vertex_accuracy))
     AccuracyText(info)
-    FieldRow(stringResource(R.string.trackedit_vertex_source), stringResource(info.source.labelRes))
     track.movedMetersAt(index)?.let {
-        FieldRow(
-            stringResource(R.string.trackedit_vertex_moved),
-            stringResource(R.string.trackedit_meters_value, it),
+        Text(
+            text = stringResource(R.string.trackedit_vertex_moved_short, it),
+            style = MaterialTheme.typography.bodySmall,
         )
     }
-    val none = stringResource(R.string.gpslog_value_none)
-    FieldRow(
-        stringResource(R.string.trackedit_vertex_neighbours),
-        stringResource(
-            R.string.trackedit_neighbours_value,
-            track.points.getOrNull(index - 1)
-                ?.let { Formats.distance(context, GeoUtils.haversineMeters(it, point)) } ?: none,
-            track.points.getOrNull(index + 1)
-                ?.let { Formats.distance(context, GeoUtils.haversineMeters(point, it)) } ?: none,
-        ),
-    )
-    Text(
-        text = point.format(),
-        style = MaterialTheme.typography.bodySmall,
-        fontFamily = FontFamily.Monospace,
-    )
 
     Button(onClick = onMove, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.trackedit_move))
@@ -707,14 +687,14 @@ private fun VertexPanel(
         OutlinedButton(onClick = onInsertAfter, modifier = Modifier.weight(1f)) {
             Text(stringResource(R.string.trackedit_insert_after))
         }
+        // Disabled rather than explained: a line of two points has nothing to spare.
+        OutlinedButton(onClick = onDelete, enabled = canDelete) {
+            Text(
+                text = stringResource(R.string.action_delete),
+                color = if (canDelete) MaterialTheme.colorScheme.error else Color.Unspecified,
+            )
+        }
     }
-    TextButton(onClick = onDelete, enabled = canDelete) {
-        Text(
-            text = stringResource(R.string.trackedit_delete_vertex),
-            color = if (canDelete) MaterialTheme.colorScheme.error else Color.Unspecified,
-        )
-    }
-    if (!canDelete) Hint(stringResource(R.string.trackedit_delete_min))
 }
 
 @Composable
@@ -760,7 +740,6 @@ private fun AddPanel(
     onAdd: () -> Unit,
     onDone: () -> Unit,
 ) {
-    Hint(stringResource(R.string.trackedit_add_hint))
     Text(
         text = stringResource(R.string.trackedit_add_position, insertIndex + 1),
         style = MaterialTheme.typography.titleMedium,
@@ -793,10 +772,6 @@ private fun WalkPanel(
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
-    Text(
-        text = stringResource(R.string.trackedit_walk_hint, track.vertexCount),
-        style = MaterialTheme.typography.bodyMedium,
-    )
     val end = track.points.lastOrNull()
     val here = state.currentPoint
     if (state.walkPoints.isEmpty() && end != null && here != null) {
@@ -818,15 +793,6 @@ private fun WalkPanel(
         ),
         style = MaterialTheme.typography.titleMedium,
     )
-    if (state.walkRejectedCount > 0) {
-        Hint(
-            stringResource(
-                R.string.pathlog_rejected,
-                state.walkRejectedCount,
-                TrackRecorder.DEFAULT_MAX_ACCURACY_M.toInt(),
-            ),
-        )
-    }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(onClick = onStop, modifier = Modifier.weight(1f)) {
             Text(stringResource(R.string.trackedit_walk_stop))
@@ -866,7 +832,6 @@ private fun VertexListSheet(
                     text = stringResource(R.string.trackedit_list_title),
                     style = MaterialTheme.typography.titleMedium,
                 )
-                Hint(stringResource(R.string.trackedit_list_explain))
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
             }
             itemsIndexed(track.vertexInfoOrUnknown) { index, info ->
@@ -916,7 +881,7 @@ private fun AccuracyText(info: TrackVertexInfo) {
         info.source == VertexSource.PLACED -> Text(
             text = stringResource(R.string.trackedit_vertex_accuracy_placed),
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF8E24AA),
+            color = PLACED_COLOUR,
         )
 
         accuracy == null -> Text(
@@ -937,15 +902,6 @@ private fun AccuracyText(info: TrackVertexInfo) {
     }
 }
 
-@Composable
-private fun Hint(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
-
 private val VertexSource.labelRes: Int
     get() = when (this) {
         VertexSource.WALKED -> R.string.trackedit_source_walked
@@ -963,3 +919,6 @@ private const val MAX_EDIT_ZOOM = 20.5
 private const val WALK_GAP_WARNING_METERS = 10.0
 
 private val TAP_SLOP = 18.dp
+
+/** Matches the placed-vertex colour in `TrackEditLayerManager`. */
+private val PLACED_COLOUR = Color(0xFF8E24AA)
