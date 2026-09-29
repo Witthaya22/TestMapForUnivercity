@@ -67,6 +67,7 @@ import th.ac.kmutnb.prachin.map.ui.common.Formats
 @Composable
 fun PathReadoutScreen(
     onBack: () -> Unit,
+    onOpenTrack: (String) -> Unit,
     viewModel: PathLogViewModel = viewModel(
         factory = PathLogViewModel.factory(TrackCaptureMode.READOUT),
     ),
@@ -194,6 +195,10 @@ fun PathReadoutScreen(
                 showExportDialog = true
             },
             onDelete = { viewModel.delete(track.id) },
+            onOpenEditor = {
+                viewModel.dismissSelection()
+                onOpenTrack(track.id)
+            },
         )
     }
 

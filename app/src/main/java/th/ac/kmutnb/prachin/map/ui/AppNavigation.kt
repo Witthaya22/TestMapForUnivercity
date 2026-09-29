@@ -3,9 +3,11 @@ package th.ac.kmutnb.prachin.map.ui
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import th.ac.kmutnb.prachin.map.ui.debug.GpsDebugScreen
 import th.ac.kmutnb.prachin.map.ui.gpslog.GpsLogScreen
 import th.ac.kmutnb.prachin.map.ui.gpslog.GpsReadoutScreen
@@ -16,6 +18,7 @@ import th.ac.kmutnb.prachin.map.ui.map.MapViewModel
 import th.ac.kmutnb.prachin.map.ui.onboarding.OnboardingScreen
 import th.ac.kmutnb.prachin.map.ui.pathlog.PathLogScreen
 import th.ac.kmutnb.prachin.map.ui.pathlog.PathReadoutScreen
+import th.ac.kmutnb.prachin.map.ui.pathlog.TrackEditorScreen
 import th.ac.kmutnb.prachin.map.ui.poi.PoiListScreen
 import th.ac.kmutnb.prachin.map.ui.settings.OfflineMapManagerScreen
 import th.ac.kmutnb.prachin.map.ui.settings.SettingsScreen
@@ -35,6 +38,12 @@ object Routes {
     const val HAZARDS = "hazards"
     const val HAZARD_SOUNDS = "hazard_sounds"
     const val GPS_DEBUG = "gps_debug"
+
+    const val ARG_TRACK_ID = "trackId"
+    const val TRACK_EDITOR = "track_editor/{$ARG_TRACK_ID}"
+
+    /** Track ids are `track_<uuid>`, which is path-safe as it stands. */
+    fun trackEditor(trackId: String) = "track_editor/$trackId"
 }
 
 @Composable
@@ -113,11 +122,27 @@ fun AppNavHost(
         }
 
         composable(Routes.PATH_LOG) {
-            PathLogScreen(onBack = { navController.popBackStack() })
+            PathLogScreen(
+                onBack = { navController.popBackStack() },
+                onOpenTrack = { id -> navController.navigate(Routes.trackEditor(id)) },
+            )
         }
 
         composable(Routes.PATH_READOUT) {
-            PathReadoutScreen(onBack = { navController.popBackStack() })
+            PathReadoutScreen(
+                onBack = { navController.popBackStack() },
+                onOpenTrack = { id -> navController.navigate(Routes.trackEditor(id)) },
+            )
+        }
+
+        composable(
+            Routes.TRACK_EDITOR,
+            arguments = listOf(navArgument(Routes.ARG_TRACK_ID) { type = NavType.StringType }),
+        ) { entry ->
+            TrackEditorScreen(
+                trackId = entry.arguments?.getString(Routes.ARG_TRACK_ID).orEmpty(),
+                onBack = { navController.popBackStack() },
+            )
         }
 
         composable(Routes.GPS_DEBUG) {

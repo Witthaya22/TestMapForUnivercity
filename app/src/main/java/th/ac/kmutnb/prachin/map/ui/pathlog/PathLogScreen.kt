@@ -78,6 +78,7 @@ import th.ac.kmutnb.prachin.map.ui.common.BottomSheetCardMaxHeight
 @Composable
 fun PathLogScreen(
     onBack: () -> Unit,
+    onOpenTrack: (String) -> Unit,
     viewModel: PathLogViewModel = viewModel(
         factory = PathLogViewModel.factory(TrackCaptureMode.MAP),
     ),
@@ -280,6 +281,10 @@ fun PathLogScreen(
                 showExportDialog = true
             },
             onDelete = { viewModel.delete(track.id) },
+            onOpenEditor = {
+                viewModel.dismissSelection()
+                onOpenTrack(track.id)
+            },
         )
     }
 

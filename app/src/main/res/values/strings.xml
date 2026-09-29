@@ -469,6 +469,62 @@
     <string name="pathlog_shape_empty">เส้นทางนี้สั้นเกินกว่าจะวาดรูปร่างได้</string>
     <string name="pathlog_shape_legend">รูปร่างเส้นทางที่เดินจริง (ทิศเหนืออยู่ด้านบน) · จุดเขียว = เริ่ม · จุดแดง = จบ · หัวท้ายห่างกัน %1$d ม.</string>
     <string name="survey_paths_moved">การเดินเก็บเส้นทางย้ายไปอยู่ที่ \"เดินเก็บเส้นทาง\" แล้ว (ตั้งค่า → สำหรับผู้ดูแล) เพราะเส้นทางเป็นค่าที่วัดได้ ไม่ใช่สถานที่</string>
+    <string name="pathlog_open_editor">ดูบนแผนที่จริง · แก้ไขจุด</string>
+    <string name="pathlog_edited_count">แก้ไขด้วยมือแล้ว %1$d จุด</string>
+
+    <!-- หน้าแก้ไขเส้นทาง (แผนที่จริง + ค่าคลาดเคลื่อนรายจุด) -->
+    <string name="trackedit_title">แก้ไขเส้นทาง %1$s</string>
+    <string name="trackedit_undo">ย้อน</string>
+    <string name="trackedit_not_found">ไม่พบเส้นทางนี้แล้ว (อาจถูกลบไป)</string>
+    <string name="trackedit_summary">%1$d จุด · รู้ค่าคลาดเคลื่อนรายจุด %2$d จุด · แก้ด้วยมือ %3$d จุด</string>
+    <string name="trackedit_hint_view">แตะที่จุดบนเส้นเพื่อดูว่าจุดนั้นคลาดเคลื่อนได้เท่าไร และแก้ไข · วงกลมรอบจุด = ระยะที่ GPS บอกว่าจุดนั้นอาจคลาดเคลื่อน</string>
+    <string name="trackedit_legend">เขียว ≤5 ม. · ส้ม ≤10 ม. · แดง &gt;10 ม. · เทา = ไม่มีค่ารายจุด · ม่วง = ปักเอง · วงกลวง + เส้นประ = ตำแหน่งเดิมก่อนขยับ</string>
+    <string name="trackedit_legacy_note">เส้นนี้เก็บก่อนมีระบบบันทึกค่ารายจุด จึงรู้แค่ค่าเฉลี่ยทั้งเส้น (± %1$.1f ม.) กับค่าแย่สุด (± %2$.1f ม.) แต่ไม่รู้ว่าเป็นจุดไหน · เส้นที่เดินเก็บใหม่จะรู้ค่าทุกจุด</string>
+    <string name="trackedit_basemap_note">แผนที่พื้นหลังคือ OpenStreetMap (ออฟไลน์) ซึ่งคลาดเคลื่อนเองได้หลายเมตร ขยับจุดตามแผนที่เมื่อเห็นจุดอ้างอิงชัด เช่น ทางแยก ขอบถนน มุมอาคาร</string>
+    <string name="trackedit_show_accuracy">แสดงวงความคลาดเคลื่อน</string>
+    <string name="trackedit_add_end">เพิ่มจุดต่อท้าย</string>
+    <string name="trackedit_walk_on">เดินเก็บต่อจากปลายเส้น</string>
+    <string name="trackedit_list">ดูค่าทุกจุด</string>
+    <string name="trackedit_vertex_title">จุดที่ %1$d จาก %2$d</string>
+    <string name="trackedit_vertex_accuracy">GPS บอกว่าคลาดเคลื่อนได้</string>
+    <string name="trackedit_vertex_accuracy_unknown">ไม่ทราบ (เก็บก่อนมีค่ารายจุด)</string>
+    <string name="trackedit_vertex_accuracy_placed">— ปักเองบนแผนที่ ไม่ได้มาจาก GPS</string>
+    <string name="trackedit_vertex_source">ที่มา</string>
+    <string name="trackedit_source_walked">เดินเก็บด้วย GPS</string>
+    <string name="trackedit_source_placed">ปักเองบนแผนที่</string>
+    <string name="trackedit_source_moved">เดินเก็บ แล้วขยับด้วยมือ</string>
+    <string name="trackedit_vertex_moved">ขยับจากตำแหน่งที่ GPS วัดได้</string>
+    <string name="trackedit_vertex_neighbours">ห่างจุดก่อนหน้า / ถัดไป</string>
+    <string name="trackedit_neighbours_value">%1$s / %2$s</string>
+    <string name="trackedit_vertex_coordinates">พิกัด</string>
+    <string name="trackedit_meters_value">%1$.1f ม.</string>
+    <string name="trackedit_move">ย้ายจุดนี้</string>
+    <string name="trackedit_insert_before">แทรกจุดก่อนหน้า</string>
+    <string name="trackedit_insert_after">แทรกจุดถัดไป</string>
+    <string name="trackedit_delete_vertex">ลบจุดนี้</string>
+    <string name="trackedit_delete_min">เส้นต้องมีอย่างน้อย 2 จุด จึงลบจุดนี้ไม่ได้</string>
+    <string name="trackedit_move_hint">เลื่อนแผนที่ให้กากบาทอยู่ตรงตำแหน่งจริงของจุดที่ %1$d แล้วกดยืนยัน</string>
+    <string name="trackedit_move_distance">กากบาทห่างจากตำแหน่งที่ GPS วัดได้ %1$.1f ม.</string>
+    <string name="trackedit_move_confirm">ยืนยันตำแหน่งนี้</string>
+    <string name="trackedit_add_hint">เลื่อนกากบาทไปตำแหน่งที่ต้องการแล้วกด \"เพิ่มจุดตรงกากบาท\" หรือแตะบนแผนที่ · เพิ่มต่อกันได้หลายจุด</string>
+    <string name="trackedit_add_position">จุดใหม่จะเป็นจุดที่ %1$d</string>
+    <string name="trackedit_add_distance">ห่างจากจุดก่อนหน้า %1$.1f ม.</string>
+    <string name="trackedit_add_here">เพิ่มจุดตรงกากบาท</string>
+    <string name="trackedit_done">เสร็จ</string>
+    <string name="trackedit_walk_hint">เดินต่อได้เลย จุดที่เดินจะต่อท้ายจุดที่ %1$d</string>
+    <string name="trackedit_walk_gap">ตอนนี้อยู่ห่างจากปลายเส้น %1$.0f ม. ช่วงนี้จะถูกเชื่อมเป็นเส้นตรง</string>
+    <string name="trackedit_walk_status">เดินต่อแล้ว %1$s · จุดใหม่ %2$d จุด · ± %3$.1f ม.</string>
+    <string name="trackedit_walk_stop">หยุดแล้วต่อเส้น</string>
+    <string name="trackedit_walk_nothing">ยังไม่ได้เดินเพิ่ม จึงไม่มีอะไรต่อท้าย</string>
+    <string name="trackedit_walk_wait_fix">รอจับสัญญาณ GPS ก่อนจึงจะเดินต่อได้</string>
+    <string name="trackedit_saved">บันทึกการแก้ไขแล้ว — ระบบนำทางใช้เส้นใหม่ทันที</string>
+    <string name="trackedit_unsaved">มีการแก้ไขที่ยังไม่บันทึก</string>
+    <string name="trackedit_discard_confirm">มีการแก้ไขที่ยังไม่บันทึก ออกโดยไม่บันทึกหรือไม่?</string>
+    <string name="trackedit_discard">ออกโดยไม่บันทึก</string>
+    <string name="trackedit_list_title">ค่าความคลาดเคลื่อนทีละจุด</string>
+    <string name="trackedit_list_item">จุดที่ %1$d</string>
+    <string name="trackedit_list_explain">ค่านี้คือรัศมีที่เครื่องรับ GPS ประเมินเองตอนเก็บจุดนั้น (มั่นใจราว 68 เปอร์เซ็นต์) ไม่ใช่ระยะที่เพี้ยนจริง — ระยะเพี้ยนจริงรู้ได้จากการเทียบกับแผนที่หรือจุดอ้างอิงเท่านั้น</string>
+    <string name="trackedit_crosshair">กากบาทตำแหน่ง</string>
 
     <!-- หน้า Debug GPS -->
     <string name="gps_debug_title">ข้อมูล GPS</string>

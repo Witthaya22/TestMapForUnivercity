@@ -281,6 +281,7 @@ internal fun TrackDetailSheet(
     onSetUsedForRouting: (Boolean) -> Unit,
     onExport: () -> Unit,
     onDelete: () -> Unit,
+    onOpenEditor: () -> Unit,
 ) {
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -315,6 +316,19 @@ internal fun TrackDetailSheet(
             // The walk itself, with nothing underneath it. The numbers below say how far
             // and how well; only this says what shape it was.
             TrackShape(points = track.points, modifier = Modifier.padding(vertical = 8.dp))
+
+            // The drawing above has nothing underneath it, so it cannot say whether the line
+            // is where the path is. The editor puts it on the real basemap, point by point.
+            Button(onClick = onOpenEditor, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.pathlog_open_editor))
+            }
+            if (track.editedVertexCount > 0) {
+                Text(
+                    text = stringResource(R.string.pathlog_edited_count, track.editedVertexCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             HorizontalDivider(Modifier.padding(vertical = 6.dp))
 
