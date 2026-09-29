@@ -1,6 +1,7 @@
 package th.ac.kmutnb.prachin.map.data.geojson
 
 import com.google.gson.JsonArray
+import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import th.ac.kmutnb.prachin.map.core.geo.GeoUtils
 import th.ac.kmutnb.prachin.map.data.model.TrackLog
@@ -49,6 +50,7 @@ object TrackLogExporter {
         "captureMode",
         "usedForRouting",
         "note",
+        "editedVertexCount",
         "wkt",
     )
 
@@ -108,6 +110,27 @@ object TrackLogExporter {
         addProperty("captureMode", track.captureMode.id)
         addProperty("usedForRouting", track.isUsedForRouting)
         addProperty("note", track.note)
+        addProperty("editedVertexCount", track.editedVertexCount)
+
+        // Index for index with the coordinates. Null means "not on record" - a track saved
+        // before per-vertex accuracy existed, or a vertex placed by hand - and is written
+        // as null rather than as a made-up number.
+        val accuracies = JsonArray()
+        val sources = JsonArray()
+        val moved = JsonArray()
+        track.points.indices.forEach { index ->
+            val info = track.vertexInfoAt(index)
+            info.accuracyMeters
+                ?.let { accuracies.add(round(it.toDouble(), METER_DECIMALS)) }
+                ?: accuracies.add(JsonNull.INSTANCE)
+            sources.add(info.source.id)
+            track.movedMetersAt(index)
+                ?.let { moved.add(round(it, METER_DECIMALS)) }
+                ?: moved.add(JsonNull.INSTANCE)
+        }
+        add("vertexAccuracyMeters", accuracies)
+        add("vertexSource", sources)
+        add("vertexMovedMeters", moved)
     }
 
     // ----------------------------------------------------------------------------------
@@ -147,6 +170,7 @@ object TrackLogExporter {
                 track.captureMode.id,
                 if (track.isUsedForRouting) "true" else "false",
                 track.note,
+                track.editedVertexCount.toString(),
                 wktOf(track),
             )
             builder.append(row.joinToString(",") { escapeCsv(it) }).append(CRLF)

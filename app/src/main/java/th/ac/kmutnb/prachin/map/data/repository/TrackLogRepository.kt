@@ -10,6 +10,7 @@ import th.ac.kmutnb.prachin.map.data.local.toEntity
 import th.ac.kmutnb.prachin.map.data.local.toTrackLog
 import th.ac.kmutnb.prachin.map.data.model.TrackCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.TrackLog
+import th.ac.kmutnb.prachin.map.data.model.TrackVertexInfo
 import th.ac.kmutnb.prachin.map.survey.RecordedTrack
 import java.util.UUID
 
@@ -81,12 +82,27 @@ class TrackLogRepository(private val trackLogDao: TrackLogDao) {
             isUsedForRouting = useForRouting,
             recordedAt = recordedAt,
             captureMode = captureMode,
+            vertexInfo = recorded.vertexAccuracies
+                .takeIf { it.size == recorded.points.size }
+                ?.map { TrackVertexInfo.walked(it) }
+                .orEmpty(),
         )
         trackLogDao.upsert(track.toEntity())
         return track
     }
 
-    /** The note is the only editable field: the rest is what the receiver measured. */
+    suspend fun find(id: String): TrackLog? = trackLogDao.findById(id)?.toTrackLog()
+
+    /**
+     * Writes back a track whose geometry was edited in the track editor.
+     *
+     * The edit itself is [th.ac.kmutnb.prachin.map.data.model.TrackEdits], which keeps each
+     * vertex's provenance; this only stores the result. Routing picks it up on its own,
+     * because the graph observes the table.
+     */
+    suspend fun replace(track: TrackLog) = trackLogDao.upsert(track.toEntity())
+
+    /** The note is free text; everything else changes only through [replace]. */
     suspend fun updateNote(id: String, note: String) = trackLogDao.updateNote(id, note)
 
     /**

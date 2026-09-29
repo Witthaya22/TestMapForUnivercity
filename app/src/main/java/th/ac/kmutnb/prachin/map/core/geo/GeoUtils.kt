@@ -191,8 +191,17 @@ object GeoUtils {
      * of which most only encode GPS jitter. Iterative rather than recursive so a long
      * track cannot blow the stack.
      */
-    fun simplifyDouglasPeucker(points: List<GeoPoint>, epsilonMeters: Double): List<GeoPoint> {
-        if (points.size <= 2 || epsilonMeters <= 0.0) return points
+    fun simplifyDouglasPeucker(points: List<GeoPoint>, epsilonMeters: Double): List<GeoPoint> =
+        simplifyDouglasPeuckerIndices(points, epsilonMeters).map { points[it] }
+
+    /**
+     * The same simplification, answered as the indices of the points it keeps, in order.
+     *
+     * For callers that hold something else index for index with the points - a track
+     * keeps each vertex's own fix accuracy, and has to know which accuracies survived.
+     */
+    fun simplifyDouglasPeuckerIndices(points: List<GeoPoint>, epsilonMeters: Double): List<Int> {
+        if (points.size <= 2 || epsilonMeters <= 0.0) return points.indices.toList()
 
         val keep = BooleanArray(points.size)
         keep[0] = true
@@ -222,7 +231,7 @@ object GeoUtils {
             }
         }
 
-        return points.filterIndexed { index, _ -> keep[index] }
+        return points.indices.filter { keep[it] }
     }
 
     // ----------------------------------------------------------------------------------

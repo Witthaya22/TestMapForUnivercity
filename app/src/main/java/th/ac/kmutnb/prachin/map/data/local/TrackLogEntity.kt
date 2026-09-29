@@ -1,11 +1,15 @@
 package th.ac.kmutnb.prachin.map.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.util.Locale
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.model.TrackCaptureMode
 import th.ac.kmutnb.prachin.map.data.model.TrackLog
+import th.ac.kmutnb.prachin.map.data.model.TrackVertexInfo
+import th.ac.kmutnb.prachin.map.data.model.VertexSource
 
 /**
  * A walked path as stored on the device.
@@ -39,6 +43,12 @@ data class TrackLogEntity(
     val isUsedForRouting: Boolean,
     val recordedAt: Long,
     val captureMode: String,
+    /**
+     * Per-vertex accuracy and provenance, `acc|source|lon,lat` per vertex, `;` between.
+     * Blank for rows written before version 8 - see [TrackLog.vertexInfo].
+     */
+    @ColumnInfo(defaultValue = "")
+    val encodedVertexInfo: String = "",
 )
 
 fun TrackLogEntity.toTrackLog(): TrackLog = TrackLog(
@@ -57,6 +67,7 @@ fun TrackLogEntity.toTrackLog(): TrackLog = TrackLog(
     isUsedForRouting = isUsedForRouting,
     recordedAt = recordedAt,
     captureMode = TrackCaptureMode.fromId(captureMode),
+    vertexInfo = decodeVertexInfo(encodedVertexInfo),
 )
 
 fun TrackLog.toEntity(): TrackLogEntity = TrackLogEntity(
@@ -75,6 +86,7 @@ fun TrackLog.toEntity(): TrackLogEntity = TrackLogEntity(
     isUsedForRouting = isUsedForRouting,
     recordedAt = recordedAt,
     captureMode = captureMode.id,
+    encodedVertexInfo = encodeVertexInfo(vertexInfo),
 )
 
 /** `lon,lat;lon,lat` - seven decimals, which is about a centimetre. */
@@ -89,3 +101,33 @@ internal fun decodePoints(encoded: String): List<GeoPoint> =
         val lat = parts[1].toDoubleOrNull() ?: return@mapNotNull null
         GeoPoint(lat = lat, lon = lon)
     }
+
+/**
+ * `acc|source|lon,lat` per vertex. Accuracy is written with [Float.toString] so it comes
+ * back bit for bit, and in a fixed locale-free form: a device set to a comma-decimal locale
+ * must not write a row that it then cannot read.
+ */
+internal fun encodeVertexInfo(info: List<TrackVertexInfo>): String =
+    info.joinToString(";") { vertex ->
+        val accuracy = vertex.accuracyMeters?.toString().orEmpty()
+        val original = vertex.originalPoint
+            ?.let { String.format(Locale.US, "%.7f,%.7f", it.lon, it.lat) }
+            .orEmpty()
+        "$accuracy|${vertex.source.id}|$original"
+    }
+
+/** Anything unreadable becomes "unknown" rather than failing the whole track. */
+internal fun decodeVertexInfo(encoded: String): List<TrackVertexInfo> {
+    if (encoded.isBlank()) return emptyList()
+    return encoded.split(';').map { entry ->
+        val parts = entry.split('|')
+        val original = parts.getOrNull(2)
+            ?.takeIf { it.isNotBlank() }
+            ?.let { decodePoints(it).firstOrNull() }
+        TrackVertexInfo(
+            accuracyMeters = parts.getOrNull(0)?.toFloatOrNull(),
+            source = VertexSource.fromId(parts.getOrNull(1)),
+            originalPoint = original,
+        )
+    }
+}

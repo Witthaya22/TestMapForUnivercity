@@ -16,7 +16,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         HazardSoundEntity::class,
         RouteHistoryEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -223,6 +223,22 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Gives each track vertex its own accuracy and provenance.
+         *
+         * Existing rows get an empty value, which the model reads as "walked, accuracy
+         * unknown" - true, because until now only the whole-walk figures were kept and
+         * the per-fix numbers are gone. Nothing is guessed back into them.
+         */
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `track_log` ADD COLUMN `encodedVertexInfo` TEXT NOT NULL" +
+                        " DEFAULT ''"
+                )
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -238,6 +254,7 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_4_5,
                 MIGRATION_5_6,
                 MIGRATION_6_7,
+                MIGRATION_7_8,
             ).build().also { instance = it }
         }
     }

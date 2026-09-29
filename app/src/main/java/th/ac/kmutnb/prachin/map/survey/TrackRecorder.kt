@@ -30,6 +30,13 @@ data class RecordedTrack(
     val rejectedCount: Int,
     /** Wall-clock seconds between the first and the last accepted fix. */
     val durationSeconds: Int,
+    /**
+     * The accuracy of the fix behind each vertex, index for index with [points].
+     *
+     * Every vertex is one real fix - thinned and simplified, never averaged - so its own
+     * reported accuracy is the only honest per-point figure there is.
+     */
+    val vertexAccuracies: List<Float> = emptyList(),
 )
 
 /**
@@ -64,6 +71,9 @@ class TrackRecorder(
 
     /** The thinned line, for the geometry. */
     private val vertices = ArrayList<GeoPoint>()
+
+    /** The accuracy of the fix each vertex came from, index for index with [vertices]. */
+    private val vertexAccuracies = ArrayList<Float>()
 
     var rejectedCount: Int = 0
         private set
@@ -112,6 +122,7 @@ class TrackRecorder(
         val last = vertices.lastOrNull()
         if (last != null && GeoUtils.haversineMeters(last, point) < minSpacingMeters) return false
         vertices += point
+        vertexAccuracies += accuracyMeters
         return true
     }
 
@@ -127,13 +138,29 @@ class TrackRecorder(
      */
     fun finish(epsilonMeters: Double = DEFAULT_EPSILON_M): RecordedTrack? {
         if (!isUsable) return null
-        val simplified = simplified(epsilonMeters)
-        if (simplified.size < 2) return null
+        return build(epsilonMeters, minVertices = 2)
+    }
+
+    /**
+     * Everything walked so far, however short, for extending a track that already exists.
+     *
+     * The minimum length that [finish] enforces is about whether a walk is worth keeping on
+     * its own. A continuation is never on its own - even one new vertex past the old end is
+     * a real extension - so all it needs is that something was walked at all.
+     */
+    fun finishContinuation(epsilonMeters: Double = DEFAULT_EPSILON_M): RecordedTrack? =
+        if (vertices.isEmpty()) null else build(epsilonMeters, minVertices = 1)
+
+    private fun build(epsilonMeters: Double, minVertices: Int): RecordedTrack? {
+        val kept = GeoUtils.simplifyDouglasPeuckerIndices(vertices, epsilonMeters)
+        if (kept.size < minVertices) return null
+        val simplified = kept.map { vertices[it] }
 
         val accuracies = accepted.map { it.accuracy }
         val counts = accepted.mapNotNull { it.satellites }
         return RecordedTrack(
             points = simplified,
+            vertexAccuracies = kept.map { vertexAccuracies[it] },
             lengthMeters = lengthMeters,
             averageAccuracyMeters = accuracies.average().toFloat(),
             worstAccuracyMeters = accuracies.maxOrNull() ?: 0f,
@@ -150,6 +177,7 @@ class TrackRecorder(
     fun reset() {
         accepted.clear()
         vertices.clear()
+        vertexAccuracies.clear()
         rejectedCount = 0
     }
 
