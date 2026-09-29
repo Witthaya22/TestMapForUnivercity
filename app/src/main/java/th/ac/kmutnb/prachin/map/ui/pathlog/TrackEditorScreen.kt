@@ -63,6 +63,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import android.graphics.PointF
+import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
@@ -250,12 +252,19 @@ fun TrackEditorScreen(
                     )
                 }
                 map.moveCamera(framing(draft.points, padding))
+                map.dropPadding()
             }
 
-            // Moving starts with the crosshair on the vertex, so "0 m" means untouched.
+            // Moving starts with the crosshair on the vertex, so "0 m" means untouched;
+            // adding starts on the point the new one will follow.
             LaunchedEffect(state.mode) {
-                if (state.mode != TrackEditMode.MOVE) return@LaunchedEffect
-                state.selected?.let { draft.points.getOrNull(it) }?.let(::flyTo)
+                val anchor = when (state.mode) {
+                    TrackEditMode.MOVE -> state.selected?.let { draft.points.getOrNull(it) }
+                    TrackEditMode.ADD -> draft.points.getOrNull(state.insertIndex - 1)
+                        ?: draft.points.getOrNull(state.insertIndex)
+                    else -> null
+                }
+                anchor?.let(::flyTo)
             }
 
             if (state.mode == TrackEditMode.MOVE || state.mode == TrackEditMode.ADD) {
@@ -432,6 +441,40 @@ private fun framing(points: List<GeoPoint>, padding: FramePadding): CameraUpdate
     }.getOrDefault(single)
 }
 
+/**
+ * Keeps the current view but takes the framing padding off the camera.
+ *
+ * `newLatLngBounds` with padding leaves that padding on the camera, which moves the
+ * camera's centre up into the padded area - away from the crosshair, which is drawn at the
+ * centre of the view. Every later fly-to then parked the vertex above the crosshair and the
+ * move distance read from the wrong spot. With no padding the two centres are one point.
+ */
+private fun MapLibreMap.dropPadding() {
+    if (width <= 0f || height <= 0f) return
+    val centre = projection.fromScreenLocation(PointF(width / 2f, height / 2f))
+    moveCamera(
+        CameraUpdateFactory.newCameraPosition(
+            CameraPosition.Builder()
+                .target(centre)
+                .zoom(cameraPosition.zoom)
+                .padding(0.0, 0.0, 0.0, 0.0)
+                .build(),
+        ),
+    )
+}
+
+/**
+ * The point under the middle of the map view - exactly where the crosshair is drawn.
+ *
+ * Read from the pixel rather than from the camera target, so it stays under the crosshair
+ * whatever padding the camera carries.
+ */
+private fun MapLibreMap.viewCentre(): GeoPoint? {
+    if (width <= 0f || height <= 0f) return null
+    val latLng = projection.fromScreenLocation(PointF(width / 2f, height / 2f))
+    return GeoPoint(lat = latLng.latitude, lon = latLng.longitude)
+}
+
 // --------------------------------------------------------------------------------------
 // Map
 // --------------------------------------------------------------------------------------
@@ -469,7 +512,7 @@ private fun TrackEditMapView(
             map.uiSettings.isAttributionEnabled = true
 
             fun reportCentre() {
-                map.cameraPosition.target?.let { cameraMoved(GeoPoint(lat = it.latitude, lon = it.longitude)) }
+                map.viewCentre()?.let { cameraMoved(it) }
             }
             map.addOnCameraMoveListener { reportCentre() }
             map.addOnCameraIdleListener { reportCentre() }
