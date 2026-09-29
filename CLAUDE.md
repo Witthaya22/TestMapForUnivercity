@@ -99,6 +99,8 @@
 | `ui/pathlog/PathLogScreen.kt` | เดินเก็บ**เส้นทาง** โหมดแผนที่ (เห็นเส้นที่เก็บไว้ทุกเส้น) |
 | `ui/pathlog/PathReadoutScreen.kt` | เดินเก็บเส้นทาง โหมดตัวเลข — ชุดข้อมูลเดียวกัน ต่างกันที่ `captureMode` |
 | `ui/pathlog/PathLogComponents.kt` | UI ที่สองหน้าจอเส้นทางใช้ร่วมกัน ห้ามก๊อป |
+| `ui/pathlog/TrackEditorScreen.kt` | แก้ไขเส้นทางทีละจุดบนแผนที่จริง + ค่าคลาดเคลื่อนรายจุด |
+| `data/model/TrackEdits.kt` | กติกาการแก้เส้น (ย้าย/เพิ่ม/ลบ/เดินต่อ) — **ต้องเก็บที่มาของทุกจุดไว้เสมอ** |
 | `survey/TrackRecorder.kt` | กรองระยะห่าง 3 ม. + ลดจุด Douglas-Peucker + สถิติของการเดิน |
 | `data/model/TrackLog.kt` | เส้นทางที่เดินเก็บ + `toWalkPath()` แปลงเข้ากราฟ routing |
 | `data/geojson/TrackLogExporter.kt` | เขียนไฟล์ `tracks_*.geojson` / `.csv` (CSV มี WKT) |
@@ -112,7 +114,7 @@
 | `core/sound/HazardSoundPlayer.kt` | เล่นเสียงเตือนนำ แล้วค่อยให้ `SpeechAnnouncer` พูด |
 | `tools/make_alert_sounds.py` | gen ไฟล์เสียงตัวอย่างใน `res/raw/` (ไม่ได้โหลดมาจากไหน) |
 | `ui/hazard/HazardScreen.kt` | หน้าปักและจัดการจุดอันตราย |
-| `data/local/AppDatabase.kt` | Room version **7** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/local/AppDatabase.kt` | Room version **8** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
