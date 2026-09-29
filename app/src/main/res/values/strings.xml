@@ -466,8 +466,6 @@
     <string name="pathlog_export_select_none">ล้างที่เลือก</string>
     <string name="pathlog_export_this">ส่งออกเฉพาะเส้น %1$s</string>
     <string name="pathlog_export_empty">ยังไม่มีเส้นทางให้ส่งออก</string>
-    <string name="pathlog_shape_empty">เส้นทางนี้สั้นเกินกว่าจะวาดรูปร่างได้</string>
-    <string name="pathlog_shape_legend">รูปร่างเส้นทางที่เดินจริง (ทิศเหนืออยู่ด้านบน) · จุดเขียว = เริ่ม · จุดแดง = จบ · หัวท้ายห่างกัน %1$d ม.</string>
     <string name="survey_paths_moved">การเดินเก็บเส้นทางย้ายไปอยู่ที่ \"เดินเก็บเส้นทาง\" แล้ว (ตั้งค่า → สำหรับผู้ดูแล) เพราะเส้นทางเป็นค่าที่วัดได้ ไม่ใช่สถานที่</string>
     <string name="pathlog_open_editor">ดูบนแผนที่จริง · แก้ไขจุด</string>
     <string name="pathlog_edited_count">แก้ไขด้วยมือแล้ว %1$d จุด</string>

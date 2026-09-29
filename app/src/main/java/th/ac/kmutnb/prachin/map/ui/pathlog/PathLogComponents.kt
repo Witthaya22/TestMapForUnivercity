@@ -313,13 +313,15 @@ internal fun TrackDetailSheet(
                 Text(track.note, style = MaterialTheme.typography.bodyMedium)
             }
 
-            // The walk itself, with nothing underneath it. The numbers below say how far
-            // and how well; only this says what shape it was.
-            TrackShape(points = track.points, modifier = Modifier.padding(vertical = 8.dp))
-
-            // The drawing above has nothing underneath it, so it cannot say whether the line
-            // is where the path is. The editor puts it on the real basemap, point by point.
-            Button(onClick = onOpenEditor, modifier = Modifier.fillMaxWidth()) {
+            // The shape of the walk lives in the editor, over the real basemap. A sketch on a
+            // blank canvas used to sit here too; it showed the same line with nothing to
+            // judge it against, so it only doubled what the editor does better.
+            Button(
+                onClick = onOpenEditor,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            ) {
                 Text(stringResource(R.string.pathlog_open_editor))
             }
             if (track.editedVertexCount > 0) {
