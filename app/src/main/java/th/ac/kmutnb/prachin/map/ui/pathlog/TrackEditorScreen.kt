@@ -1,7 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.pathlog
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -48,22 +46,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import android.annotation.SuppressLint
 import android.graphics.PointF
-import org.maplibre.android.camera.CameraPosition
+import android.view.MotionEvent
+import android.view.ViewConfiguration
 import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
@@ -75,6 +72,7 @@ import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.core.geo.GeoUtils
 import th.ac.kmutnb.prachin.map.data.config.CampusConfig
 import th.ac.kmutnb.prachin.map.data.model.GpsFixQuality
+import th.ac.kmutnb.prachin.map.data.model.TrackEdits
 import th.ac.kmutnb.prachin.map.data.model.TrackLog
 import th.ac.kmutnb.prachin.map.data.model.TrackVertexInfo
 import th.ac.kmutnb.prachin.map.data.model.VertexSource
@@ -83,6 +81,7 @@ import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
 import th.ac.kmutnb.prachin.map.ui.common.BottomSheetCardMaxHeight
 import th.ac.kmutnb.prachin.map.ui.common.Formats
 import th.ac.kmutnb.prachin.map.ui.common.messageRes
+import kotlin.math.hypot
 
 /**
  * One saved track over the real basemap, point by point, with the means to correct it.
@@ -92,10 +91,11 @@ import th.ac.kmutnb.prachin.map.ui.common.messageRes
  * over the same offline OpenStreetMap basemap the navigation uses, so a point whose circle
  * misses the path it was walked along stands out on sight.
  *
- * Corrections are made against that basemap with a fixed crosshair rather than by dragging
- * a dot: a fingertip hides exactly the spot being placed, a crosshair does not. Every edit
- * keeps its provenance (see `TrackEdits`), so a corrected line never passes for a measured
- * one in the exported file.
+ * Corrections are made by hand, the way any map editor works: tap a vertex to select it,
+ * drag it to where it belongs, tap the map to place new ones. The vertex keeps the offset
+ * from the fingertip it was picked up with, so it does not jump under the finger. Every
+ * edit keeps its provenance (see `TrackEdits`), so a corrected line never passes for a
+ * measured one in the exported file.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,8 +114,8 @@ fun TrackEditorScreen(
     val layerManager = remember { TrackEditLayerManager() }
 
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
-    // Where the crosshair points: the camera target, which is the centre of the map.
-    var crosshair by remember { mutableStateOf<GeoPoint?>(null) }
+    // Where the selected vertex is being dragged to; null when no drag is under way.
+    var dragPoint by remember { mutableStateOf<GeoPoint?>(null) }
     var fitted by remember { mutableStateOf(false) }
     var showList by rememberSaveable { mutableStateOf(false) }
     var confirmLeave by rememberSaveable { mutableStateOf(false) }
@@ -134,11 +134,11 @@ fun TrackEditorScreen(
         scope.launch { snackbarHostState.showSnackbar(message) }
     }
 
-    // Back leaves a half-done move or add first; walking is only left by its own buttons,
-    // so a stray back gesture cannot throw away a walk.
+    // Back leaves adding first; walking is only left by its own buttons, so a stray back
+    // gesture cannot throw away a walk.
     BackHandler(enabled = state.mode != TrackEditMode.WALK) {
         when (state.mode) {
-            TrackEditMode.MOVE, TrackEditMode.ADD -> viewModel.endMode()
+            TrackEditMode.ADD -> viewModel.endMode()
             else -> leave()
         }
     }
@@ -210,14 +210,33 @@ fun TrackEditorScreen(
                 config = config,
                 styleUri = styleUri,
                 layerManager = layerManager,
+                dragAnchor = state.selected
+                    ?.takeIf { state.canDragSelected }
+                    ?.let { draft.points.getOrNull(it) },
                 onMapReady = { mapLibreMap = it },
-                onCameraMoved = { crosshair = it },
                 onTap = viewModel::onMapTap,
+                onDrag = { dragPoint = it },
+                onDrop = { to ->
+                    to?.let(viewModel::moveSelected)
+                    dragPoint = null
+                },
             )
 
             // --- overlays pushed into the map ------------------------------------------
-            LaunchedEffect(draft, state.selected, state.showAccuracy) {
-                layerManager.setTrack(draft, state.selected, state.showAccuracy)
+            // While dragging, the line is drawn as it will be once dropped - the neighbours'
+            // segments, the link back to the GPS position and all - so what is let go is
+            // what was seen.
+            val selectedIndex = state.selected
+            val shown = remember(draft, selectedIndex, dragPoint) {
+                val to = dragPoint
+                if (to != null && selectedIndex != null && selectedIndex in draft.points.indices) {
+                    TrackEdits.moveVertex(draft, selectedIndex, to)
+                } else {
+                    draft
+                }
+            }
+            LaunchedEffect(shown, state.selected, state.showAccuracy) {
+                layerManager.setTrack(shown, state.selected, state.showAccuracy)
             }
             LaunchedEffect(state.locationState) {
                 layerManager.setUserLocation(state.currentPoint, state.currentAccuracyMeters ?: 0f)
@@ -231,9 +250,6 @@ fun TrackEditorScreen(
                         listOf(end) + state.walkPoints
                     },
                 )
-            }
-            LaunchedEffect(crosshair, state.mode, state.selected, state.insertIndex, draft) {
-                layerManager.setPreview(previewSegments(state, draft, crosshair))
             }
 
             // Frame the whole track once, when both the map and the track are there, and
@@ -251,24 +267,16 @@ fun TrackEditorScreen(
                         bottom = (screenHeightDp * 0.45f).dp.roundToPx(),
                     )
                 }
+                // The padding stays on the camera, so later fly-tos also land clear of
+                // the card rather than behind it.
                 map.moveCamera(framing(draft.points, padding))
-                map.dropPadding()
             }
 
-            // Moving starts with the crosshair on the vertex, so "0 m" means untouched;
-            // adding starts on the point the new one will follow.
+            // Adding starts on the point the new one will follow.
             LaunchedEffect(state.mode) {
-                val anchor = when (state.mode) {
-                    TrackEditMode.MOVE -> state.selected?.let { draft.points.getOrNull(it) }
-                    TrackEditMode.ADD -> draft.points.getOrNull(state.insertIndex - 1)
-                        ?: draft.points.getOrNull(state.insertIndex)
-                    else -> null
-                }
-                anchor?.let(::flyTo)
-            }
-
-            if (state.mode == TrackEditMode.MOVE || state.mode == TrackEditMode.ADD) {
-                Crosshair(Modifier.align(Alignment.Center))
+                if (state.mode != TrackEditMode.ADD) return@LaunchedEffect
+                (draft.points.getOrNull(state.insertIndex - 1)
+                    ?: draft.points.getOrNull(state.insertIndex))?.let(::flyTo)
             }
 
             SummaryChip(
@@ -308,21 +316,9 @@ fun TrackEditorScreen(
                     ) {
                         val selected = state.selected
                         when {
-                            state.mode == TrackEditMode.MOVE && selected != null ->
-                                MovePanel(
-                                    track = draft,
-                                    index = selected,
-                                    crosshair = crosshair,
-                                    onConfirm = { crosshair?.let(viewModel::confirmMove) },
-                                    onCancel = viewModel::endMode,
-                                )
-
                             state.mode == TrackEditMode.ADD ->
                                 AddPanel(
-                                    track = draft,
                                     insertIndex = state.insertIndex,
-                                    crosshair = crosshair,
-                                    onAdd = { crosshair?.let(viewModel::addAt) },
                                     onDone = viewModel::endMode,
                                 )
 
@@ -342,9 +338,9 @@ fun TrackEditorScreen(
                                 VertexPanel(
                                     track = draft,
                                     index = selected,
+                                    dragPoint = dragPoint,
                                     canDelete = state.canDeleteVertex,
                                     onClose = { viewModel.select(null) },
-                                    onMove = viewModel::startMove,
                                     onInsertBefore = { viewModel.startAdd(selected) },
                                     onInsertAfter = { viewModel.startAdd(selected + 1) },
                                     onDelete = viewModel::deleteSelected,
@@ -424,32 +420,6 @@ fun TrackEditorScreen(
     }
 }
 
-/** What confirming the edit in progress would draw, as dashed segments. */
-private fun previewSegments(
-    state: TrackEditorUiState,
-    track: TrackLog,
-    crosshair: GeoPoint?,
-): List<List<GeoPoint>> {
-    val target = crosshair ?: return emptyList()
-    val points = track.points
-    return when (state.mode) {
-        TrackEditMode.MOVE -> {
-            val index = state.selected ?: return emptyList()
-            listOfNotNull(
-                points.getOrNull(index - 1)?.let { listOf(it, target) },
-                points.getOrNull(index + 1)?.let { listOf(target, it) },
-            )
-        }
-
-        TrackEditMode.ADD -> listOfNotNull(
-            points.getOrNull(state.insertIndex - 1)?.let { listOf(it, target) },
-            points.getOrNull(state.insertIndex)?.let { listOf(target, it) },
-        )
-
-        else -> emptyList()
-    }
-}
-
 private data class FramePadding(val side: Int, val top: Int, val bottom: Int)
 
 /** The whole track in view, clear of the card at the bottom. */
@@ -468,40 +438,6 @@ private fun framing(points: List<GeoPoint>, padding: FramePadding): CameraUpdate
     }.getOrDefault(single)
 }
 
-/**
- * Keeps the current view but takes the framing padding off the camera.
- *
- * `newLatLngBounds` with padding leaves that padding on the camera, which moves the
- * camera's centre up into the padded area - away from the crosshair, which is drawn at the
- * centre of the view. Every later fly-to then parked the vertex above the crosshair and the
- * move distance read from the wrong spot. With no padding the two centres are one point.
- */
-private fun MapLibreMap.dropPadding() {
-    if (width <= 0f || height <= 0f) return
-    val centre = projection.fromScreenLocation(PointF(width / 2f, height / 2f))
-    moveCamera(
-        CameraUpdateFactory.newCameraPosition(
-            CameraPosition.Builder()
-                .target(centre)
-                .zoom(cameraPosition.zoom)
-                .padding(0.0, 0.0, 0.0, 0.0)
-                .build(),
-        ),
-    )
-}
-
-/**
- * The point under the middle of the map view - exactly where the crosshair is drawn.
- *
- * Read from the pixel rather than from the camera target, so it stays under the crosshair
- * whatever padding the camera carries.
- */
-private fun MapLibreMap.viewCentre(): GeoPoint? {
-    if (width <= 0f || height <= 0f) return null
-    val latLng = projection.fromScreenLocation(PointF(width / 2f, height / 2f))
-    return GeoPoint(lat = latLng.latitude, lon = latLng.longitude)
-}
-
 // --------------------------------------------------------------------------------------
 // Map
 // --------------------------------------------------------------------------------------
@@ -511,15 +447,20 @@ private fun TrackEditMapView(
     config: CampusConfig,
     styleUri: String,
     layerManager: TrackEditLayerManager,
+    dragAnchor: GeoPoint?,
     onMapReady: (MapLibreMap) -> Unit,
-    onCameraMoved: (GeoPoint) -> Unit,
     onTap: (GeoPoint, Int?) -> Unit,
+    onDrag: (GeoPoint) -> Unit,
+    onDrop: (GeoPoint?) -> Unit,
 ) {
     val mapView = rememberMapViewWithLifecycle()
-    val cameraMoved by rememberUpdatedState(onCameraMoved)
     val tapped by rememberUpdatedState(onTap)
+    val anchor by rememberUpdatedState(dragAnchor)
+    val dragged by rememberUpdatedState(onDrag)
+    val dropped by rememberUpdatedState(onDrop)
     val density = LocalDensity.current
     val tapSlopPx = with(density) { TAP_SLOP.toPx() }
+    val grabRadiusPx = with(density) { GRAB_RADIUS.toPx() }
 
     DisposableEffect(mapView, styleUri) {
         mapView.getMapAsync { map ->
@@ -538,11 +479,16 @@ private fun TrackEditMapView(
             map.uiSettings.isLogoEnabled = false
             map.uiSettings.isAttributionEnabled = true
 
-            fun reportCentre() {
-                map.viewCentre()?.let { cameraMoved(it) }
-            }
-            map.addOnCameraMoveListener { reportCentre() }
-            map.addOnCameraIdleListener { reportCentre() }
+            mapView.setOnTouchListener(
+                VertexDragListener(
+                    map = map,
+                    anchor = { anchor },
+                    grabRadiusPx = grabRadiusPx,
+                    touchSlopPx = ViewConfiguration.get(mapView.context).scaledTouchSlop.toFloat(),
+                    onDrag = { dragged(it) },
+                    onDrop = { dropped(it) },
+                ),
+            )
 
             map.addOnMapClickListener { latLng ->
                 val screenPoint = map.projection.toScreenLocation(latLng)
@@ -561,29 +507,83 @@ private fun TrackEditMapView(
                 true
             }
         }
-        onDispose { layerManager.detach() }
+        onDispose {
+            mapView.setOnTouchListener(null)
+            layerManager.detach()
+        }
     }
 
     AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
 }
 
-/** A fixed cross at the centre of the map; what it covers is what gets placed. */
-@Composable
-private fun Crosshair(modifier: Modifier = Modifier) {
-    val description = stringResource(R.string.trackedit_crosshair)
-    Canvas(
-        modifier
-            .size(44.dp)
-            .semantics { contentDescription = description },
-    ) {
-        val c = center
-        val arm = size.minDimension / 2f
-        val gap = 5.dp.toPx()
-        listOf(Color.White to 5.dp.toPx(), Color(0xFF6A1B9A) to 2.dp.toPx()).forEach { (colour, width) ->
-            drawLine(colour, Offset(c.x - arm, c.y), Offset(c.x - gap, c.y), width)
-            drawLine(colour, Offset(c.x + gap, c.y), Offset(c.x + arm, c.y), width)
-            drawLine(colour, Offset(c.x, c.y - arm), Offset(c.x, c.y - gap), width)
-            drawLine(colour, Offset(c.x, c.y + gap), Offset(c.x, c.y + arm), width)
+/**
+ * Lets a finger pick up the selected vertex and drag it, ahead of the map's own gestures.
+ *
+ * A touch that lands on the selected vertex is taken from the map entirely - otherwise the
+ * map would pan along with the drag - and every other touch is passed through untouched,
+ * so panning, zooming and tapping work as before. Only the selected vertex can be grabbed:
+ * on a track of two hundred points nearly every pan would otherwise start on one.
+ *
+ * The vertex keeps the offset from the fingertip it was picked up with, so it does not jump
+ * under the finger, and a touch that never travels past the system touch slop moves nothing.
+ */
+private class VertexDragListener(
+    private val map: MapLibreMap,
+    private val anchor: () -> GeoPoint?,
+    private val grabRadiusPx: Float,
+    private val touchSlopPx: Float,
+    private val onDrag: (GeoPoint) -> Unit,
+    private val onDrop: (GeoPoint?) -> Unit,
+) : android.view.View.OnTouchListener {
+
+    /** Vertex minus finger, in pixels, while a vertex is held; null when none is. */
+    private var grab: PointF? = null
+    private val down = PointF()
+    private var dragging = false
+    private var last: GeoPoint? = null
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouch(view: android.view.View, event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                val vertex = anchor() ?: return false
+                val at = map.projection.toScreenLocation(LatLng(vertex.lat, vertex.lon))
+                if (hypot(at.x - event.x, at.y - event.y) > grabRadiusPx) return false
+                grab = PointF(at.x - event.x, at.y - event.y)
+                down.set(event.x, event.y)
+                dragging = false
+                last = null
+                return true
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val offset = grab ?: return false
+                if (!dragging && hypot(event.x - down.x, event.y - down.y) < touchSlopPx) {
+                    return true
+                }
+                dragging = true
+                val latLng = map.projection.fromScreenLocation(
+                    PointF(event.x + offset.x, event.y + offset.y),
+                )
+                val point = GeoPoint(lat = latLng.latitude, lon = latLng.longitude)
+                last = point
+                onDrag(point)
+                return true
+            }
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (grab == null) return false
+                val dropAt = last.takeIf { dragging && event.actionMasked == MotionEvent.ACTION_UP }
+                grab = null
+                dragging = false
+                last = null
+                onDrop(dropAt)
+                return true
+            }
+
+            // A second finger while a vertex is held is ignored, not handed to the map:
+            // the map never saw the first finger, so it could not make sense of the pair.
+            else -> return grab != null
         }
     }
 }
@@ -679,9 +679,9 @@ private fun LegendDot(colour: Color, label: String) {
 private fun VertexPanel(
     track: TrackLog,
     index: Int,
+    dragPoint: GeoPoint?,
     canDelete: Boolean,
     onClose: () -> Unit,
-    onMove: () -> Unit,
     onInsertBefore: () -> Unit,
     onInsertAfter: () -> Unit,
     onDelete: () -> Unit,
@@ -699,16 +699,30 @@ private fun VertexPanel(
         }
     }
     AccuracyText(info)
-    track.movedMetersAt(index)?.let {
+    // Measured from where the receiver put the vertex, not from where it was a moment
+    // ago, so a second correction still reports the whole distance from the measurement.
+    val origin = info.originalPoint ?: track.points[index]
+    val moved = when {
+        info.source == VertexSource.PLACED -> null
+        dragPoint != null -> GeoUtils.haversineMeters(origin, dragPoint)
+        else -> track.movedMetersAt(index)
+    }
+    moved?.let {
         Text(
             text = stringResource(R.string.trackedit_vertex_moved_short, it),
-            style = MaterialTheme.typography.bodySmall,
+            style = if (dragPoint != null) {
+                MaterialTheme.typography.titleMedium
+            } else {
+                MaterialTheme.typography.bodySmall
+            },
         )
     }
+    Text(
+        text = stringResource(R.string.trackedit_drag_hint),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 
-    Button(onClick = onMove, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.trackedit_move))
-    }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = onInsertBefore, modifier = Modifier.weight(1f)) {
             Text(stringResource(R.string.trackedit_insert_before))
@@ -727,76 +741,17 @@ private fun VertexPanel(
 }
 
 @Composable
-private fun MovePanel(
-    track: TrackLog,
-    index: Int,
-    crosshair: GeoPoint?,
-    onConfirm: () -> Unit,
-    onCancel: () -> Unit,
-) {
-    val info = track.vertexInfoAt(index)
-    Text(
-        text = stringResource(R.string.trackedit_move_hint, index + 1),
-        style = MaterialTheme.typography.bodyMedium,
-    )
-    // Measured from where the receiver put the vertex, not from where it was a moment
-    // ago, so a second correction still reports the whole distance from the measurement.
-    if (info.source != VertexSource.PLACED && crosshair != null) {
-        val origin = info.originalPoint ?: track.points[index]
-        Text(
-            text = stringResource(
-                R.string.trackedit_move_distance,
-                GeoUtils.haversineMeters(origin, crosshair),
-            ),
-            style = MaterialTheme.typography.titleMedium,
-        )
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(onClick = onConfirm, enabled = crosshair != null, modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.trackedit_move_confirm))
-        }
-        OutlinedButton(onClick = onCancel) {
-            Text(stringResource(R.string.action_cancel))
-        }
-    }
-}
-
-@Composable
-private fun AddPanel(
-    track: TrackLog,
-    insertIndex: Int,
-    crosshair: GeoPoint?,
-    onAdd: () -> Unit,
-    onDone: () -> Unit,
-) {
+private fun AddPanel(insertIndex: Int, onDone: () -> Unit) {
     Text(
         text = stringResource(R.string.trackedit_add_position, insertIndex + 1),
         style = MaterialTheme.typography.titleMedium,
     )
-    val previous = track.points.getOrNull(insertIndex - 1)
-    if (previous != null && crosshair != null) {
-        Text(
-            text = stringResource(
-                R.string.trackedit_add_distance,
-                GeoUtils.haversineMeters(previous, crosshair),
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        // Two taps without moving the map would stack two vertices on one spot.
-        val clearOfPrevious = previous == null || crosshair == null ||
-            GeoUtils.haversineMeters(previous, crosshair) >= MIN_ADD_SPACING_METERS
-        Button(
-            onClick = onAdd,
-            enabled = crosshair != null && clearOfPrevious,
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(stringResource(R.string.trackedit_add_here))
-        }
-        OutlinedButton(onClick = onDone) {
-            Text(stringResource(R.string.trackedit_done))
-        }
+    Text(
+        text = stringResource(R.string.trackedit_add_hint),
+        style = MaterialTheme.typography.bodyMedium,
+    )
+    Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.trackedit_done))
     }
 }
 
@@ -954,9 +909,6 @@ private const val MAX_EDIT_ZOOM = 20.5
 /** A gap bigger than a couple of paces is worth pointing out before it becomes a line. */
 private const val WALK_GAP_WARNING_METERS = 10.0
 
-/** Closer than this to the previous vertex, a new one would only be a duplicate. */
-private const val MIN_ADD_SPACING_METERS = 0.5
-
 /** Straight-line metres from the track's end to [from]; null when either is missing. */
 private fun walkGapMeters(track: TrackLog, from: GeoPoint?): Double? {
     val end = track.points.lastOrNull() ?: return null
@@ -964,6 +916,12 @@ private fun walkGapMeters(track: TrackLog, from: GeoPoint?): Double? {
 }
 
 private val TAP_SLOP = 18.dp
+
+/**
+ * How far from the selected vertex a touch still picks it up. Wider than the dot on
+ * purpose: a fingertip is about this size, and missing the dot pans the map instead.
+ */
+private val GRAB_RADIUS = 28.dp
 
 /** Matches the placed-vertex colour in `TrackEditLayerManager`. */
 private val PLACED_COLOUR = Color(0xFF8E24AA)

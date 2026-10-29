@@ -25,6 +25,9 @@ object TrackEdits {
     /** A line needs two vertices to be a line, and to stay routable. */
     const val MIN_VERTICES = 2
 
+    /** Closer than this to a neighbour, a new vertex would only be a duplicate of it. */
+    const val MIN_SPACING_METERS = 0.5
+
     /**
      * Puts vertex [index] at [to].
      *
@@ -64,6 +67,15 @@ object TrackEdits {
             .also { it.add(index, TrackVertexInfo.PLACED) }
         return withGeometry(track, points, info)
     }
+
+    /**
+     * Whether a vertex placed at [point] as index [index] would sit on one of its two
+     * neighbours. A second tap on the same spot would otherwise stack a duplicate there,
+     * which shows as one dot but counts, exports and routes as two.
+     */
+    fun wouldStack(track: TrackLog, index: Int, point: GeoPoint): Boolean =
+        listOfNotNull(track.points.getOrNull(index - 1), track.points.getOrNull(index))
+            .any { GeoUtils.haversineMeters(it, point) < MIN_SPACING_METERS }
 
     fun canDelete(track: TrackLog): Boolean = track.points.size > MIN_VERTICES
 

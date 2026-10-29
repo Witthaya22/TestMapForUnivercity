@@ -41,7 +41,7 @@ class TrackEditLayerManager {
         this.style = style
         listOf(
             SOURCE_ACCURACY, SOURCE_ORIGINAL_LINKS, SOURCE_ORIGINALS, SOURCE_LINE,
-            SOURCE_WALK, SOURCE_PREVIEW, SOURCE_VERTICES, SOURCE_USER_ACCURACY, SOURCE_USER,
+            SOURCE_WALK, SOURCE_VERTICES, SOURCE_USER_ACCURACY, SOURCE_USER,
         ).forEach { style.addSource(GeoJsonSource(it, MapGeoJson.EMPTY_COLLECTION)) }
 
         // Later layers draw on top.
@@ -88,13 +88,6 @@ class TrackEditLayerManager {
                 PropertyFactory.lineWidth(4f),
                 PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
                 PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
-            ),
-        )
-        style.addLayer(
-            LineLayer(LAYER_PREVIEW, SOURCE_PREVIEW).withProperties(
-                PropertyFactory.lineColor(COLOR_PREVIEW),
-                PropertyFactory.lineWidth(3f),
-                PropertyFactory.lineDasharray(arrayOf(1.5f, 1.5f)),
             ),
         )
         style.addLayer(
@@ -206,15 +199,6 @@ class TrackEditLayerManager {
         setGeoJson(SOURCE_ORIGINAL_LINKS, MapGeoJson.documentOf(links))
     }
 
-    /** Dashed segments showing what confirming the current edit would draw. */
-    fun setPreview(segments: List<List<GeoPoint>>) {
-        val features = JsonArray()
-        segments.filter { it.size >= 2 }.forEach {
-            features.add(MapGeoJson.featureOf(MapGeoJson.lineGeometry(it), JsonObject()))
-        }
-        setGeoJson(SOURCE_PREVIEW, MapGeoJson.documentOf(features))
-    }
-
     /** The continuation being walked, joined to the old end. */
     fun setWalk(points: List<GeoPoint>) = setGeoJson(SOURCE_WALK, MapGeoJson.line(points))
 
@@ -248,7 +232,6 @@ class TrackEditLayerManager {
         private const val SOURCE_ORIGINAL_LINKS = "trackedit-original-links"
         private const val SOURCE_LINE = "trackedit-line"
         private const val SOURCE_WALK = "trackedit-walk"
-        private const val SOURCE_PREVIEW = "trackedit-preview"
         private const val SOURCE_VERTICES = "trackedit-vertices"
         private const val SOURCE_USER = "trackedit-user"
         private const val SOURCE_USER_ACCURACY = "trackedit-user-accuracy"
@@ -259,7 +242,6 @@ class TrackEditLayerManager {
         private const val LAYER_ORIGINAL_LINKS = "trackedit-original-links-layer"
         private const val LAYER_LINE = "trackedit-line-layer"
         private const val LAYER_WALK = "trackedit-walk-layer"
-        private const val LAYER_PREVIEW = "trackedit-preview-layer"
         private const val LAYER_VERTEX_LABELS = "trackedit-vertex-label-layer"
         private const val LAYER_USER = "trackedit-user-layer"
         private const val LAYER_USER_ACCURACY = "trackedit-user-accuracy-layer"
@@ -278,7 +260,6 @@ class TrackEditLayerManager {
 
         private const val COLOR_LINE = 0xFF1565C0.toInt()
         private const val COLOR_WALK = 0xFF00ACC1.toInt()
-        private const val COLOR_PREVIEW = 0xFF6A1B9A.toInt()
         private const val COLOR_ORIGINAL = 0xFF616161.toInt()
         private const val COLOR_USER = 0xFF2196F3.toInt()
         private const val COLOR_PLACED = 0xFF8E24AA.toInt()

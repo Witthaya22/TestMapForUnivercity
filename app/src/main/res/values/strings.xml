@@ -491,15 +491,11 @@
     <string name="trackedit_source_placed">ปักเอง</string>
     <string name="trackedit_source_moved">ย้ายแล้ว</string>
     <string name="trackedit_meters_value">%1$.1f ม.</string>
-    <string name="trackedit_move">ย้ายจุดนี้</string>
+    <string name="trackedit_drag_hint">ใช้นิ้วลากจุดนี้ไปตำแหน่งจริงเพื่อย้าย</string>
     <string name="trackedit_insert_before">แทรกก่อน</string>
     <string name="trackedit_insert_after">แทรกหลัง</string>
-    <string name="trackedit_move_hint">เลื่อนแผนที่ให้ + ตรงตำแหน่งจริงของจุดที่ %1$d</string>
-    <string name="trackedit_move_distance">ห่างจากจุดที่ GPS วัด %1$.1f ม.</string>
-    <string name="trackedit_move_confirm">ยืนยัน</string>
     <string name="trackedit_add_position">จุดใหม่ลำดับที่ %1$d</string>
-    <string name="trackedit_add_distance">ห่างจากจุดก่อนหน้า %1$.1f ม.</string>
-    <string name="trackedit_add_here">เพิ่มตรง +</string>
+    <string name="trackedit_add_hint">แตะบนแผนที่ตรงตำแหน่งจริงเพื่อวางจุด · ลากจุดที่เพิ่งวางเพื่อขยับ</string>
     <string name="trackedit_done">เสร็จ</string>
     <string name="trackedit_walk_gap">ห่างปลายเส้น %1$.0f ม. ช่วงนี้จะเป็นเส้นตรง</string>
     <string name="trackedit_walk_status">เดินต่อแล้ว %1$s · %2$d จุด · ± %3$.1f ม.</string>
@@ -512,7 +508,6 @@
     <string name="trackedit_discard">ออกโดยไม่บันทึก</string>
     <string name="trackedit_list_title">ค่าคลาดเคลื่อนทีละจุด</string>
     <string name="trackedit_list_item">จุดที่ %1$d</string>
-    <string name="trackedit_crosshair">กากบาทตำแหน่ง</string>
 
     <!-- หน้า Debug GPS -->
     <string name="gps_debug_title">ข้อมูล GPS</string>

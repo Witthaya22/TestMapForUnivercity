@@ -22,15 +22,12 @@ import th.ac.kmutnb.prachin.map.location.LocationState
 import th.ac.kmutnb.prachin.map.location.SatelliteInfo
 import th.ac.kmutnb.prachin.map.survey.TrackRecorder
 
-/** What a tap or the crosshair currently means in the editor. */
+/** What a tap on the map currently means in the editor. */
 enum class TrackEditMode {
-    /** Looking: a tap selects a vertex. */
+    /** Looking: a tap selects a vertex, dragging the selected one moves it. */
     VIEW,
 
-    /** The selected vertex follows the crosshair until confirmed. */
-    MOVE,
-
-    /** Each confirm (or tap) adds a hand-placed vertex at [TrackEditorUiState.insertIndex]. */
+    /** Each tap adds a hand-placed vertex at [TrackEditorUiState.insertIndex]. */
     ADD,
 
     /** Walking on from the end; fixes become new vertices. */
@@ -80,6 +77,11 @@ data class TrackEditorUiState(
     val canWalk: Boolean get() = currentPoint != null && mode == TrackEditMode.VIEW
 
     val canDeleteVertex: Boolean get() = draft?.let { TrackEdits.canDelete(it) } == true
+
+    /** The selected vertex can be picked up with a finger; not while walking on. */
+    val canDragSelected: Boolean
+        get() = mode != TrackEditMode.WALK && selected != null &&
+            draft != null && selected in draft.points.indices
 }
 
 /**
@@ -183,22 +185,18 @@ class TrackEditorViewModel(
         when (_uiState.value.mode) {
             TrackEditMode.ADD -> addAt(point)
             TrackEditMode.VIEW -> select(vertexIndex)
-            TrackEditMode.MOVE, TrackEditMode.WALK -> Unit
+            TrackEditMode.WALK -> Unit
         }
     }
 
     fun setShowAccuracy(show: Boolean) = _uiState.update { it.copy(showAccuracy = show) }
 
-    fun startMove() = _uiState.update {
-        if (it.selected == null) it else it.copy(mode = TrackEditMode.MOVE)
-    }
-
-    fun confirmMove(to: GeoPoint) {
+    /** Where the selected vertex was dropped at the end of a drag; one undo step. */
+    fun moveSelected(to: GeoPoint) {
         val state = _uiState.value
         val index = state.selected ?: return
-        if (state.mode != TrackEditMode.MOVE) return
+        if (!state.canDragSelected) return
         applyEdit { TrackEdits.moveVertex(it, index, to) }
-        _uiState.update { it.copy(mode = TrackEditMode.VIEW) }
     }
 
     /** @param index where the first new vertex goes; the end of the line when null. */
@@ -210,11 +208,16 @@ class TrackEditorViewModel(
         )
     }
 
-    /** Adds one vertex and stays in add mode, so a run of points is a run of taps. */
+    /**
+     * Adds one vertex and stays in add mode, so a run of points is a run of taps. A tap on
+     * top of a neighbour is ignored rather than stacked.
+     */
     fun addAt(point: GeoPoint) {
         val state = _uiState.value
+        val draft = state.draft ?: return
         if (state.mode != TrackEditMode.ADD) return
         val index = state.insertIndex
+        if (TrackEdits.wouldStack(draft, index, point)) return
         applyEdit { TrackEdits.insertVertex(it, index, point) }
         _uiState.update { it.copy(insertIndex = index + 1, selected = index) }
     }
@@ -226,7 +229,7 @@ class TrackEditorViewModel(
         _uiState.update { it.copy(selected = null) }
     }
 
-    /** Leaves move or add mode without touching the draft. */
+    /** Leaves add mode without touching the draft. */
     fun endMode() = _uiState.update {
         if (it.mode == TrackEditMode.WALK) it else it.copy(mode = TrackEditMode.VIEW)
     }
