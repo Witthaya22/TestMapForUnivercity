@@ -120,6 +120,23 @@ class TrackEditsTest {
     }
 
     @Test
+    fun `a tap on top of a neighbour would stack, a tap a pace away would not`() {
+        // Adding after the end: the only neighbour is the last vertex, at 90 m north.
+        val end = track.points.size
+        assertTrue(TrackEdits.wouldStack(track, end, at(90.2, 0.0)))
+        assertFalse(TrackEdits.wouldStack(track, end, at(91.0, 0.0)))
+
+        // Inserting between vertices 3 and 4 (40 m and 50 m): both sides count.
+        assertTrue(TrackEdits.wouldStack(track, 5, at(40.0, 0.3)))
+        assertTrue(TrackEdits.wouldStack(track, 5, at(49.8, 0.0)))
+        assertFalse(TrackEdits.wouldStack(track, 5, at(45.0, 0.0)))
+
+        // Before the start there is only the first vertex to sit on.
+        assertTrue(TrackEdits.wouldStack(track, 0, at(0.1, 0.0)))
+        assertFalse(TrackEdits.wouldStack(track, 0, at(-2.0, 0.0)))
+    }
+
+    @Test
     fun `deleting a point takes its record with it`() {
         val deleted = TrackEdits.deleteVertex(track, 6)
 
