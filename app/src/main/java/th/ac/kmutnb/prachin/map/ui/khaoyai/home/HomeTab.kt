@@ -43,7 +43,7 @@ import th.ac.kmutnb.prachin.map.data.khaoyai.KhaoYaiContent
 import th.ac.kmutnb.prachin.map.data.khaoyai.SpeciesKind
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ForestBrush
 import th.ac.kmutnb.prachin.map.ui.khaoyai.HeroBanner
-import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiSession
+import th.ac.kmutnb.prachin.map.data.model.UserAccount
 import th.ac.kmutnb.prachin.map.ui.khaoyai.LeafCorner
 import th.ac.kmutnb.prachin.map.ui.khaoyai.SectionHeader
 import th.ac.kmutnb.prachin.map.ui.khaoyai.news.NewsCard
@@ -52,7 +52,7 @@ import th.ac.kmutnb.prachin.map.ui.theme.HornbillAmber
 
 @Composable
 fun HomeTab(
-    session: KhaoYaiSession,
+    account: UserAccount,
     content: KhaoYaiContent,
     contentPadding: PaddingValues,
     onOpenNavigation: () -> Unit,
@@ -65,7 +65,7 @@ fun HomeTab(
     onOpenSos: () -> Unit,
 ) {
     LazyColumn(contentPadding = contentPadding) {
-        item { Hero(session, content, onOpenSos) }
+        item { Hero(account, content, onOpenSos) }
         item {
             NavigationCard(
                 onClick = onOpenNavigation,
@@ -121,7 +121,7 @@ fun HomeTab(
 }
 
 @Composable
-private fun Hero(session: KhaoYaiSession, content: KhaoYaiContent, onOpenSos: () -> Unit) {
+private fun Hero(account: UserAccount, content: KhaoYaiContent, onOpenSos: () -> Unit) {
     HeroBanner(height = 320.dp) {
         Surface(
             onClick = onOpenSos,
@@ -152,7 +152,7 @@ private fun Hero(session: KhaoYaiSession, content: KhaoYaiContent, onOpenSos: ()
             Text(
                 text = stringResource(
                     R.string.home_greeting,
-                    session.username.ifBlank { stringResource(R.string.home_guest_name) },
+                    account.fullName.ifBlank { stringResource(R.string.home_guest_name) },
                 ),
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),

@@ -79,6 +79,9 @@ val HazardType.labelRes: Int
         HazardType.CONSTRUCTION -> R.string.hazard_type_construction
         HazardType.BROKEN_PATH -> R.string.hazard_type_broken_path
         HazardType.ANIMAL -> R.string.hazard_type_animal
+        HazardType.CLIFF -> R.string.hazard_type_cliff
+        HazardType.FLASH_FLOOD -> R.string.hazard_type_flash_flood
+        HazardType.WILDLIFE_AREA -> R.string.hazard_type_wildlife_area
         HazardType.OTHER -> R.string.hazard_type_other
     }
 
@@ -142,5 +145,8 @@ val HazardType.voiceLabelRes: Int
         HazardType.CONSTRUCTION -> R.string.hazard_voice_type_construction
         HazardType.BROKEN_PATH -> R.string.hazard_voice_type_broken_path
         HazardType.ANIMAL -> R.string.hazard_voice_type_animal
+        HazardType.CLIFF -> R.string.hazard_voice_type_cliff
+        HazardType.FLASH_FLOOD -> R.string.hazard_voice_type_flash_flood
+        HazardType.WILDLIFE_AREA -> R.string.hazard_voice_type_wildlife_area
         HazardType.OTHER -> R.string.hazard_voice_type_other
     }

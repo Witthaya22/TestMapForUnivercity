@@ -52,6 +52,9 @@ object AssetPaths {
     /** Author and licence of every bundled photo, written by `tools/fetch_photos.py`. */
     const val PHOTO_CREDITS = "photos/credits.json"
 
+    /** Hospitals and police stations near the park, from OpenStreetMap. */
+    const val EMERGENCY_PLACES = "data/emergency_places.json"
+
     /** Drop audio files in here and they become warning sounds; see `docs/HAZARDS.md`. */
     const val HAZARD_SOUNDS_DIR = "sounds"
 

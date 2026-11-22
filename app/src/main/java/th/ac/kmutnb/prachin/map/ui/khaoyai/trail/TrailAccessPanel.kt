@@ -31,6 +31,9 @@ import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailAccess
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailAccessRules
+import th.ac.kmutnb.prachin.map.data.khaoyai.TrailSchedule
+import th.ac.kmutnb.prachin.map.ui.khaoyai.openStateLabel
+import th.ac.kmutnb.prachin.map.ui.khaoyai.trailHours
 import th.ac.kmutnb.prachin.map.location.LocationState
 import th.ac.kmutnb.prachin.map.ui.khaoyai.openLink
 import th.ac.kmutnb.prachin.map.ui.khaoyai.rememberLocationUi
@@ -49,7 +52,7 @@ fun TrailAccessPanel(trail: Trail, onStart: () -> Unit) {
     val location = rememberLocationUi()
     val state = location.state
     val here = (state as? LocationState.Available)?.fix?.point
-    val access = TrailAccessRules.evaluate(trail, here)
+    val access = TrailAccessRules.evaluate(trail, here, TrailSchedule.stateNow(trail))
     val context = LocalContext.current
 
     Surface(shadowElevation = 8.dp) {
@@ -63,6 +66,10 @@ fun TrailAccessPanel(trail: Trail, onStart: () -> Unit) {
             when (access) {
                 TrailAccess.Demo -> Status(stringResource(R.string.access_demo), MaterialTheme.colorScheme.primary)
                 TrailAccess.Closed -> Status(stringResource(R.string.access_closed), MaterialTheme.colorScheme.error)
+                is TrailAccess.OutsideHours -> Status(
+                    stringResource(R.string.access_outside_hours, openStateLabel(access.state), trailHours(trail)),
+                    MaterialTheme.colorScheme.error,
+                )
                 TrailAccess.Unmapped -> Status(stringResource(R.string.access_unmapped), MaterialTheme.colorScheme.onSurfaceVariant)
                 is TrailAccess.Inside -> Status(
                     stringResource(R.string.access_inside, distanceText(access.distanceMeters)),

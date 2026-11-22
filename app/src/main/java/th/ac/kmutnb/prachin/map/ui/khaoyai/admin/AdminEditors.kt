@@ -55,6 +55,8 @@ import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.SpeciesKind
+import th.ac.kmutnb.prachin.map.data.khaoyai.StationKind
+import th.ac.kmutnb.prachin.map.ui.khaoyai.stationKindLabel
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailDifficulty
 import th.ac.kmutnb.prachin.map.location.LocationState
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ContentPhoto
@@ -103,6 +105,20 @@ internal fun TrailEditor(
         }
         FormField(d.startPoint, { d = d.copy(startPoint = it) }, R.string.admin_field_start)
         FormField(d.endPoint, { d = d.copy(endPoint = it) }, R.string.admin_field_end)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FormField(
+                d.startFrom, { d = d.copy(startFrom = it) }, R.string.admin_field_start_from,
+                if (d.hoursInvalid) stringResource(R.string.admin_error_time) else null, KeyboardType.Text, Modifier.weight(1f),
+            )
+            FormField(d.startUntil, { d = d.copy(startUntil = it) }, R.string.admin_field_start_until, null, KeyboardType.Text, Modifier.weight(1f))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FormField(
+                d.seasonClosedFrom, { d = d.copy(seasonClosedFrom = it) }, R.string.admin_field_season_from,
+                if (d.seasonInvalid) stringResource(R.string.admin_error_season) else null, KeyboardType.Text, Modifier.weight(1f),
+            )
+            FormField(d.seasonClosedUntil, { d = d.copy(seasonClosedUntil = it) }, R.string.admin_field_season_until, null, KeyboardType.Text, Modifier.weight(1f))
+        }
         FormField(d.openNote, { d = d.copy(openNote = it) }, R.string.admin_field_open_note, singleLine = false)
         FormField(d.summary, { d = d.copy(summary = it) }, R.string.admin_field_summary, singleLine = false)
         FormField(d.description, { d = d.copy(description = it) }, R.string.admin_field_description, singleLine = false, minLines = 3)
@@ -115,6 +131,15 @@ internal fun TrailEditor(
         FormField(
             d.entryRadiusMeters, { d = d.copy(entryRadiusMeters = it) }, R.string.admin_field_entry_radius,
             number(d.entryRadiusInvalid), KeyboardType.Number,
+        )
+        FormField(
+            d.gpsToleranceMeters, { d = d.copy(gpsToleranceMeters = it) }, R.string.admin_field_gps_tolerance,
+            number(d.toleranceInvalid), KeyboardType.Number,
+        )
+        Text(
+            stringResource(R.string.admin_field_gps_tolerance_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         SwitchRow(R.string.admin_field_demo_unlocked, d.demoUnlocked) { d = d.copy(demoUnlocked = it) }
         Text(
@@ -240,6 +265,12 @@ private fun StationEditor(
         onDismiss = onDismiss,
     ) {
         PhotoField(s.photo, s.emoji, importPhoto) { s = s.copy(photo = it) }
+        Text(stringResource(R.string.admin_field_station_kind), style = MaterialTheme.typography.labelLarge)
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            StationKind.entries.forEach { k ->
+                FilterChip(selected = s.kind == k, onClick = { s = s.copy(kind = k) }, label = { Text("${k.emoji} ${stationKindLabel(k)}") })
+            }
+        }
         FormField(s.name, { s = s.copy(name = it) }, R.string.admin_field_name, required(s.nameMissing))
         FormField(s.emoji, { s = s.copy(emoji = it) }, R.string.admin_field_emoji)
         FormField(s.description, { s = s.copy(description = it) }, R.string.admin_field_station_story, singleLine = false, minLines = 4)

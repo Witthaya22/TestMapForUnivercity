@@ -31,6 +31,19 @@ enum class TrailDifficulty(val id: String) {
     }
 }
 
+/** What a station is, for its label and marker (§2.3.1.5: attraction, viewpoint, waterfall, rest stop). */
+enum class StationKind(val id: String, val emoji: String) {
+    NATURE("nature", "🌿"),
+    ATTRACTION("attraction", "📍"),
+    VIEWPOINT("viewpoint", "🔭"),
+    WATERFALL("waterfall", "💦"),
+    REST("rest", "⛺");
+
+    companion object {
+        fun fromId(id: String?): StationKind = entries.firstOrNull { it.id == id } ?: NATURE
+    }
+}
+
 /**
  * A point of interest along a trail - an old tree, an odd rock, a salt lick. Walking into
  * [radiusMeters] of [point] brings its card up on the map (see `StationMonitor`).
@@ -45,6 +58,7 @@ data class TrailStation(
     val radiusMeters: Int = DEFAULT_RADIUS_METERS,
     /** A photo reference, see [PhotoRef]; blank for none. */
     val photo: String = "",
+    val kind: StationKind = StationKind.NATURE,
 ) {
     companion object {
         /** About a fix's error and a few paces: close enough to be looking at it. */
@@ -84,9 +98,23 @@ data class Trail(
      */
     val demoUnlocked: Boolean,
     val sourceUrl: String,
+    /** Earliest start, `HH:mm`; blank for no limit. The park's trails start 08:00. */
+    val startFrom: String = "",
+    /** Latest start, `HH:mm`; blank for no limit. 14:00 for most, 10:00 for trail 6. */
+    val startUntil: String = "",
+    /** Yearly closure, `MM-dd` to `MM-dd`; blank for none. Trail 6: 07-01 to 08-31. */
+    val seasonClosedFrom: String = "",
+    val seasonClosedUntil: String = "",
+    /**
+     * How far off the line a fix may be and still count as on the trail; the dot is held
+     * on the line within it. Set per trail by an officer to absorb the GPS error found
+     * when the line was surveyed (§2.3.2.3 "ชดเชยระยะทางผิดพลาด").
+     */
+    val gpsToleranceMeters: Int = DEFAULT_GPS_TOLERANCE_METERS,
 ) {
     companion object {
         const val DEFAULT_ENTRY_RADIUS_METERS = 1_000
+        const val DEFAULT_GPS_TOLERANCE_METERS = 10
     }
 }
 

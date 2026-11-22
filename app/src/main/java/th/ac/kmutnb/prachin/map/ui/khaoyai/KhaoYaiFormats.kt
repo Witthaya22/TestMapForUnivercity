@@ -6,6 +6,9 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.SpeciesKind
+import th.ac.kmutnb.prachin.map.data.khaoyai.StationKind
+import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
+import th.ac.kmutnb.prachin.map.data.khaoyai.TrailOpenState
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailDifficulty
 import th.ac.kmutnb.prachin.map.ui.theme.ForestLeaf
 import th.ac.kmutnb.prachin.map.ui.theme.HornbillAmber
@@ -54,6 +57,44 @@ fun difficultyColor(difficulty: TrailDifficulty): Color = when (difficulty) {
     TrailDifficulty.MODERATE -> HornbillAmber
     TrailDifficulty.HARD -> Color(0xFFC0502D)
 }
+
+@Composable
+fun openStateLabel(state: TrailOpenState): String = stringResource(
+    when (state) {
+        TrailOpenState.OPEN_NOW -> R.string.open_state_open
+        TrailOpenState.NOT_YET -> R.string.open_state_not_yet
+        TrailOpenState.ENDED_TODAY -> R.string.open_state_ended
+        TrailOpenState.SEASON_CLOSED -> R.string.open_state_season
+        TrailOpenState.CLOSED -> R.string.open_state_closed
+    },
+)
+
+fun openStateColor(state: TrailOpenState): Color =
+    if (state == TrailOpenState.OPEN_NOW) Color(0xFF2E7D32) else Color(0xFFC62828)
+
+/** `เริ่มเดินได้ 08:00–14:00 น.` and any closed season, or blank when the trail has no limits. */
+@Composable
+fun trailHours(trail: Trail): String {
+    val parts = mutableListOf<String>()
+    if (trail.startFrom.isNotBlank() || trail.startUntil.isNotBlank()) {
+        parts += stringResource(R.string.trail_hours, trail.startFrom.ifBlank { "-" }, trail.startUntil.ifBlank { "-" })
+    }
+    if (trail.seasonClosedFrom.isNotBlank() && trail.seasonClosedUntil.isNotBlank()) {
+        parts += stringResource(R.string.trail_season_closed, trail.seasonClosedFrom, trail.seasonClosedUntil)
+    }
+    return parts.joinToString(" · ")
+}
+
+@Composable
+fun stationKindLabel(kind: StationKind): String = stringResource(
+    when (kind) {
+        StationKind.NATURE -> R.string.station_kind_nature
+        StationKind.ATTRACTION -> R.string.station_kind_attraction
+        StationKind.VIEWPOINT -> R.string.station_kind_viewpoint
+        StationKind.WATERFALL -> R.string.station_kind_waterfall
+        StationKind.REST -> R.string.station_kind_rest
+    },
+)
 
 @Composable
 fun speciesKindLabel(kind: SpeciesKind): String = stringResource(

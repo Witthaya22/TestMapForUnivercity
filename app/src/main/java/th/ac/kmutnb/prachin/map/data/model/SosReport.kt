@@ -4,23 +4,37 @@ import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import java.util.Locale
 
-enum class SosCategory(val id: String, val labelRes: Int, val emoji: String) {
-    INJURED("injured", R.string.sos_category_injured, "🩹"),
+/**
+ * The emergency types of the proposal (§2.3.1.3). [needsPlace] types also show the
+ * nearest hospital or police station, from `assets/data/emergency_places.json`.
+ */
+enum class SosCategory(val id: String, val labelRes: Int, val emoji: String, val needsPlace: EmergencyPlaceKind? = null) {
+    ACCIDENT("injured", R.string.sos_category_accident, "🩹"),
     LOST("lost", R.string.sos_category_lost, "🧭"),
     WILDLIFE("wildlife", R.string.sos_category_wildlife, "🐘"),
-    UNWELL("unwell", R.string.sos_category_unwell, "🤒"),
+    HOSPITAL("hospital", R.string.sos_category_hospital, "🏥", EmergencyPlaceKind.HOSPITAL),
+    POLICE("police", R.string.sos_category_police, "🚓", EmergencyPlaceKind.POLICE),
     OTHER("other", R.string.sos_category_other, "❗");
 
     companion object {
-        fun fromId(id: String?): SosCategory = entries.firstOrNull { it.id == id } ?: OTHER
+        // "unwell" was a type before the proposal's list; someone unwell needs a hospital.
+        fun fromId(id: String?): SosCategory =
+            if (id == "unwell") HOSPITAL else entries.firstOrNull { it.id == id } ?: OTHER
     }
 }
 
-/** NEW until an admin takes it on, then ACKNOWLEDGED, then RESOLVED. */
+/**
+ * NEW as sent; then the three steps the officer records (§2.3.2.2): received,
+ * in progress, help completed.
+ */
 enum class SosStatus(val id: String, val labelRes: Int) {
     NEW("new", R.string.sos_status_new),
     ACKNOWLEDGED("acknowledged", R.string.sos_status_acknowledged),
+    IN_PROGRESS("in_progress", R.string.sos_status_in_progress),
     RESOLVED("resolved", R.string.sos_status_resolved);
+
+    /** The step an officer moves a call to next; null once it is done. */
+    val next: SosStatus? get() = entries.getOrNull(ordinal + 1)
 
     companion object {
         fun fromId(id: String?): SosStatus = entries.firstOrNull { it.id == id } ?: NEW
@@ -30,6 +44,9 @@ enum class SosStatus(val id: String, val labelRes: Int) {
 data class SosReport(
     val id: String,
     val createdAt: Long,
+    /** The account that sent it, so officers can find the person and their latest position. */
+    val userId: String = "",
+    val touristId: String = "",
     /** Who was signed in; blank for a visitor who gave no name. */
     val username: String,
     /** Null when the phone had no fix at the moment of sending. */
@@ -42,6 +59,10 @@ data class SosReport(
     val status: SosStatus = SosStatus.NEW,
     val handledAt: Long? = null,
     val adminNote: String = "",
+    /** Seeded examples for the report screens; never shown as a real call. */
+    val isDemo: Boolean = false,
+    /** Sent to the server - always false until there is one. */
+    val synced: Boolean = false,
 ) {
     /** Opens in Google Maps (or a browser) on any phone, so it can be passed on as text. */
     val mapLink: String?

@@ -14,6 +14,9 @@ sealed interface TrailAccess {
 
     data object Closed : TrailAccess
 
+    /** Open, but not at this hour or in this season; see [TrailSchedule]. */
+    data class OutsideHours(val state: TrailOpenState) : TrailAccess
+
     /** No fix yet, or none allowed; the screen says which. */
     data object NoLocation : TrailAccess
 
@@ -36,9 +39,10 @@ object TrailAccessRules {
      * trailhead when no line is known, or when the trailhead is nearer. Measured to the
      * whole line, not only the start, so joining a trail half way along also counts.
      */
-    fun evaluate(trail: Trail, here: GeoPoint?): TrailAccess {
+    fun evaluate(trail: Trail, here: GeoPoint?, openState: TrailOpenState = TrailOpenState.OPEN_NOW): TrailAccess {
         if (trail.demoUnlocked) return TrailAccess.Demo
         if (!trail.isOpen) return TrailAccess.Closed
+        if (!openState.canStart) return TrailAccess.OutsideHours(openState)
         val distance = distanceToTrail(trail, here ?: return TrailAccess.NoLocation)
             ?: return TrailAccess.Unmapped
         return if (distance <= trail.entryRadiusMeters) {

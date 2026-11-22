@@ -68,6 +68,12 @@ object KhaoYaiContentJson {
             .takeIf { it > 0 } ?: Trail.DEFAULT_ENTRY_RADIUS_METERS,
         demoUnlocked = o.flag("demoUnlocked", default = false),
         sourceUrl = o.text("sourceUrl"),
+        startFrom = o.text("startFrom"),
+        startUntil = o.text("startUntil"),
+        seasonClosedFrom = o.text("seasonClosedFrom"),
+        seasonClosedUntil = o.text("seasonClosedUntil"),
+        gpsToleranceMeters = o.number("gpsToleranceMeters").toInt()
+            .takeIf { it > 0 } ?: Trail.DEFAULT_GPS_TOLERANCE_METERS,
     )
 
     private fun trail(t: Trail) = JsonObject().apply {
@@ -91,6 +97,11 @@ object KhaoYaiContentJson {
         addProperty("entryRadiusMeters", t.entryRadiusMeters)
         addProperty("demoUnlocked", t.demoUnlocked)
         addProperty("sourceUrl", t.sourceUrl)
+        addProperty("startFrom", t.startFrom)
+        addProperty("startUntil", t.startUntil)
+        addProperty("seasonClosedFrom", t.seasonClosedFrom)
+        addProperty("seasonClosedUntil", t.seasonClosedUntil)
+        addProperty("gpsToleranceMeters", t.gpsToleranceMeters)
     }
 
     /** A bare string is an old-style station with a name only. */
@@ -104,6 +115,7 @@ object KhaoYaiContentJson {
             point = e.point("point"),
             radiusMeters = e.number("radiusMeters").toInt().takeIf { it > 0 } ?: TrailStation.DEFAULT_RADIUS_METERS,
             photo = e.text("photo"),
+            kind = StationKind.fromId(e.text("kind")),
         )
         else -> null
     }
@@ -116,6 +128,7 @@ object KhaoYaiContentJson {
         s.point?.let { add("point", point(it)) }
         addProperty("radiusMeters", s.radiusMeters)
         addProperty("photo", s.photo)
+        addProperty("kind", s.kind.id)
     }
 
     private fun news(o: JsonObject) = NewsItem(

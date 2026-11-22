@@ -16,8 +16,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         HazardSoundEntity::class,
         RouteHistoryEntity::class,
         SosReportEntity::class,
+        UserAccountEntity::class,
+        TouristPositionEntity::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -35,6 +37,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun routeHistoryDao(): RouteHistoryDao
 
     abstract fun sosReportDao(): SosReportDao
+
+    abstract fun userAccountDao(): UserAccountDao
+
+    abstract fun touristPositionDao(): TouristPositionDao
 
     companion object {
         private const val NAME = "kmutnb_map.db"
@@ -267,6 +273,39 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Accounts and tourist positions (proposal §2.3.1.1-2), and who sent each SOS.
+         * New tables and added columns only; every call and track already stored stays.
+         */
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `user_account` (" +
+                        "`id` TEXT NOT NULL, `memberId` TEXT NOT NULL, `username` TEXT NOT NULL, " +
+                        "`passwordHash` TEXT NOT NULL, `fullName` TEXT NOT NULL, `phone` TEXT NOT NULL, " +
+                        "`email` TEXT NOT NULL, `nationality` TEXT NOT NULL, `role` TEXT NOT NULL, " +
+                        "`permissions` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, " +
+                        "`isDemo` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_user_account_username` ON `user_account` (`username`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_user_account_email` ON `user_account` (`email`)")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `tourist_position` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` TEXT NOT NULL, " +
+                        "`trailId` TEXT NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, " +
+                        "`accuracyMeters` REAL NOT NULL, `recordedAt` INTEGER NOT NULL, `synced` INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_tourist_position_userId_recordedAt` " +
+                        "ON `tourist_position` (`userId`, `recordedAt`)"
+                )
+                db.execSQL("ALTER TABLE `sos_report` ADD COLUMN `userId` TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE `sos_report` ADD COLUMN `touristId` TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE `sos_report` ADD COLUMN `isDemo` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE `sos_report` ADD COLUMN `synced` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -284,6 +323,7 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_6_7,
                 MIGRATION_7_8,
                 MIGRATION_8_9,
+                MIGRATION_9_10,
             ).build().also { instance = it }
         }
     }

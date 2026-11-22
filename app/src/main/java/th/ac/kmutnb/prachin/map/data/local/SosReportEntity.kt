@@ -29,6 +29,14 @@ data class SosReportEntity(
     val status: String,
     val handledAt: Long?,
     val adminNote: String,
+    @androidx.room.ColumnInfo(defaultValue = "")
+    val userId: String = "",
+    @androidx.room.ColumnInfo(defaultValue = "")
+    val touristId: String = "",
+    @androidx.room.ColumnInfo(defaultValue = "0")
+    val isDemo: Boolean = false,
+    @androidx.room.ColumnInfo(defaultValue = "0")
+    val synced: Boolean = false,
 )
 
 @Dao
@@ -48,6 +56,15 @@ interface SosReportDao {
 
     @Query("DELETE FROM sos_report WHERE status = :status")
     suspend fun deleteWithStatus(status: String)
+
+    @Query("DELETE FROM sos_report WHERE isDemo = 1")
+    suspend fun deleteDemo()
+
+    @Insert
+    suspend fun insertAll(reports: List<SosReportEntity>)
+
+    @Query("SELECT COUNT(*) FROM sos_report WHERE synced = 0 AND isDemo = 0")
+    fun observeUnsynced(): Flow<Int>
 }
 
 fun SosReportEntity.toReport() = SosReport(
@@ -62,6 +79,10 @@ fun SosReportEntity.toReport() = SosReport(
     status = SosStatus.fromId(status),
     handledAt = handledAt,
     adminNote = adminNote,
+    userId = userId,
+    touristId = touristId,
+    isDemo = isDemo,
+    synced = synced,
 )
 
 fun SosReport.toEntity() = SosReportEntity(
@@ -77,4 +98,8 @@ fun SosReport.toEntity() = SosReportEntity(
     status = status.id,
     handledAt = handledAt,
     adminNote = adminNote,
+    userId = userId,
+    touristId = touristId,
+    isDemo = isDemo,
+    synced = synced,
 )

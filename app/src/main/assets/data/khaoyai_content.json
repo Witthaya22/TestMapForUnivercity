@@ -6,12 +6,12 @@
       "name": "เส้นทางสาธิต มจพ. วิทยาเขตปราจีนบุรี",
       "emoji": "🏫",
       "photo": "",
-      "distanceKm": 1.7,
-      "durationMinutes": 50,
+      "distanceKm": 3.3,
+      "durationMinutes": 60,
       "difficulty": "easy",
       "startPoint": "ลานหลวงพ่อสิงห์ กลางวิทยาเขต",
       "endPoint": "ลานหลวงพ่อสิงห์",
-      "summary": "เส้นทางตัวอย่างในวิทยาเขต ใช้ทดลองระบบนำทางและจุดสื่อความหมายก่อนไปเดินจริงที่เขาใหญ่",
+      "summary": "เส้นทางตัวอย่างในวิทยาเขต 3.3 กม. ตามทางเดินจริง ใช้ทดลองระบบนำทาง จุดสื่อความหมาย และการแจ้งเตือนออกนอกเส้นทาง",
       "description": "เส้นทางนี้ใช้แผนที่ออฟไลน์ของ มจพ. วิทยาเขตปราจีนบุรีที่มีอยู่ในแอป เพื่อให้เห็นว่าการเดินเส้นทางศึกษาธรรมชาติจะเป็นอย่างไร เปิดแผนที่แล้วเดินไปตามจุดทั้ง 5 จุด เมื่อเข้าใกล้จุดไหนในระยะประมาณ 25–30 เมตร แอปจะเด้งเรื่องราวของจุดนั้นขึ้นมาเอง เนื้อหาของแต่ละจุดในเส้นทางนี้เป็นข้อมูลตัวอย่าง ผู้ดูแลแก้ไขได้จากหน้าผู้ดูแล",
       "stations": [
         {
@@ -22,9 +22,10 @@
           "radiusMeters": 30,
           "photo": "",
           "point": [
-            101.3472801,
-            14.1605492
-          ]
+            101.347331,
+            14.160514
+          ],
+          "kind": "rest"
         },
         {
           "id": "kmutnb_2",
@@ -34,9 +35,10 @@
           "radiusMeters": 30,
           "photo": "photos/strangler_fig.jpg",
           "point": [
-            101.3452317,
-            14.1598677
-          ]
+            101.345079,
+            14.15982
+          ],
+          "kind": "nature"
         },
         {
           "id": "kmutnb_3",
@@ -46,9 +48,10 @@
           "radiusMeters": 30,
           "photo": "photos/rock_formation.jpg",
           "point": [
-            101.3458533,
-            14.1574258
-          ]
+            101.34605,
+            14.157673
+          ],
+          "kind": "attraction"
         },
         {
           "id": "kmutnb_4",
@@ -58,9 +61,10 @@
           "radiusMeters": 30,
           "photo": "photos/wild_orchid.jpg",
           "point": [
-            101.3480452,
-            14.1580272
-          ]
+            101.348271,
+            14.158054
+          ],
+          "kind": "nature"
         },
         {
           "id": "kmutnb_5",
@@ -70,22 +74,217 @@
           "radiusMeters": 30,
           "photo": "photos/grassland.jpg",
           "point": [
-            101.3472077,
-            14.1633601
-          ]
+            101.346961,
+            14.163314
+          ],
+          "kind": "viewpoint"
         }
       ],
       "needsGuide": false,
       "isOpen": true,
       "openNote": "เส้นทางสาธิต เปิดให้กดเข้าได้จากทุกที่",
       "trailhead": [
-        101.3472801,
-        14.1605492
+        101.347331,
+        14.160514
       ],
-      "path": [],
+      "path": [
+        [
+          101.347331,
+          14.160514
+        ],
+        [
+          101.347719,
+          14.160222
+        ],
+        [
+          101.34717,
+          14.159578
+        ],
+        [
+          101.345199,
+          14.161144
+        ],
+        [
+          101.344403,
+          14.160182
+        ],
+        [
+          101.345003,
+          14.159725
+        ],
+        [
+          101.345079,
+          14.15982
+        ],
+        [
+          101.345003,
+          14.159725
+        ],
+        [
+          101.344403,
+          14.160182
+        ],
+        [
+          101.345199,
+          14.161144
+        ],
+        [
+          101.34717,
+          14.159578
+        ],
+        [
+          101.345759,
+          14.157911
+        ],
+        [
+          101.34633,
+          14.157442
+        ],
+        [
+          101.347641,
+          14.159052
+        ],
+        [
+          101.347952,
+          14.158804
+        ],
+        [
+          101.348013,
+          14.158704
+        ],
+        [
+          101.347949,
+          14.158657
+        ],
+        [
+          101.347944,
+          14.158574
+        ],
+        [
+          101.348628,
+          14.158045
+        ],
+        [
+          101.348472,
+          14.157906
+        ],
+        [
+          101.348271,
+          14.158054
+        ],
+        [
+          101.348472,
+          14.157906
+        ],
+        [
+          101.348628,
+          14.158045
+        ],
+        [
+          101.347944,
+          14.158574
+        ],
+        [
+          101.347949,
+          14.158657
+        ],
+        [
+          101.348013,
+          14.158704
+        ],
+        [
+          101.347952,
+          14.158804
+        ],
+        [
+          101.347641,
+          14.159052
+        ],
+        [
+          101.348582,
+          14.160202
+        ],
+        [
+          101.348649,
+          14.160461
+        ],
+        [
+          101.348439,
+          14.160534
+        ],
+        [
+          101.348309,
+          14.16071
+        ],
+        [
+          101.3483,
+          14.160898
+        ],
+        [
+          101.348389,
+          14.161064
+        ],
+        [
+          101.347445,
+          14.161762
+        ],
+        [
+          101.347144,
+          14.161934
+        ],
+        [
+          101.346964,
+          14.161982
+        ],
+        [
+          101.346961,
+          14.163314
+        ],
+        [
+          101.346964,
+          14.161982
+        ],
+        [
+          101.347144,
+          14.161934
+        ],
+        [
+          101.347445,
+          14.161762
+        ],
+        [
+          101.348389,
+          14.161064
+        ],
+        [
+          101.3483,
+          14.160898
+        ],
+        [
+          101.348309,
+          14.16071
+        ],
+        [
+          101.348026,
+          14.160602
+        ],
+        [
+          101.347719,
+          14.160222
+        ],
+        [
+          101.347331,
+          14.160514
+        ]
+      ],
       "entryRadiusMeters": 1000,
       "demoUnlocked": true,
-      "sourceUrl": ""
+      "sourceUrl": "",
+      "gpsToleranceMeters": 10,
+      "startFrom": "",
+      "startUntil": "",
+      "seasonClosedFrom": "",
+      "seasonClosedUntil": ""
     },
     {
       "id": "trail_1_kong_kaew",
@@ -110,7 +309,8 @@
           "point": [
             101.37232,
             14.43919
-          ]
+          ],
+          "kind": "attraction"
         },
         {
           "id": "kk_agarwood",
@@ -118,7 +318,8 @@
           "emoji": "🌲",
           "description": "ไม้มีค่าที่เนื้อไม้ส่วนที่เป็นแผลจะสร้างสารหอม เมื่อเผาไฟให้กลิ่นหอม จึงถูกลักลอบตัดมาก เป็นไม้หวงห้ามตามกฎหมาย",
           "radiusMeters": 25,
-          "photo": "photos/agarwood.jpg"
+          "photo": "photos/agarwood.jpg",
+          "kind": "nature"
         },
         {
           "id": "kk_gibbon",
@@ -126,7 +327,8 @@
           "emoji": "🐒",
           "description": "ช่วงเช้าชะนีมือขาวและชะนีมงกุฎร้องประสานเสียงจากเรือนยอดไม้ หยุดเดินแล้วฟัง จะบอกได้ว่าครอบครัวชะนีอยู่ทางไหน",
           "radiusMeters": 25,
-          "photo": "photos/gibbon.jpg"
+          "photo": "photos/gibbon.jpg",
+          "kind": "nature"
         },
         {
           "id": "kk_fall",
@@ -138,7 +340,8 @@
           "point": [
             101.37399,
             14.43881
-          ]
+          ],
+          "kind": "waterfall"
         }
       ],
       "needsGuide": false,
@@ -308,7 +511,12 @@
       ],
       "entryRadiusMeters": 1000,
       "demoUnlocked": false,
-      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking"
+      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking",
+      "gpsToleranceMeters": 10,
+      "startFrom": "08:00",
+      "startUntil": "14:00",
+      "seasonClosedFrom": "",
+      "seasonClosedUntil": ""
     },
     {
       "id": "trail_2_pha_kluai_mai_haew_suwat",
@@ -333,7 +541,8 @@
           "point": [
             101.400684,
             14.431032
-          ]
+          ],
+          "kind": "waterfall"
         },
         {
           "id": "pk_lava",
@@ -341,7 +550,8 @@
           "emoji": "🌋",
           "description": "หน้าแล้งเมื่อน้ำลด จะเห็นลวดลายการไหลของหินลาวาจากภูเขาไฟเมื่อหลายร้อยล้านปีก่อนบนพื้นลำธาร",
           "radiusMeters": 25,
-          "photo": "photos/rock_formation.jpg"
+          "photo": "photos/rock_formation.jpg",
+          "kind": "nature"
         },
         {
           "id": "pk_stone_flower",
@@ -349,7 +559,8 @@
           "emoji": "🌼",
           "description": "พืชชนิดใหม่ของโลกที่ขึ้นบนหินกลางลำธาร จมน้ำหน้าฝนและโผล่พ้นน้ำให้เห็นหน้าแล้ง ห้ามเหยียบหรือเก็บ",
           "radiusMeters": 25,
-          "photo": ""
+          "photo": "",
+          "kind": "nature"
         },
         {
           "id": "pk_end",
@@ -361,7 +572,8 @@
           "point": [
             101.41414,
             14.43554
-          ]
+          ],
+          "kind": "waterfall"
         }
       ],
       "needsGuide": false,
@@ -675,7 +887,12 @@
       ],
       "entryRadiusMeters": 1000,
       "demoUnlocked": false,
-      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking"
+      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking",
+      "gpsToleranceMeters": 10,
+      "startFrom": "08:00",
+      "startUntil": "14:00",
+      "seasonClosedFrom": "",
+      "seasonClosedUntil": ""
     },
     {
       "id": "trail_3_km33_nong_phak_chi",
@@ -696,7 +913,8 @@
           "emoji": "🌿",
           "description": "ต้นไทรและหว้าที่ออกลูกคืออาหารของนกเงือก ชะนี และนกอีกหลายชนิด หยุดดูเรือนยอดไม้สักครู่",
           "radiusMeters": 25,
-          "photo": "photos/strangler_fig.jpg"
+          "photo": "photos/strangler_fig.jpg",
+          "kind": "nature"
         },
         {
           "id": "npc_kaphrao",
@@ -704,7 +922,8 @@
           "emoji": "🌳",
           "description": "ไม้ที่พบเฉพาะในผืนป่าดงพญาเย็น–เขาใหญ่ ไม่ใช่กะเพราที่ใช้ทำอาหาร แต่ใบมีกลิ่นคล้ายกัน",
           "radiusMeters": 25,
-          "photo": ""
+          "photo": "",
+          "kind": "nature"
         },
         {
           "id": "npc_tracks",
@@ -712,7 +931,8 @@
           "emoji": "🐘",
           "description": "มองหารอยเท้ากลมขนาดใหญ่และกองมูล ถ้าเป็นรอยใหม่ ให้เดินเงียบและฟังคำแนะนำของเจ้าหน้าที่",
           "radiusMeters": 25,
-          "photo": "photos/elephant.jpg"
+          "photo": "photos/elephant.jpg",
+          "kind": "nature"
         },
         {
           "id": "npc_tower",
@@ -724,7 +944,8 @@
           "point": [
             101.35969,
             14.454
-          ]
+          ],
+          "kind": "viewpoint"
         }
       ],
       "needsGuide": true,
@@ -1082,7 +1303,12 @@
       ],
       "entryRadiusMeters": 1000,
       "demoUnlocked": false,
-      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking"
+      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking",
+      "gpsToleranceMeters": 10,
+      "startFrom": "08:00",
+      "startUntil": "14:00",
+      "seasonClosedFrom": "",
+      "seasonClosedUntil": ""
     },
     {
       "id": "trail_4_dong_tiw_sai_sorn",
@@ -1103,7 +1329,8 @@
           "emoji": "🌳",
           "description": "ไม้ใหญ่อายุหลายร้อยปี รากพูพอนแผ่สูงท่วมหัวคน ช่วยค้ำลำต้นบนดินชื้นและตื้น อย่าปีนหรือขีดเขียนบนราก",
           "radiusMeters": 25,
-          "photo": "photos/tetrameles.jpg"
+          "photo": "photos/tetrameles.jpg",
+          "kind": "nature"
         },
         {
           "id": "ds_flowers",
@@ -1111,7 +1338,8 @@
           "emoji": "🌺",
           "description": "หงส์เหิน บีโกเนีย และชาฤาษี ออกดอกในฤดูฝนตามพื้นป่าและโขดหินที่ชื้น",
           "radiusMeters": 25,
-          "photo": "photos/wild_orchid.jpg"
+          "photo": "photos/wild_orchid.jpg",
+          "kind": "nature"
         },
         {
           "id": "ds_reservoir",
@@ -1123,7 +1351,8 @@
           "point": [
             101.369745,
             14.431826
-          ]
+          ],
+          "kind": "viewpoint"
         }
       ],
       "needsGuide": true,
@@ -1136,7 +1365,12 @@
       "path": [],
       "entryRadiusMeters": 1000,
       "demoUnlocked": false,
-      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking"
+      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking",
+      "gpsToleranceMeters": 10,
+      "startFrom": "08:00",
+      "startUntil": "14:00",
+      "seasonClosedFrom": "",
+      "seasonClosedUntil": ""
     },
     {
       "id": "trail_5_dong_tiw_nong_phak_chi",
@@ -1157,7 +1391,8 @@
           "emoji": "🌳",
           "description": "ไฮไลท์ของเส้นทาง ไม้ใหญ่อายุหลายร้อยปีที่มีรากพูพอนสูงท่วมหัว",
           "radiusMeters": 25,
-          "photo": "photos/tetrameles.jpg"
+          "photo": "photos/tetrameles.jpg",
+          "kind": "nature"
         },
         {
           "id": "dn_mushroom",
@@ -1165,7 +1400,8 @@
           "emoji": "🍄",
           "description": "หน้าฝนพื้นป่าเต็มไปด้วยเห็ดหลากสี เห็ดหลายชนิดมีพิษ ดูได้แต่ห้ามเก็บหรือชิม",
           "radiusMeters": 25,
-          "photo": ""
+          "photo": "",
+          "kind": "nature"
         },
         {
           "id": "dn_bear",
@@ -1173,7 +1409,8 @@
           "emoji": "🐻",
           "description": "สังเกตรอยข่วนบนเปลือกไม้สูงจากพื้น หมีควายปีนต้นไม้หาผลไม้และรังผึ้ง ถ้าพบหมี อย่าวิ่งหนี ถอยห่างช้า ๆ",
           "radiusMeters": 25,
-          "photo": "photos/black_bear.jpg"
+          "photo": "photos/black_bear.jpg",
+          "kind": "nature"
         },
         {
           "id": "dn_tower",
@@ -1185,7 +1422,8 @@
           "point": [
             101.35969,
             14.454
-          ]
+          ],
+          "kind": "viewpoint"
         }
       ],
       "needsGuide": true,
@@ -1563,7 +1801,12 @@
       ],
       "entryRadiusMeters": 1000,
       "demoUnlocked": false,
-      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking"
+      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking",
+      "gpsToleranceMeters": 10,
+      "startFrom": "08:00",
+      "startUntil": "14:00",
+      "seasonClosedFrom": "",
+      "seasonClosedUntil": ""
     },
     {
       "id": "trail_6_visitor_center_haew_suwat",
@@ -1588,7 +1831,8 @@
           "point": [
             101.37232,
             14.43919
-          ]
+          ],
+          "kind": "attraction"
         },
         {
           "id": "vs_fern",
@@ -1596,7 +1840,8 @@
           "emoji": "🍃",
           "description": "เฟิร์นต้นขนาดใหญ่เป็นพืชโบราณตั้งแต่ยุคไดโนเสาร์ ใบอ่อนม้วนเป็นวงก้นหอย เป็นพืชคุ้มครอง",
           "radiusMeters": 25,
-          "photo": "photos/tree_fern.jpg"
+          "photo": "photos/tree_fern.jpg",
+          "kind": "nature"
         },
         {
           "id": "vs_agarwood",
@@ -1604,7 +1849,8 @@
           "emoji": "🌲",
           "description": "ไม้ที่ถูกลักลอบตัดมากที่สุดในผืนป่า เจ้าหน้าที่ลาดตระเวนดูแลอยู่ตลอด",
           "radiusMeters": 25,
-          "photo": "photos/agarwood.jpg"
+          "photo": "photos/agarwood.jpg",
+          "kind": "nature"
         },
         {
           "id": "vs_fall",
@@ -1616,7 +1862,8 @@
           "point": [
             101.41414,
             14.43554
-          ]
+          ],
+          "kind": "waterfall"
         }
       ],
       "needsGuide": true,
@@ -1629,7 +1876,12 @@
       "path": [],
       "entryRadiusMeters": 1000,
       "demoUnlocked": false,
-      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking"
+      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking",
+      "gpsToleranceMeters": 10,
+      "startFrom": "08:00",
+      "startUntil": "10:00",
+      "seasonClosedFrom": "07-01",
+      "seasonClosedUntil": "08-31"
     },
     {
       "id": "trail_7_thai_us_200",
@@ -1654,7 +1906,8 @@
           "point": [
             101.369745,
             14.431826
-          ]
+          ],
+          "kind": "viewpoint"
         },
         {
           "id": "us_pheasant",
@@ -1662,7 +1915,8 @@
           "emoji": "🦚",
           "description": "นกประจำชาติไทย ตัวผู้มีหงอนและหางยาวสีม่วงน้ำเงินเหลือบ มักเดินหากินบนพื้นป่าช่วงเช้า",
           "radiusMeters": 25,
-          "photo": ""
+          "photo": "",
+          "kind": "nature"
         },
         {
           "id": "us_grassland",
@@ -1670,7 +1924,8 @@
           "emoji": "🌾",
           "description": "พื้นที่เปิดโล่งที่สัตว์กินพืชออกมาหากิน มองหากวางป่าและเก้งที่ชายทุ่ง",
           "radiusMeters": 25,
-          "photo": "photos/sunset_grassland.jpg"
+          "photo": "photos/sunset_grassland.jpg",
+          "kind": "viewpoint"
         }
       ],
       "needsGuide": false,
@@ -1683,7 +1938,12 @@
       "path": [],
       "entryRadiusMeters": 1000,
       "demoUnlocked": false,
-      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking"
+      "sourceUrl": "https://khaoyainationalpark.com/plan-your-visit/thing-to-do/hiking",
+      "gpsToleranceMeters": 10,
+      "startFrom": "08:00",
+      "startUntil": "14:00",
+      "seasonClosedFrom": "",
+      "seasonClosedUntil": ""
     }
   ],
   "news": [

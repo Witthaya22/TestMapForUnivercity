@@ -531,7 +531,7 @@
     <!-- ===================================================================== -->
     <string name="ky_brand_title">เขาใหญ่</string>
     <string name="ky_brand_subtitle">เส้นทางศึกษาธรรมชาติ อุทยานแห่งชาติเขาใหญ่</string>
-    <string name="ky_sample_notice">ข้อมูลในแอปตอนนี้เป็นข้อมูลตัวอย่าง ตรวจสอบกับอุทยานก่อนออกเดินจริง</string>
+    <string name="ky_sample_notice">ข้อมูลเส้นทางและข่าวจากเว็บไซต์อุทยานฯ (พ.ย. 2569) · ตรวจสอบประกาศล่าสุดกับอุทยานก่อนเดินทาง</string>
     <string name="ky_hero_image">ภาพวาดทิวเขาและผืนป่าเขาใหญ่ยามเช้า</string>
 
     <!-- เข้าสู่ระบบ / สมัคร / ลืมรหัสผ่าน (ตัวอย่าง ยังไม่มีฐานข้อมูล) -->
@@ -762,10 +762,8 @@
     <string name="sos_position_value">%1$.6f, %2$.6f (± %3$.0f ม.)</string>
     <string name="sos_position_searching">กำลังหาสัญญาณ GPS… ส่งได้เลยแม้ยังไม่มีตำแหน่ง</string>
     <string name="sos_what_happened">เกิดอะไรขึ้น</string>
-    <string name="sos_category_injured">บาดเจ็บ</string>
     <string name="sos_category_lost">หลงทาง</string>
     <string name="sos_category_wildlife">พบสัตว์ป่าอันตราย</string>
-    <string name="sos_category_unwell">เจ็บป่วย / อ่อนเพลีย</string>
     <string name="sos_category_other">อื่น ๆ</string>
     <string name="sos_message">รายละเอียด (กี่คน อาการ จุดสังเกตใกล้ ๆ)</string>
     <string name="sos_send">ส่งตำแหน่งและข้อความ</string>
@@ -821,4 +819,207 @@
     <string name="admin_tool_hazard_sounds">คลังเสียงเตือน</string>
     <string name="admin_tool_offline">จัดการแผนที่ออฟไลน์</string>
     <string name="admin_tool_settings">ตั้งค่าทั้งหมด (รวมเมนูผู้ดูแล)</string>
+    <!-- ===== บทบาท บัญชีผู้ใช้ (แบบเสนอโครงงาน §2.3) ===== -->
+    <string name="role_tourist">นักท่องเที่ยว</string>
+    <string name="role_officer">เจ้าหน้าที่อุทยาน</string>
+    <string name="role_admin">ผู้ดูแลระบบ</string>
+    <string name="permission_manage_sos">รับและจัดการเหตุฉุกเฉิน</string>
+    <string name="permission_view_tourists">ดูตำแหน่งและค้นหานักท่องเที่ยว</string>
+    <string name="permission_edit_trails">อัปเดตเส้นทาง จุดพัก จุดเสี่ยง และเครื่องมือแผนที่</string>
+    <string name="permission_view_reports">ดูสรุปภาคสนามและออกรายงาน</string>
+    <string name="account_error_username">ชื่อผู้ใช้ 4–20 ตัว ใช้ได้เฉพาะ a-z A-Z 0-9 _ .</string>
+    <string name="account_error_username_taken">ชื่อผู้ใช้นี้มีคนใช้แล้ว</string>
+    <string name="account_error_password">รหัสผ่านอย่างน้อย 8 ตัว มีทั้งตัวอักษรและตัวเลข</string>
+    <string name="account_error_name">กรอกชื่อ-นามสกุล</string>
+    <string name="account_error_phone">หมายเลขโทรศัพท์ไม่ถูกต้อง (9–15 หลัก)</string>
+    <string name="account_error_email">รูปแบบอีเมลไม่ถูกต้อง</string>
+    <string name="account_error_email_taken">อีเมลนี้ใช้สมัครไปแล้ว</string>
+    <string name="account_error_nationality">กรอกสัญชาติ</string>
+    <string name="login_error_no_user">ไม่พบชื่อผู้ใช้นี้</string>
+    <string name="login_error_password">รหัสผ่านไม่ถูกต้อง</string>
+    <string name="login_error_disabled">บัญชีนี้ถูกระงับ ติดต่อผู้ดูแลระบบ</string>
+    <string name="login_demo_title">บัญชีทดลอง (แตะเพื่อกรอกให้)</string>
+    <string name="signup_full_name">ชื่อ-นามสกุล</string>
+    <string name="signup_phone">หมายเลขโทรศัพท์</string>
+    <string name="signup_nationality">สัญชาติ</string>
+    <string name="signup_done_title">สมัครสมาชิกสำเร็จ</string>
+    <string name="signup_done_body">รหัสนักท่องเที่ยว (Tourist ID) ของคุณคือ\n%1$s\nแจ้งรหัสนี้กับเจ้าหน้าที่ได้เมื่อขอความช่วยเหลือ</string>
+    <string name="signup_start">เริ่มใช้งาน</string>
+    <string name="forgot_sent">ส่งรหัส OTP ไปที่ %1$s แล้ว (หมดอายุใน 10 นาที)</string>
+    <string name="forgot_demo_code">ยังไม่มีระบบส่งอีเมล — รหัส OTP สำหรับทดลองคือ %1$s</string>
+    <string name="forgot_code">รหัส OTP 6 หลัก</string>
+    <string name="forgot_new_password">รหัสผ่านใหม่</string>
+    <string name="forgot_reset">ตั้งรหัสผ่านใหม่</string>
+    <string name="forgot_error_code">รหัส OTP ไม่ถูกต้อง</string>
+    <string name="forgot_error_expired">รหัส OTP หมดอายุแล้ว ขอรหัสใหม่</string>
+    <string name="profile_contact">โทร %1$s · %2$s · สัญชาติ %3$s</string>
+    <string name="profile_edit">แก้ไขข้อมูลส่วนตัว</string>
+    <string name="profile_change_password">เปลี่ยนรหัสผ่าน</string>
+    <string name="profile_current_password">รหัสผ่านปัจจุบัน</string>
+    <string name="profile_password_failed">เปลี่ยนไม่สำเร็จ: รหัสผ่านปัจจุบันไม่ถูก หรือรหัสใหม่ไม่ปลอดภัยพอ</string>
+    <string name="profile_back_to_staff">กลับไปหน้าเจ้าหน้าที่</string>
+    <string name="demo_badge">ตัวอย่าง</string>
+
+    <!-- ===== เจ้าหน้าที่ / ผู้ดูแลระบบ ===== -->
+    <string name="staff_tab_overview">ภาพรวม</string>
+    <string name="staff_tab_sos">เหตุฉุกเฉิน</string>
+    <string name="staff_tab_tourists">นักท่องเที่ยว</string>
+    <string name="staff_hello">สวัสดี, %1$s</string>
+    <string name="staff_summary_title">สรุปข้อมูลภาคสนาม</string>
+    <string name="staff_sum_sos_new">SOS ใหม่</string>
+    <string name="staff_sum_sos_active">กำลังช่วยเหลือ</string>
+    <string name="staff_sum_sos_today">แจ้งเหตุวันนี้</string>
+    <string name="staff_sum_on_trail">อยู่บนเส้นทาง (3 ชม.)</string>
+    <string name="staff_sum_tourists">นักท่องเที่ยวทั้งหมด</string>
+    <string name="staff_sum_hazards">จุดเสี่ยงที่เปิดใช้</string>
+    <string name="staff_sync_pending">รอส่งขึ้นเซิร์ฟเวอร์: ตำแหน่ง %1$d รายการ · SOS %2$d เรื่อง — ยังไม่มีเซิร์ฟเวอร์ ข้อมูลเก็บในเครื่องนี้ (Backend ทำภายหลัง)</string>
+    <string name="staff_menu_reports">รายงานสรุป (รายวัน / เดือน / ปี)</string>
+    <string name="staff_menu_users">จัดการผู้ใช้ และสิทธิ์เจ้าหน้าที่</string>
+    <string name="staff_menu_content">จัดการข้อมูล: เส้นทาง จุดพัก ข่าว สัตว์-พืช</string>
+    <string name="staff_menu_trails">อัปเดตเส้นทาง จุดท่องเที่ยว จุดพัก</string>
+    <string name="staff_demo_title">ข้อมูลตัวอย่าง</string>
+    <string name="staff_demo_body">นักท่องเที่ยวตัวอย่าง 6 คนบนเส้นทาง และการแจ้งเหตุตัวอย่างย้อนหลัง 3 เดือน ใช้ทดลองหน้าค้นหา แผนที่ และรายงาน ทุกรายการมีป้าย \"ตัวอย่าง\"</string>
+    <string name="staff_demo_clear">ลบข้อมูลตัวอย่าง</string>
+    <string name="staff_demo_seed">สร้างใหม่</string>
+    <string name="staff_demo_clear_confirm">ลบนักท่องเที่ยวและการแจ้งเหตุที่เป็นตัวอย่างทั้งหมด?</string>
+    <string name="staff_demo_seed_confirm">ลบข้อมูลตัวอย่างเดิมแล้วสร้างชุดใหม่?</string>
+    <string name="tourists_title">ค้นหานักท่องเที่ยว</string>
+    <string name="tourists_search">ชื่อ, Tourist ID, ชื่อผู้ใช้ หรือเบอร์โทร</string>
+    <string name="tourists_only_on_trail">อยู่บนเส้นทางตอนนี้</string>
+    <string name="tourists_count">%1$d คน</string>
+    <string name="tourists_empty">ไม่พบนักท่องเที่ยว</string>
+    <string name="tourists_on_trail">บนเส้นทาง</string>
+    <string name="tourists_row">%1$s · %2$s · %3$s</string>
+    <string name="tourists_never_seen">ยังไม่มีตำแหน่ง (ยังไม่ได้เริ่มเดินเส้นทาง)</string>
+    <string name="tourists_last_seen">ตำแหน่งล่าสุด %1$s · %2$s · ± %3$.0f ม.</string>
+    <string name="tourists_not_found">ไม่พบนักท่องเที่ยวคนนี้</string>
+    <string name="tourists_detail_ids">Tourist ID %1$s · %2$s</string>
+    <string name="tourists_detail_contact">โทร %1$s · %2$s · สัญชาติ %3$s</string>
+    <string name="tourists_detail_history">เส้นทางที่เดินผ่านมา: %1$d จุด (เส้นสีฟ้าบนแผนที่)</string>
+    <string name="tourists_detail_calls">การแจ้งเหตุของคนนี้ (%1$d)</string>
+    <string name="tourists_call">โทรหา</string>
+    <string name="ago_minutes">%1$d นาทีที่แล้ว</string>
+    <string name="ago_hours">%1$d ชม. ที่แล้ว</string>
+    <string name="ago_days">%1$d วันที่แล้ว</string>
+    <string name="report_title">รายงานสรุป</string>
+    <string name="report_with_demo">รวมข้อมูลตัวอย่าง</string>
+    <string name="report_total">เหตุฉุกเฉินทั้งหมด %1$d เรื่อง</string>
+    <string name="report_no_calls">ยังไม่มีการแจ้งเหตุ</string>
+    <string name="report_most_frequent">เหตุที่แจ้งบ่อยที่สุด: %1$s (%2$d ครั้ง)</string>
+    <string name="report_today">แจ้งเข้ามาวันนี้ %1$d เรื่อง</string>
+    <string name="report_by_time">จำนวนการแจ้งเหตุตามช่วงเวลา</string>
+    <string name="report_period_day">รายวัน</string>
+    <string name="report_period_month">รายเดือน</string>
+    <string name="report_period_year">รายปี</string>
+    <string name="report_chart_max">สูงสุด %1$d เรื่อง</string>
+    <string name="report_by_type">แยกตามประเภทเหตุ</string>
+    <string name="report_by_status">แยกตามสถานะการช่วยเหลือ</string>
+    <string name="report_users">จำนวนผู้ใช้งานที่สมัคร</string>
+    <string name="report_hazards">จุดเสี่ยงอันตรายที่เปิดใช้ %1$d จุด</string>
+    <string name="report_no_hazards">ยังไม่มีจุดเสี่ยง — ปักได้ที่ เครื่องมือแผนที่ → จุดอันตราย</string>
+    <string name="report_export_csv">ส่งออกการแจ้งเหตุเป็น CSV</string>
+    <string name="users_title">จัดการผู้ใช้</string>
+    <string name="users_add">เพิ่มผู้ใช้</string>
+    <string name="users_edit">แก้ไขผู้ใช้</string>
+    <string name="users_search">ค้นหาชื่อ ชื่อผู้ใช้ รหัส อีเมล</string>
+    <string name="users_disabled">ระงับ</string>
+    <string name="users_role">บทบาท</string>
+    <string name="users_permissions">สิทธิ์ของเจ้าหน้าที่</string>
+    <string name="users_active">อนุญาตให้เข้าสู่ระบบ</string>
+    <string name="users_new_password">ตั้งรหัสผ่านใหม่ให้ผู้ใช้</string>
+    <string name="users_set_password">ตั้งรหัสผ่าน</string>
+    <string name="users_password_set">ตั้งรหัสผ่านแล้ว</string>
+    <string name="users_delete">ลบผู้ใช้นี้</string>
+    <string name="users_delete_confirm">ลบบัญชี %1$s และประวัติตำแหน่งทั้งหมด?</string>
+
+    <!-- ===== SOS ตามแบบเสนอ ===== -->
+    <string name="sos_category_accident">อุบัติเหตุ</string>
+    <string name="sos_category_hospital">ต้องการไปโรงพยาบาลใกล้ที่สุด</string>
+    <string name="sos_category_police">ต้องการไปสถานีตำรวจใกล้ที่สุด</string>
+    <string name="sos_status_in_progress">กำลังดำเนินการ</string>
+    <string name="sos_nearest_hospital">โรงพยาบาลที่ใกล้ที่สุด</string>
+    <string name="sos_nearest_police">สถานีตำรวจที่ใกล้ที่สุด</string>
+    <string name="sos_nearest_need_fix">รอสัญญาณ GPS เพื่อหาที่ใกล้ที่สุด</string>
+    <string name="sos_nearest_row">%1$s · ห่าง %2$.1f กม. (เส้นตรง)</string>
+    <string name="sos_nearest_call">โทร %1$s</string>
+    <string name="sos_nearest_directions">เส้นทางไปที่นี่</string>
+    <string name="sos_admin_search">ค้นหาจากชื่อ หรือ Tourist ID</string>
+    <string name="sos_admin_called_from">แจ้งจาก %1$.6f, %2$.6f (± %3$.0f ม.)</string>
+    <string name="sos_admin_latest">ตำแหน่งล่าสุดหลังแจ้ง %1$s · ขยับไป %2$.0f ม.</string>
+    <string name="sos_admin_mark">บันทึก: %1$s</string>
+    <string name="sos_admin_open_tourist">ดูนักท่องเที่ยว</string>
+
+    <!-- ===== เส้นทาง: เวลาเปิด จุดสื่อความหมาย การเดิน ===== -->
+    <string name="open_state_open">เปิดให้เริ่มเดิน</string>
+    <string name="open_state_not_yet">ยังไม่ถึงเวลาเปิด</string>
+    <string name="open_state_ended">หมดเวลาเริ่มเดินวันนี้</string>
+    <string name="open_state_season">ปิดตามฤดูกาล</string>
+    <string name="open_state_closed">ปิดชั่วคราว</string>
+    <string name="trail_hours">เริ่มเดินได้ %1$s–%2$s น.</string>
+    <string name="trail_season_closed">ปิดทุกปี %1$s ถึง %2$s</string>
+    <string name="access_outside_hours">ตอนนี้เริ่มเดินไม่ได้: %1$s (%2$s)</string>
+    <string name="station_kind_nature">ธรรมชาติ</string>
+    <string name="station_kind_attraction">จุดท่องเที่ยว</string>
+    <string name="station_kind_viewpoint">จุดชมวิว</string>
+    <string name="station_kind_waterfall">น้ำตก</string>
+    <string name="station_kind_rest">จุดพัก</string>
+    <string name="trail_status_waiting">กำลังหาตำแหน่ง…</string>
+    <string name="trail_status_no_line">เส้นทางนี้ยังไม่มีเส้นบนแผนที่ · GPS ± %1$.0f ม.</string>
+    <string name="trail_status_on">✅ อยู่ในเส้นทาง · ห่างเส้น %1$.0f ม. · GPS ± %2$.0f ม.</string>
+    <string name="trail_status_on_snapped">✅ อยู่บนเส้นทาง (ปักหมุดบนเส้น) · ห่างจริง %1$.0f ม. · GPS ± %2$.0f ม.</string>
+    <string name="trail_status_off">⚠ ออกนอกเส้นทาง %1$.0f ม. — เดินกลับเข้าเส้นทาง · GPS ± %2$.0f ม.</string>
+    <string name="trail_status_next">จุดต่อไป: %1$s อีก %2$.0f ม. · เดินแล้ว %3$.2f กม.</string>
+    <string name="trail_status_done">ผ่านจุดสื่อความหมายครบแล้ว · เดินแล้ว %1$.2f กม.</string>
+    <string name="trail_left_snackbar">คุณออกนอกเส้นทางแล้ว เดินกลับเข้าเส้นทาง</string>
+    <string name="trail_left_spoken">ออกนอกเส้นทางแล้ว, กรุณาเดินกลับเข้าเส้นทาง</string>
+    <string name="trail_back_on">กลับเข้าเส้นทางแล้ว</string>
+    <string name="hazard_type_cliff">หน้าผา / ที่ลาดชัน</string>
+    <string name="hazard_type_flash_flood">น้ำป่าไหลหลาก</string>
+    <string name="hazard_type_wildlife_area">พื้นที่พบสัตว์ป่าบ่อย</string>
+    <string name="hazard_voice_type_cliff">ระวังหน้าผา</string>
+    <string name="hazard_voice_type_flash_flood">ระวังน้ำป่า</string>
+    <string name="hazard_voice_type_wildlife_area">เขตสัตว์ป่า</string>
+    <string name="admin_field_start_from">เริ่มเดินได้ตั้งแต่ (08:00)</string>
+    <string name="admin_field_start_until">เริ่มเดินได้ถึง (14:00)</string>
+    <string name="admin_field_season_from">ปิดประจำปีตั้งแต่ (07-01)</string>
+    <string name="admin_field_season_until">ถึง (08-31)</string>
+    <string name="admin_error_time">ใช้รูปแบบ 08:00 หรือเว้นว่าง</string>
+    <string name="admin_error_season">ใส่ทั้งสองช่องแบบ เดือน-วัน เช่น 07-01 หรือเว้นว่างทั้งคู่</string>
+    <string name="admin_field_gps_tolerance">ชดเชยความคลาดเคลื่อน GPS (เมตร) *</string>
+    <string name="admin_field_gps_tolerance_hint">ห่างจากเส้นไม่เกินค่านี้ หมุดจะอยู่บนเส้นทาง · เกิน 2.5 เท่าจะเตือนออกนอกเส้นทาง · ปรับตามค่าคลาดเคลื่อนที่วัดได้ตอนเดินเก็บเส้น</string>
+    <string name="admin_field_station_kind">ประเภทจุด</string>
+
+    <!-- ===== วิธีขอเดินป่า (จากเว็บไซต์อุทยานฯ) ===== -->
+    <string name="trail_info_title">วิธีขอเดินป่า และข้อปฏิบัติ</string>
+    <string name="trail_info_teaser">ลงทะเบียน เวลาเปิด การเตรียมตัว และความหมายของหลักบอกทาง</string>
+    <string name="trail_info_hours_title">เวลาเริ่มเดิน</string>
+    <string name="trail_info_hours">เส้นทางที่ 1–5 และ 7 เริ่มเดินได้ 08:00–14:00 น. · เส้นทางที่ 6 (ศูนย์บริการฯ–น้ำตกเหวสุวัต) ต้องเริ่มไม่เกิน 10:00 น. และปิด 1 ก.ค.–31 ส.ค. · อุทยานเปิด 06:00–18:00 น.</string>
+    <string name="trail_info_steps_title">ขั้นตอนขอเดินป่า</string>
+    <string-array name="trail_info_steps">
+        <item>ตรวจสอบว่าเส้นทางเปิดให้บริการวันนั้นไหม และดูสภาพอากาศ</item>
+        <item>ศึกษาเส้นทาง การเตรียมตัว และข้อปฏิบัติให้ดี</item>
+        <item>ลงทะเบียนและขออนุญาตที่ศูนย์บริการนักท่องเที่ยว — เส้นทางที่เดินเองไม่ได้จะมีเจ้าหน้าที่นำทาง</item>
+        <item>เริ่มเดินตามเส้นทางที่ได้รับอนุญาตเท่านั้น</item>
+    </string-array>
+    <string name="trail_info_prepare_title">เตรียมความพร้อมก่อนเดินป่า</string>
+    <string-array name="trail_info_prepare">
+        <item>ประเมินร่างกาย: ผู้มีโรคหอบหืด แพ้แมลง ความดันสูง ไม่แนะนำให้เดินป่า</item>
+        <item>ศึกษาข้อมูล: ช่วงเวลาเปิดเส้นทาง สภาพอากาศ ความเสี่ยง และวิธีติดต่อเจ้าหน้าที่</item>
+        <item>แต่งกาย: เสื้อแขนยาว กางเกงขายาวแห้งง่าย รองเท้าหุ้มส้นหรือหุ้มข้อ ใส่ถุงเท้า</item>
+        <item>อุปกรณ์: เป้ ยาประจำตัว ไฟฉาย น้ำดื่ม ขนม ถุงขยะ สเปรย์กันแมลง และถุงกันทากในหน้าฝน</item>
+    </string-array>
+    <string name="trail_info_rules_title">ข้อปฏิบัติระหว่างเดินป่า</string>
+    <string-array name="trail_info_rules">
+        <item>ไม่เดินป่าคนเดียว</item>
+        <item>เดินด้วยความเร็วสม่ำเสมอ พัก 5–10 นาที ทุก 1–2 ชั่วโมง</item>
+        <item>ไม่ออกนอกเส้นทาง เดินเรียงเดี่ยว และมองเห็นคนข้างหน้าเสมอ</item>
+        <item>เดินอย่างระมัดระวัง สังเกตรอบตัวทั้งใกล้และไกล</item>
+        <item>ไม่นำอะไรกลับไปนอกจากภาพถ่าย ไม่ทิ้งอะไรไว้นอกจากรอยเท้า</item>
+        <item>ไม่รบกวนสัตว์ป่า ไม่ส่งเสียงดัง และเฝ้าดูสัตว์จากระยะไกล</item>
+    </string-array>
+    <string name="trail_info_markers_title">หลักบอกทางบนเส้นทาง</string>
+    <string name="trail_info_markers">ตามเส้นทางมีหลักป้องกันการหลงทางเป็นระยะ ตัวเลขด้านบนคือหมายเลขเส้นทาง (เช่น 2) ตัวเลขด้านล่างคือระยะที่เดินมาเป็นเมตร (เช่น 300) — ถ้าไม่เห็นหลักนานผิดปกติ ให้หยุดแล้วเดินย้อนกลับไปหลักล่าสุด</string>
+    <string name="trail_info_contact_title">ติดต่อ</string>
+    <string name="trail_info_contact">ศูนย์บริการนักท่องเที่ยว 086-092-6529 (แจ้งเหตุ 24 ชม.) · ที่ทำการอุทยาน 086-092-6527 · สอบถามข้อมูลท่องเที่ยว 08:30–16:30 น.</string>
+    <string name="trail_info_source">ดูต้นฉบับบนเว็บไซต์อุทยาน (ต้องใช้อินเทอร์เน็ต)</string>
 </resources>

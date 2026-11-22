@@ -49,7 +49,11 @@ import androidx.compose.ui.unit.sp
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailDifficulty
+import th.ac.kmutnb.prachin.map.data.khaoyai.TrailSchedule
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailStation
+import th.ac.kmutnb.prachin.map.ui.khaoyai.openStateColor
+import th.ac.kmutnb.prachin.map.ui.khaoyai.openStateLabel
+import th.ac.kmutnb.prachin.map.ui.khaoyai.trailHours
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ContentPhoto
 import th.ac.kmutnb.prachin.map.ui.khaoyai.HERO_PHOTO
 import th.ac.kmutnb.prachin.map.ui.khaoyai.PhotoCreditLine
@@ -73,6 +77,7 @@ fun TrailsTab(
     trails: List<Trail>,
     contentPadding: PaddingValues,
     onOpenTrail: (String) -> Unit,
+    onOpenInfo: () -> Unit,
 ) {
     var difficulty by rememberSaveable { mutableStateOf<TrailDifficulty?>(null) }
     val shown = trails.filter { difficulty == null || it.difficulty == difficulty }
@@ -88,6 +93,23 @@ fun TrailsTab(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item { SampleNotice() }
+            item {
+                Card(
+                    onClick = onOpenInfo,
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("📋", fontSize = 24.sp)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.trail_info_title), fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.trail_info_teaser), style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
             item {
                 Row(
                     Modifier.horizontalScroll(rememberScrollState()),
@@ -194,11 +216,10 @@ private fun TrailRow(trail: Trail, onClick: () -> Unit) {
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     DifficultyPill(trail.difficulty)
+                    val state = TrailSchedule.stateNow(trail)
+                    if (!trail.demoUnlocked) Pill(openStateLabel(state), openStateColor(state))
                     if (trail.needsGuide) {
                         Pill(stringResource(R.string.trail_needs_guide), MaterialTheme.colorScheme.tertiary)
-                    }
-                    if (!trail.isOpen) {
-                        Pill(stringResource(R.string.trail_closed), MaterialTheme.colorScheme.error)
                     }
                 }
             }
@@ -225,6 +246,7 @@ fun TrailDetailScreen(
         NotFound(stringResource(R.string.trail_not_found), onBack)
         return
     }
+    val hoursText = trailHours(trail)
     Scaffold(
         bottomBar = { TrailAccessPanel(trail = trail, onStart = onStartNavigation) },
     ) { padding ->
@@ -262,7 +284,7 @@ fun TrailDetailScreen(
                 PhotoCreditLine(trail.photo, Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp))
                 StatsCard(trail)
             }
-            if (trail.openNote.isNotBlank() || trail.endPoint.isNotBlank()) {
+            if (trail.openNote.isNotBlank() || trail.endPoint.isNotBlank() || hoursText.isNotBlank()) {
                 item {
                     Column(
                         Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
@@ -271,8 +293,13 @@ fun TrailDetailScreen(
                         if (trail.endPoint.isNotBlank()) {
                             InfoChip(R.drawable.ic_place, stringResource(R.string.trail_end_point, trail.endPoint))
                         }
+                        val hours = trailHours(trail)
+                        if (hours.isNotBlank()) {
+                            val state = TrailSchedule.stateNow(trail)
+                            InfoChip(R.drawable.ic_schedule, "$hours · ${openStateLabel(state)}", tint = openStateColor(state))
+                        }
                         if (trail.openNote.isNotBlank()) {
-                            InfoChip(R.drawable.ic_schedule, trail.openNote)
+                            InfoChip(R.drawable.ic_info, trail.openNote)
                         }
                     }
                 }

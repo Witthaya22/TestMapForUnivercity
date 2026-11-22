@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.KhaoYaiContent
 import th.ac.kmutnb.prachin.map.data.khaoyai.SpeciesKind
+import th.ac.kmutnb.prachin.map.data.model.UserAccount
 import th.ac.kmutnb.prachin.map.ui.khaoyai.home.HomeTab
 import th.ac.kmutnb.prachin.map.ui.khaoyai.nature.NatureTab
 import th.ac.kmutnb.prachin.map.ui.khaoyai.news.NewsTab
@@ -33,16 +34,19 @@ enum class MainTab(val labelRes: Int, val iconRes: Int) {
 /** What a visitor sees after signing in: five tabs over the bottom navigation bar. */
 @Composable
 fun MainShell(
-    session: KhaoYaiSession,
+    account: UserAccount,
     content: KhaoYaiContent,
     onOpenNavigation: () -> Unit,
     onOpenTrail: (String) -> Unit,
+    onOpenTrailInfo: () -> Unit,
     onOpenSpecies: (String) -> Unit,
     onOpenNews: (String) -> Unit,
     onOpenAbout: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenSos: () -> Unit,
-    onOpenAdmin: () -> Unit,
+    onEditProfile: () -> Unit,
+    /** Staff browsing the tourist screens; null for a tourist. */
+    onOpenStaff: (() -> Unit)?,
     onLogout: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(MainTab.HOME) }
@@ -66,7 +70,7 @@ fun MainShell(
     ) { padding ->
         when (tab) {
             MainTab.HOME -> HomeTab(
-                session = session,
+                account = account,
                 content = content,
                 contentPadding = padding,
                 onOpenNavigation = onOpenNavigation,
@@ -82,7 +86,7 @@ fun MainShell(
                 onOpenSos = onOpenSos,
             )
 
-            MainTab.TRAILS -> TrailsTab(content.trails, padding, onOpenTrail)
+            MainTab.TRAILS -> TrailsTab(content.trails, padding, onOpenTrail, onOpenTrailInfo)
 
             MainTab.NATURE -> NatureTab(
                 species = content.species,
@@ -95,14 +99,15 @@ fun MainShell(
             MainTab.NEWS -> NewsTab(content.newsByDate, padding, onOpenNews)
 
             MainTab.PROFILE -> ProfileTab(
-                session = session,
+                account = account,
                 contentPadding = padding,
                 onOpenNavigation = onOpenNavigation,
                 onOpenAbout = onOpenAbout,
                 onOpenHistory = onOpenHistory,
                 onOpenSos = onOpenSos,
-                onOpenAdmin = onOpenAdmin.takeIf { session.isAdmin },
+                onEditProfile = onEditProfile,
                 onLogout = onLogout,
+                onOpenStaff = onOpenStaff,
             )
         }
     }

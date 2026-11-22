@@ -93,22 +93,20 @@ private data class AdminRowData(val id: String, val emoji: String, val title: St
 
 /**
  * Add, edit and delete the trails, news and species the visitor screens show.
- * shortcut: writes go to [KhaoYaiContentRepository], which keeps them in memory only.
+ * Saved to app storage by [KhaoYaiContentRepository].
+ *
+ * @param sections what this account may edit: officers the trails (§2.3.2.3), an
+ * administrator everything.
  */
 @Composable
 fun AdminScreen(
     content: KhaoYaiContent,
     repository: KhaoYaiContentRepository,
-    onViewAsVisitor: () -> Unit,
-    /** Opens one of the walking navigation's own screens, by its `Routes` value. */
-    onOpenTool: (String) -> Unit,
-    onOpenSos: () -> Unit,
-    onLogout: () -> Unit,
+    sections: List<AdminSection>,
+    canReset: Boolean,
+    onBack: () -> Unit,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val sosRepository = remember { (context.applicationContext as th.ac.kmutnb.prachin.map.MapApplication).container.sosRepository }
-    val newSos by sosRepository.newCount.collectAsStateWithLifecycle(initialValue = 0)
-    var section by rememberSaveable { mutableStateOf(AdminSection.TRAILS) }
+    var section by rememberSaveable { mutableStateOf(sections.first()) }
     // Which form is open: the section, and the item id (null for a new item).
     var editing by rememberSaveable { mutableStateOf(false) }
     var editId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -147,11 +145,7 @@ fun AdminScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
-                AdminHeader(
-                    onViewAsVisitor = onViewAsVisitor,
-                    onReset = { confirmReset = true },
-                    onLogout = onLogout,
-                )
+                ContentTopBar(onBack = onBack, onReset = if (canReset) ({ confirmReset = true }) else null)
             }
             item {
                 Surface(
@@ -174,19 +168,23 @@ fun AdminScreen(
                     Modifier.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    StatCard(stringResource(R.string.home_stat_trails, content.trails.size), "🌲", Modifier.weight(1f)) {
-                        section = AdminSection.TRAILS
+                    if (AdminSection.TRAILS in sections) {
+                        StatCard(stringResource(R.string.home_stat_trails, content.trails.size), "🌲", Modifier.weight(1f)) {
+                            section = AdminSection.TRAILS
+                        }
                     }
-                    StatCard(stringResource(R.string.home_stat_news, content.news.size), "📢", Modifier.weight(1f)) {
-                        section = AdminSection.NEWS
+                    if (AdminSection.NEWS in sections) {
+                        StatCard(stringResource(R.string.home_stat_news, content.news.size), "📢", Modifier.weight(1f)) {
+                            section = AdminSection.NEWS
+                        }
                     }
-                    StatCard(stringResource(R.string.home_stat_species, content.species.size), "🐘", Modifier.weight(1f)) {
-                        section = AdminSection.SPECIES
+                    if (AdminSection.SPECIES in sections) {
+                        StatCard(stringResource(R.string.home_stat_species, content.species.size), "🐘", Modifier.weight(1f)) {
+                            section = AdminSection.SPECIES
+                        }
                     }
                 }
             }
-            item { SosCard(newSos, onOpenSos) }
-            item { MapToolsCard(onOpenTool) }
             item {
                 Row(
                     Modifier
@@ -194,7 +192,7 @@ fun AdminScreen(
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    AdminSection.entries.forEach { s ->
+                    sections.forEach { s ->
                         FilterChip(
                             selected = section == s,
                             onClick = { section = s },
@@ -344,90 +342,24 @@ private fun adminRows(section: AdminSection, content: KhaoYaiContent): List<Admi
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-private fun AdminHeader(onViewAsVisitor: () -> Unit, onReset: () -> Unit, onLogout: () -> Unit) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .background(ForestBrush),
-    ) {
-        LeafCorner(
-            Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding(),
-            size = 64.dp,
-            alpha = 0.3f,
-        )
-        Column(
-            Modifier
-                .statusBarsPadding()
-                .padding(20.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(painterResource(R.drawable.ic_shield), contentDescription = null, tint = Color.White)
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    stringResource(R.string.admin_header),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(onClick = onLogout) {
-                    Icon(painterResource(R.drawable.ic_logout), stringResource(R.string.profile_logout), tint = Color.White)
+private fun ContentTopBar(onBack: () -> Unit, onReset: (() -> Unit)?) {
+    androidx.compose.material3.TopAppBar(
+        title = { Text(stringResource(R.string.admin_title), fontWeight = FontWeight.Bold) },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.action_back))
+            }
+        },
+        actions = {
+            if (onReset != null) {
+                IconButton(onClick = onReset) {
+                    Icon(painterResource(R.drawable.ic_refresh), stringResource(R.string.admin_reset))
                 }
             }
-            Text(
-                stringResource(R.string.admin_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.9f),
-            )
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onViewAsVisitor) {
-                    Text(stringResource(R.string.admin_view_as_visitor), color = Color.White)
-                }
-                OutlinedButton(onClick = onReset) {
-                    Icon(
-                        painterResource(R.drawable.ic_refresh),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.admin_reset), color = Color.White)
-                }
-            }
-        }
-    }
-}
-
-/** Calls for help come first on the dashboard: red while any is still untaken. */
-@Composable
-private fun SosCard(newCount: Int, onOpen: () -> Unit) {
-    Card(
-        onClick = onOpen,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (newCount > 0) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("🆘", style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.sos_admin_title), fontWeight = FontWeight.Bold)
-                Text(
-                    if (newCount > 0) stringResource(R.string.sos_admin_new_count, newCount) else stringResource(R.string.sos_admin_none_new),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
-        }
-    }
+        },
+    )
 }
 
 /**
@@ -435,7 +367,7 @@ private fun SosCard(newCount: Int, onOpen: () -> Unit) {
  * walk a trail in, correct it point by point, pin hazards, place POIs, manage the map pack.
  */
 @Composable
-private fun MapToolsCard(onOpenTool: (String) -> Unit) {
+internal fun MapToolsCard(onOpenTool: (String) -> Unit) {
     val tools = listOf(
         Triple(R.drawable.ic_navigation, R.string.admin_tool_map, Routes.MAP),
         Triple(R.drawable.ic_walk, R.string.admin_tool_path_log, Routes.PATH_LOG),

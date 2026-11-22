@@ -1,5 +1,9 @@
 package th.ac.kmutnb.prachin.map.ui.map
 
+import th.ac.kmutnb.prachin.map.navigation.TrailGuide
+import th.ac.kmutnb.prachin.map.navigation.TrailGuideEvent
+import th.ac.kmutnb.prachin.map.navigation.TrailGuideState
+import th.ac.kmutnb.prachin.map.location.LocationFix
 import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailStation
 import th.ac.kmutnb.prachin.map.navigation.StationMonitor
@@ -69,6 +73,8 @@ data class MapUiState(
     val activeTrail: Trail? = null,
     /** The station whose story is open, popped up on arrival or tapped on the map. */
     val openStation: TrailStation? = null,
+    /** Where the walker stands on the trail being walked; null when none is. */
+    val trailGuide: TrailGuideState? = null,
     val locationState: LocationState = LocationState.Searching(null, SatelliteInfo.UNKNOWN, null),
 
     /** Destinations chosen so far, in visiting order. */
@@ -121,7 +127,13 @@ data class MapUiState(
      * hazard warnings, the logs, the surveyor - reads [currentPoint].
      */
     val displayPoint: GeoPoint?
-        get() = if (isSnappedToRoute) progress?.snappedPoint ?: currentPoint else currentPoint
+        get() = when {
+            isSnappedToRoute -> progress?.snappedPoint ?: currentPoint
+            // Walking a trail: held on the trail line within its GPS tolerance, like a car
+            // navigator holds the car on the road. The banner still shows the real gap.
+            trailGuide?.isSnapped == true -> trailGuide.pointOnTrail ?: currentPoint
+            else -> currentPoint
+        }
 
     /** How far the fix is from the route line, or null when not navigating. */
     val metresFromRoute: Double?
@@ -157,6 +169,9 @@ data class MapUiState(
 
 /** One-shot side effects: things that happen rather than things that are true. */
 sealed interface MapEffect {
+    /** Walked off the trail being followed: buzz and say so, once. */
+    data object LeftTrail : MapEffect
+
     /** Walked into a trail station: a short buzz says look at the phone. */
     data object StationReached : MapEffect
 
@@ -207,6 +222,9 @@ class MapViewModel(
     /** Pops each station of the walked trail once, on arrival. */
     private val stationMonitor = StationMonitor()
 
+    /** On or off the trail, the next station, the distance walked. */
+    private val trailGuide = TrailGuide()
+
     private var hazardAlertsEnabled = true
     private var hazardVoiceEnabled = true
     private var hazardSoundEnabled = true
@@ -226,10 +244,15 @@ class MapViewModel(
 
         viewModelScope.launch {
             container.khaoYaiContentRepository.activeTrail.collect { trail ->
-                if (trail?.id != _uiState.value.activeTrail?.id) stationMonitor.reset()
+                val changed = trail?.id != _uiState.value.activeTrail?.id
+                if (changed) {
+                    stationMonitor.reset()
+                    trailGuide.reset()
+                }
                 _uiState.update { state ->
                     state.copy(
                         activeTrail = trail,
+                        trailGuide = if (changed) null else state.trailGuide,
                         openStation = state.openStation?.takeIf { open -> trail?.stations?.any { it.id == open.id } == true },
                     )
                 }
@@ -334,6 +357,7 @@ class MapViewModel(
         adjustIntervalForSpeed(state.fix.speedMps)
         checkHazards(state.fix.point)
         checkStations(state.fix.point, state.fix.accuracyMeters)
+        followTrail(state.fix)
 
         val activeEngine = engine ?: return
         // The engine is always given the raw fix. Snapping is a decision about the
@@ -404,6 +428,30 @@ class MapViewModel(
         if (_uiState.value.openStation != null) return
         _uiState.update { it.copy(openStation = first) }
         viewModelScope.launch { effectChannel.send(MapEffect.StationReached) }
+    }
+
+    /**
+     * Updates where the walker stands on the trail, alerts once on leaving it and once on
+     * coming back, and records the position for the park officers (§2.3.1.2, §2.3.1.4).
+     */
+    private fun followTrail(fix: LocationFix) {
+        val trail = _uiState.value.activeTrail ?: return
+        val (guide, event) = trailGuide.update(trail, fix.point, fix.accuracyMeters, stationMonitor.visited)
+        _uiState.update { it.copy(trailGuide = guide) }
+        when (event) {
+            TrailGuideEvent.LEFT_TRAIL -> viewModelScope.launch {
+                effectChannel.send(MapEffect.LeftTrail)
+                if (hazardVoiceEnabled) {
+                    container.speechAnnouncer.speak(application.getString(R.string.trail_left_spoken), interrupt = true)
+                }
+            }
+            TrailGuideEvent.BACK_ON_TRAIL -> viewModelScope.launch {
+                effectChannel.send(MapEffect.Message(R.string.trail_back_on))
+            }
+            null -> Unit
+        }
+        val user = container.accountRepository.currentUser.value ?: return
+        viewModelScope.launch { container.trackingRepository.record(user.id, trail.id, fix) }
     }
 
     fun showStation(id: String) = _uiState.update { state ->

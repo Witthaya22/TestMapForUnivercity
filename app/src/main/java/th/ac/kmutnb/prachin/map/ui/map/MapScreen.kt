@@ -88,6 +88,10 @@ fun MapScreen(
             when (effect) {
                 MapEffect.VibrateArrival -> vibrate(context)
                 MapEffect.StationReached -> vibrate(context, millis = 200L)
+                MapEffect.LeftTrail -> {
+                    vibrate(context, millis = 700L)
+                    snackbarHostState.showSnackbar(context.getString(R.string.trail_left_snackbar))
+                }
                 is MapEffect.Message -> snackbarHostState.showSnackbar(context.getString(effect.messageRes))
                 is MapEffect.MessageWith ->
                     snackbarHostState.showSnackbar(context.getString(effect.messageRes, effect.arg))
@@ -144,7 +148,8 @@ fun MapScreen(
                     layerManager.setWalkingNetwork(state.network.paths, state.showWalkingNetwork)
                 }
             }
-            LaunchedEffect(state.locationState, layerManager.isAttached) {
+            // displayPoint too: the trail guide can move the dot onto the line a moment after the fix arrives.
+            LaunchedEffect(state.locationState, state.displayPoint, layerManager.isAttached) {
                 if (!layerManager.isAttached) return@LaunchedEffect
                 val available = state.locationState as? LocationState.Available
                 layerManager.setUserLocation(
@@ -186,7 +191,7 @@ fun MapScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 state.activeTrail?.let { trail ->
-                    ActiveTrailBanner(trail = trail, onEnd = viewModel::endTrail, onSos = onOpenSos)
+                    ActiveTrailBanner(trail = trail, guide = state.trailGuide, onEnd = viewModel::endTrail, onSos = onOpenSos)
                 }
                 HazardBanner(state.hazardAlerts)
                 GpsStatusBanner(state.locationState)

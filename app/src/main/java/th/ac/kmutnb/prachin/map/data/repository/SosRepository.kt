@@ -26,6 +26,8 @@ class SosRepository(private val dao: SosReportDao) {
 
     suspend fun send(
         username: String,
+        userId: String,
+        touristId: String,
         fix: LocationFix?,
         category: SosCategory,
         message: String,
@@ -35,6 +37,8 @@ class SosRepository(private val dao: SosReportDao) {
         val report = SosReport(
             id = "sos_${UUID.randomUUID()}",
             createdAt = now,
+            userId = userId,
+            touristId = touristId,
             username = username,
             point = fix?.point,
             accuracyMeters = fix?.accuracyMeters,
@@ -52,4 +56,11 @@ class SosRepository(private val dao: SosReportDao) {
     suspend fun delete(id: String) = dao.deleteById(id)
 
     suspend fun deleteResolved() = dao.deleteWithStatus(SosStatus.RESOLVED.id)
+
+    suspend fun insertDemo(reports: List<SosReport>) = dao.insertAll(reports.map { it.copy(isDemo = true).toEntity() })
+
+    suspend fun deleteDemo() = dao.deleteDemo()
+
+    /** Calls still waiting for the server; with no server yet, every real call. */
+    val unsynced: Flow<Int> = dao.observeUnsynced()
 }

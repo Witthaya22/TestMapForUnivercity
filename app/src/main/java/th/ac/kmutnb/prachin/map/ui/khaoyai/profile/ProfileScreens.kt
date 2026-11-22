@@ -40,25 +40,32 @@ import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.ui.khaoyai.FloatingBackButton
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ForestBrush
 import th.ac.kmutnb.prachin.map.ui.khaoyai.HeroBanner
-import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiSession
+import th.ac.kmutnb.prachin.map.data.model.UserAccount
 import th.ac.kmutnb.prachin.map.ui.khaoyai.LeafCorner
 import th.ac.kmutnb.prachin.map.ui.khaoyai.MenuRow
 import th.ac.kmutnb.prachin.map.ui.khaoyai.Pill
 import th.ac.kmutnb.prachin.map.ui.theme.HornbillAmberLight
 
 /** @param onOpenAdmin shown only to an admin; null hides the row. */
+/**
+ * The signed-in account (§2.3.1.1): member ID, contact details, and the things done to
+ * it - edit, sign out. Rows passed as null are not shown, so staff and tourists share it.
+ *
+ * @param onOpenStaff staff browsing the tourist screens get their own screens back.
+ */
 @Composable
 fun ProfileTab(
-    session: KhaoYaiSession,
+    account: UserAccount,
     contentPadding: PaddingValues,
-    onOpenNavigation: () -> Unit,
+    onOpenNavigation: (() -> Unit)?,
     onOpenAbout: () -> Unit,
-    onOpenHistory: () -> Unit,
-    onOpenSos: () -> Unit,
-    onOpenAdmin: (() -> Unit)?,
+    onOpenHistory: (() -> Unit)?,
+    onOpenSos: (() -> Unit)?,
+    onEditProfile: () -> Unit,
     onLogout: () -> Unit,
+    onOpenStaff: (() -> Unit)? = null,
 ) {
-    val name = session.username.ifBlank { stringResource(R.string.home_guest_name) }
+    val name = account.fullName.ifBlank { account.username }
     Column(
         Modifier
             .fillMaxSize()
@@ -81,30 +88,30 @@ fun ProfileTab(
                 Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(vertical = 32.dp),
+                    .padding(vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
                     Modifier
-                        .size(88.dp)
+                        .size(84.dp)
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(name.take(1).uppercase(), fontSize = 38.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(name.take(1).uppercase(), fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
                 }
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
                 Text(name, style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(6.dp))
-                Pill(
-                    stringResource(if (session.isAdmin) R.string.profile_role_admin else R.string.profile_role_user),
-                    HornbillAmberLight,
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Pill(stringResource(account.role.labelRes), HornbillAmberLight)
+                    Pill(account.memberId, Color.White)
+                }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    stringResource(R.string.profile_demo_note),
+                    stringResource(R.string.profile_contact, account.phone, account.email, account.nationality),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = Color.White.copy(alpha = 0.85f),
                 )
             }
         }
@@ -115,29 +122,27 @@ fun ProfileTab(
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         ) {
-            MenuRow(R.drawable.ic_navigation, stringResource(R.string.profile_navigation), onOpenNavigation)
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            MenuRow(R.drawable.ic_call, stringResource(R.string.sos_title), onOpenSos, tint = MaterialTheme.colorScheme.error)
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            MenuRow(R.drawable.ic_schedule, stringResource(R.string.history_title), onOpenHistory)
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            MenuRow(R.drawable.ic_info, stringResource(R.string.profile_about), onOpenAbout)
-            if (onOpenAdmin != null) {
+            if (onOpenStaff != null) {
+                MenuRow(R.drawable.ic_shield, stringResource(R.string.profile_back_to_staff), onOpenStaff, tint = MaterialTheme.colorScheme.tertiary)
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                MenuRow(
-                    R.drawable.ic_shield,
-                    stringResource(R.string.admin_title),
-                    onOpenAdmin,
-                    tint = MaterialTheme.colorScheme.tertiary,
-                )
+            }
+            MenuRow(R.drawable.ic_edit, stringResource(R.string.profile_edit), onEditProfile)
+            onOpenNavigation?.let {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                MenuRow(R.drawable.ic_navigation, stringResource(R.string.profile_navigation), it)
+            }
+            onOpenSos?.let {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                MenuRow(R.drawable.ic_call, stringResource(R.string.sos_title), it, tint = MaterialTheme.colorScheme.error)
+            }
+            onOpenHistory?.let {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                MenuRow(R.drawable.ic_schedule, stringResource(R.string.history_title), it)
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            MenuRow(
-                R.drawable.ic_logout,
-                stringResource(R.string.profile_logout),
-                onLogout,
-                tint = MaterialTheme.colorScheme.error,
-            )
+            MenuRow(R.drawable.ic_info, stringResource(R.string.profile_about), onOpenAbout)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            MenuRow(R.drawable.ic_logout, stringResource(R.string.profile_logout), onLogout, tint = MaterialTheme.colorScheme.error)
         }
     }
 }

@@ -31,35 +31,67 @@ import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailStation
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ContentPhoto
 import th.ac.kmutnb.prachin.map.ui.khaoyai.PhotoCreditLine
+import th.ac.kmutnb.prachin.map.ui.khaoyai.stationKindLabel
+import th.ac.kmutnb.prachin.map.navigation.TrailGuideState
 
-/** Which trail is being walked, how many stations it has on the map, and the way out. */
+/**
+ * The trail being walked, and where the walker stands on it (§2.3.1.4 of the proposal):
+ * on the trail or off it and by how far, how sure the GPS is, the next station and the
+ * distance walked - with SOS and the way out always one tap away.
+ */
 @Composable
-fun ActiveTrailBanner(trail: Trail, onEnd: () -> Unit, onSos: () -> Unit) {
+fun ActiveTrailBanner(trail: Trail, guide: TrailGuideState?, onEnd: () -> Unit, onSos: () -> Unit) {
+    val off = guide?.isOffTrail == true
     Surface(
-        color = MaterialTheme.colorScheme.tertiaryContainer,
-        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        color = if (off) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = if (off) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer,
         shape = MaterialTheme.shapes.medium,
         tonalElevation = 3.dp,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Row(Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
+        Column(Modifier.padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 4.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     stringResource(R.string.station_walking, trail.name),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
                 )
-                Text(
-                    stringResource(R.string.station_walking_hint, trail.stations.count { it.point != null }),
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                TextButton(onClick = onSos) {
+                    Text(stringResource(R.string.sos_short), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                }
+                TextButton(onClick = onEnd) { Text(stringResource(R.string.station_end_trail)) }
             }
-            TextButton(onClick = onSos) {
-                Text(stringResource(R.string.sos_short), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
-            }
-            TextButton(onClick = onEnd) { Text(stringResource(R.string.station_end_trail)) }
+            val distance = guide?.distanceFromTrail
+            Text(
+                when {
+                    guide == null -> stringResource(R.string.trail_status_waiting)
+                    distance == null -> stringResource(R.string.trail_status_no_line, guide.accuracyMeters)
+                    off -> stringResource(R.string.trail_status_off, distance, guide.accuracyMeters)
+                    guide.isSnapped -> stringResource(R.string.trail_status_on_snapped, distance, guide.accuracyMeters)
+                    else -> stringResource(R.string.trail_status_on, distance, guide.accuracyMeters)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = if (off) FontWeight.Bold else FontWeight.Normal,
+            )
+            val next = guide?.nextStation
+            Text(
+                if (next != null && guide.metersToNextStation != null) {
+                    stringResource(
+                        R.string.trail_status_next,
+                        listOf(next.emoji, next.name).filter { it.isNotBlank() }.joinToString(" "),
+                        guide.metersToNextStation,
+                        guide.walkedMeters / 1000.0,
+                    )
+                } else {
+                    stringResource(R.string.trail_status_done, (guide?.walkedMeters ?: 0.0) / 1000.0)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -79,7 +111,7 @@ fun StationSheet(station: TrailStation, onDismiss: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                stringResource(R.string.station_arrived),
+                stringResource(R.string.station_arrived) + " · " + station.kind.emoji + " " + stationKindLabel(station.kind),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.tertiary,
                 fontWeight = FontWeight.Bold,

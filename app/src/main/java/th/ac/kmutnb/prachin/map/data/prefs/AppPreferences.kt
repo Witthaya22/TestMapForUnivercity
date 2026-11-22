@@ -72,9 +72,21 @@ class AppPreferences(context: Context) {
      */
     val sessionUsername: Flow<String?> = store.data.map { it[KEY_SESSION_USERNAME] }
 
-    suspend fun setSessionUsername(username: String?) {
+    /** The account signed in to the Khao Yai app, by id; null when signed out. */
+    val sessionUserId: Flow<String?> = store.data.map { it[KEY_SESSION_USER_ID] }
+
+    /** Whether the demo tourists and calls have been put in once; see `DemoDataSeeder`. */
+    val demoSeeded: Flow<Boolean> = store.data.map { it[KEY_DEMO_SEEDED] ?: false }
+
+    suspend fun setDemoSeeded(seeded: Boolean) {
+        store.edit { it[KEY_DEMO_SEEDED] = seeded }
+    }
+
+    suspend fun setSessionUserId(id: String?) {
         store.edit { prefs ->
-            if (username == null) prefs.remove(KEY_SESSION_USERNAME) else prefs[KEY_SESSION_USERNAME] = username
+            // The older username-only session is retired with it.
+            prefs.remove(KEY_SESSION_USERNAME)
+            if (id == null) prefs.remove(KEY_SESSION_USER_ID) else prefs[KEY_SESSION_USER_ID] = id
         }
     }
 
@@ -158,5 +170,7 @@ class AppPreferences(context: Context) {
         val KEY_HAZARD_VOICE = booleanPreferencesKey("hazard_voice")
         val KEY_HAZARD_SOUND = booleanPreferencesKey("hazard_sound")
         val KEY_SESSION_USERNAME = stringPreferencesKey("session_username")
+        val KEY_SESSION_USER_ID = stringPreferencesKey("session_user_id")
+        val KEY_DEMO_SEEDED = booleanPreferencesKey("demo_seeded")
     }
 }

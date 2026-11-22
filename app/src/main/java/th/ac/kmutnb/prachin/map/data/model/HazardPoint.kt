@@ -34,6 +34,15 @@ enum class HazardType(val id: String) {
     /** Snakes, wasps, and other wildlife. */
     ANIMAL("animal"),
 
+    /** A cliff edge or steep drop beside the trail (§2.3.2.3 of the proposal). */
+    CLIFF("cliff"),
+
+    /** A stream that can rise suddenly after rain. */
+    FLASH_FLOOD("flash_flood"),
+
+    /** Where elephants, gaur or bears are often met. */
+    WILDLIFE_AREA("wildlife_area"),
+
     OTHER("other"),
     ;
 

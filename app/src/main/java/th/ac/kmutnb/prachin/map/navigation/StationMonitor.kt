@@ -24,6 +24,9 @@ class StationMonitor {
         shown.clear()
     }
 
+    /** Stations already reached on this walk, for working out which comes next. */
+    val visited: Set<String> get() = shown.toSet()
+
     /**
      * @return the stations this fix has just walked into, nearest first; usually none.
      * A fix worse than [MAX_ACCURACY_METERS] is ignored: with an error that wide the

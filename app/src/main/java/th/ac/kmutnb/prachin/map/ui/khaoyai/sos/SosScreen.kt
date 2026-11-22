@@ -55,7 +55,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import th.ac.kmutnb.prachin.map.MapApplication
 import th.ac.kmutnb.prachin.map.R
+import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
+import th.ac.kmutnb.prachin.map.data.model.EmergencyPlace
+import th.ac.kmutnb.prachin.map.data.model.EmergencyPlaceKind
+import th.ac.kmutnb.prachin.map.data.model.EmergencyPlaces
 import th.ac.kmutnb.prachin.map.data.model.SosCategory
+import th.ac.kmutnb.prachin.map.data.model.UserAccount
+import th.ac.kmutnb.prachin.map.ui.khaoyai.openLink
 import th.ac.kmutnb.prachin.map.data.model.SosReport
 import th.ac.kmutnb.prachin.map.data.model.SosRules
 import th.ac.kmutnb.prachin.map.location.LocationState
@@ -71,7 +77,7 @@ const val PARK_EMERGENCY_NUMBER = "0860926529"
  * or chat. The screen says plainly where that call goes today, so nobody waits on it.
  */
 @Composable
-fun SosScreen(username: String, onBack: () -> Unit) {
+fun SosScreen(account: UserAccount?, onBack: () -> Unit) {
     val context = LocalContext.current
     val container = remember { (context.applicationContext as MapApplication).container }
     val activeTrail by container.khaoYaiContentRepository.activeTrail.collectAsStateWithLifecycle(initialValue = null)
@@ -79,7 +85,7 @@ fun SosScreen(username: String, onBack: () -> Unit) {
     val fix = (location.state as? LocationState.Available)?.fix
     val scope = rememberCoroutineScope()
 
-    var category by rememberSaveable { mutableStateOf(SosCategory.INJURED) }
+    var category by rememberSaveable { mutableStateOf(SosCategory.ACCIDENT) }
     var message by rememberSaveable { mutableStateOf("") }
     var sent by remember { mutableStateOf<SosReport?>(null) }
 
@@ -132,6 +138,9 @@ fun SosScreen(username: String, onBack: () -> Unit) {
                     )
                 }
             }
+            category.needsPlace?.let { kind ->
+                NearestPlaces(kind, fix?.point, container.emergencyPlaces)
+            }
             OutlinedTextField(
                 value = message,
                 onValueChange = { message = it },
@@ -145,7 +154,9 @@ fun SosScreen(username: String, onBack: () -> Unit) {
                 onClick = {
                     scope.launch {
                         sent = container.sosRepository.send(
-                            username = username,
+                            username = account?.fullName.orEmpty(),
+                            userId = account?.id.orEmpty(),
+                            touristId = account?.memberId.orEmpty(),
                             fix = fix,
                             category = category,
                             message = message,
@@ -186,6 +197,52 @@ fun SosScreen(username: String, onBack: () -> Unit) {
                 shape = RoundedCornerShape(14.dp),
             ) {
                 Text(stringResource(R.string.sos_demo_note), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(12.dp))
+            }
+        }
+    }
+}
+
+/** The nearest hospitals or police stations to where the phone is, with call and directions. */
+@Composable
+private fun NearestPlaces(kind: EmergencyPlaceKind, here: GeoPoint?, places: List<EmergencyPlace>) {
+    val context = LocalContext.current
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                stringResource(if (kind == EmergencyPlaceKind.HOSPITAL) R.string.sos_nearest_hospital else R.string.sos_nearest_police),
+                fontWeight = FontWeight.Bold,
+            )
+            if (here == null) {
+                Text(stringResource(R.string.sos_nearest_need_fix), style = MaterialTheme.typography.bodySmall)
+            } else {
+                EmergencyPlaces.nearest(places, kind, here).forEach { nearby ->
+                    Text(
+                        stringResource(R.string.sos_nearest_row, nearby.place.name, nearby.distanceMeters / 1000.0),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (nearby.place.phone.isNotBlank()) {
+                            OutlinedButton(onClick = { dial(context, nearby.place.phone.filter(Char::isDigit)) }) {
+                                Text(stringResource(R.string.sos_nearest_call, nearby.place.phone))
+                            }
+                        }
+                        OutlinedButton(onClick = {
+                            openLink(
+                                context,
+                                String.format(
+                                    java.util.Locale.US,
+                                    "https://www.google.com/maps/dir/?api=1&destination=%.6f,%.6f",
+                                    nearby.place.point.lat,
+                                    nearby.place.point.lon,
+                                ),
+                            )
+                        }) { Text(stringResource(R.string.sos_nearest_directions)) }
+                    }
+                }
             }
         }
     }

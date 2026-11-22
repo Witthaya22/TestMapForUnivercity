@@ -6,6 +6,8 @@ import th.ac.kmutnb.prachin.map.data.khaoyai.Species
 import th.ac.kmutnb.prachin.map.data.khaoyai.SpeciesKind
 import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailDifficulty
+import th.ac.kmutnb.prachin.map.data.khaoyai.StationKind
+import th.ac.kmutnb.prachin.map.data.khaoyai.TrailSchedule
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailStation
 import th.ac.kmutnb.prachin.map.data.khaoyai.newContentId
 import java.io.Serializable
@@ -57,6 +59,7 @@ data class StationDraft(
     val point: LatLonDraft = LatLonDraft(),
     val radiusMeters: String = TrailStation.DEFAULT_RADIUS_METERS.toString(),
     val photo: String = "",
+    val kind: StationKind = StationKind.NATURE,
 ) : Serializable {
     val nameMissing: Boolean get() = name.isBlank()
     val radiusInvalid: Boolean get() = radiusMeters.toPositiveInt() == null
@@ -72,6 +75,7 @@ data class StationDraft(
             point = point.point,
             radiusMeters = radiusMeters.toPositiveInt()!!,
             photo = photo,
+            kind = kind,
         )
     }
 
@@ -84,6 +88,7 @@ data class StationDraft(
             point = LatLonDraft.of(s.point),
             radiusMeters = s.radiusMeters.toString(),
             photo = s.photo,
+            kind = s.kind,
         )
     }
 }
@@ -107,14 +112,29 @@ data class TrailDraft(
     val entryRadiusMeters: String = Trail.DEFAULT_ENTRY_RADIUS_METERS.toString(),
     val demoUnlocked: Boolean = false,
     val sourceUrl: String = "",
+    val startFrom: String = "",
+    val startUntil: String = "",
+    val seasonClosedFrom: String = "",
+    val seasonClosedUntil: String = "",
+    val gpsToleranceMeters: String = Trail.DEFAULT_GPS_TOLERANCE_METERS.toString(),
 ) : Serializable {
+    /** Blank is "no limit"; anything typed must read as HH:mm. */
+    val hoursInvalid: Boolean
+        get() = listOf(startFrom, startUntil).any { it.isNotBlank() && TrailSchedule.minutes(it) == null }
+
+    /** Both ends or neither, each MM-dd. */
+    val seasonInvalid: Boolean
+        get() = (seasonClosedFrom.isBlank() != seasonClosedUntil.isBlank()) ||
+            listOf(seasonClosedFrom, seasonClosedUntil).any { it.isNotBlank() && TrailSchedule.monthDay(it) == null }
+
+    val toleranceInvalid: Boolean get() = gpsToleranceMeters.toPositiveInt() == null
     val nameMissing: Boolean get() = name.isBlank()
     val distanceInvalid: Boolean get() = distanceKm.toPositiveDouble() == null
     val durationInvalid: Boolean get() = durationMinutes.toPositiveInt() == null
     val entryRadiusInvalid: Boolean get() = entryRadiusMeters.toPositiveInt() == null
     val isValid: Boolean
         get() = !nameMissing && !distanceInvalid && !durationInvalid && !entryRadiusInvalid &&
-            !trailhead.isInvalid && stations.all { it.isValid }
+            !trailhead.isInvalid && stations.all { it.isValid } && !hoursInvalid && !seasonInvalid && !toleranceInvalid
 
     /** @param path kept from the trail being edited; the form does not draw lines. */
     fun toTrail(id: String, path: List<GeoPoint> = emptyList()): Trail? {
@@ -140,6 +160,11 @@ data class TrailDraft(
             entryRadiusMeters = entryRadiusMeters.toPositiveInt()!!,
             demoUnlocked = demoUnlocked,
             sourceUrl = sourceUrl.trim(),
+            startFrom = startFrom.trim(),
+            startUntil = startUntil.trim(),
+            seasonClosedFrom = seasonClosedFrom.trim(),
+            seasonClosedUntil = seasonClosedUntil.trim(),
+            gpsToleranceMeters = gpsToleranceMeters.toPositiveInt()!!,
         )
     }
 
@@ -163,6 +188,11 @@ data class TrailDraft(
             entryRadiusMeters = trail.entryRadiusMeters.toString(),
             demoUnlocked = trail.demoUnlocked,
             sourceUrl = trail.sourceUrl,
+            startFrom = trail.startFrom,
+            startUntil = trail.startUntil,
+            seasonClosedFrom = trail.seasonClosedFrom,
+            seasonClosedUntil = trail.seasonClosedUntil,
+            gpsToleranceMeters = trail.gpsToleranceMeters.toString(),
         )
     }
 }
