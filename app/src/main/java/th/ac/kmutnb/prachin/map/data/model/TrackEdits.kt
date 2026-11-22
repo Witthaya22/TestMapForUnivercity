@@ -77,6 +77,11 @@ object TrackEdits {
         listOfNotNull(track.points.getOrNull(index - 1), track.points.getOrNull(index))
             .any { GeoUtils.haversineMeters(it, point) < MIN_SPACING_METERS }
 
+    /** Like [wouldStack], for vertex [index] moved to [point]: its neighbours are either side. */
+    fun wouldStackOnMove(track: TrackLog, index: Int, point: GeoPoint): Boolean =
+        listOfNotNull(track.points.getOrNull(index - 1), track.points.getOrNull(index + 1))
+            .any { GeoUtils.haversineMeters(it, point) < MIN_SPACING_METERS }
+
     fun canDelete(track: TrackLog): Boolean = track.points.size > MIN_VERTICES
 
     fun deleteVertex(track: TrackLog, index: Int): TrackLog {

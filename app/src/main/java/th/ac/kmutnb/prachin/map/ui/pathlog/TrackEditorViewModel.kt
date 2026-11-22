@@ -191,11 +191,15 @@ class TrackEditorViewModel(
 
     fun setShowAccuracy(show: Boolean) = _uiState.update { it.copy(showAccuracy = show) }
 
-    /** Where the selected vertex was dropped at the end of a drag; one undo step. */
+    /**
+     * Where the selected vertex was dropped at the end of a drag; one undo step. A drop on
+     * top of a neighbour is ignored, for the same reason a tap there adds nothing.
+     */
     fun moveSelected(to: GeoPoint) {
         val state = _uiState.value
         val index = state.selected ?: return
         if (!state.canDragSelected) return
+        if (TrackEdits.wouldStackOnMove(state.draft ?: return, index, to)) return
         applyEdit { TrackEdits.moveVertex(it, index, to) }
     }
 

@@ -479,19 +479,10 @@ private fun TrackEditMapView(
             map.uiSettings.isLogoEnabled = false
             map.uiSettings.isAttributionEnabled = true
 
-            mapView.setOnTouchListener(
-                VertexDragListener(
-                    map = map,
-                    anchor = { anchor },
-                    grabRadiusPx = grabRadiusPx,
-                    touchSlopPx = ViewConfiguration.get(mapView.context).scaledTouchSlop.toFloat(),
-                    onDrag = { dragged(it) },
-                    onDrop = { dropped(it) },
-                ),
-            )
-
-            map.addOnMapClickListener { latLng ->
-                val screenPoint = map.projection.toScreenLocation(latLng)
+            // One tap path for both the map's own clicks and the taps the drag listener
+            // keeps from the map, so a tap beside the selected vertex still selects or adds.
+            fun handleTap(screenPoint: PointF) {
+                val latLng = map.projection.fromScreenLocation(screenPoint)
                 val hit = map.queryRenderedFeatures(
                     android.graphics.RectF(
                         screenPoint.x - tapSlopPx,
@@ -504,6 +495,22 @@ private fun TrackEditMapView(
                     it.getNumberProperty(TrackEditLayerManager.PROPERTY_INDEX)?.toInt()
                 }
                 tapped(GeoPoint(lat = latLng.latitude, lon = latLng.longitude), hit)
+            }
+
+            mapView.setOnTouchListener(
+                VertexDragListener(
+                    map = map,
+                    anchor = { anchor },
+                    grabRadiusPx = grabRadiusPx,
+                    touchSlopPx = ViewConfiguration.get(mapView.context).scaledTouchSlop.toFloat(),
+                    onDrag = { dragged(it) },
+                    onDrop = { dropped(it) },
+                    onTap = ::handleTap,
+                ),
+            )
+
+            map.addOnMapClickListener { latLng ->
+                handleTap(map.projection.toScreenLocation(latLng))
                 true
             }
         }
@@ -525,7 +532,10 @@ private fun TrackEditMapView(
  * on a track of two hundred points nearly every pan would otherwise start on one.
  *
  * The vertex keeps the offset from the fingertip it was picked up with, so it does not jump
- * under the finger, and a touch that never travels past the system touch slop moves nothing.
+ * under the finger. A touch that never travels past the system touch slop moves nothing and
+ * is handed to [onTap] instead: the map never saw it, so without this a tap on a neighbour
+ * that sits inside the grab radius - three metres away at street zoom - would do nothing.
+ * Only the finger that picked the vertex up moves it.
  */
 private class VertexDragListener(
     private val map: MapLibreMap,
@@ -534,6 +544,7 @@ private class VertexDragListener(
     private val touchSlopPx: Float,
     private val onDrag: (GeoPoint) -> Unit,
     private val onDrop: (GeoPoint?) -> Unit,
+    private val onTap: (PointF) -> Unit,
 ) : android.view.View.OnTouchListener {
 
     /** Vertex minus finger, in pixels, while a vertex is held; null when none is. */
@@ -541,6 +552,7 @@ private class VertexDragListener(
     private val down = PointF()
     private var dragging = false
     private var last: GeoPoint? = null
+    private var pointerId = MotionEvent.INVALID_POINTER_ID
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: android.view.View, event: MotionEvent): Boolean {
@@ -550,6 +562,7 @@ private class VertexDragListener(
                 val at = map.projection.toScreenLocation(LatLng(vertex.lat, vertex.lon))
                 if (hypot(at.x - event.x, at.y - event.y) > grabRadiusPx) return false
                 grab = PointF(at.x - event.x, at.y - event.y)
+                pointerId = event.getPointerId(0)
                 down.set(event.x, event.y)
                 dragging = false
                 last = null
@@ -558,13 +571,14 @@ private class VertexDragListener(
 
             MotionEvent.ACTION_MOVE -> {
                 val offset = grab ?: return false
-                if (!dragging && hypot(event.x - down.x, event.y - down.y) < touchSlopPx) {
+                val index = event.findPointerIndex(pointerId).takeIf { it >= 0 } ?: return true
+                val x = event.getX(index)
+                val y = event.getY(index)
+                if (!dragging && hypot(x - down.x, y - down.y) < touchSlopPx) {
                     return true
                 }
                 dragging = true
-                val latLng = map.projection.fromScreenLocation(
-                    PointF(event.x + offset.x, event.y + offset.y),
-                )
+                val latLng = map.projection.fromScreenLocation(PointF(x + offset.x, y + offset.y))
                 val point = GeoPoint(lat = latLng.latitude, lon = latLng.longitude)
                 last = point
                 onDrag(point)
@@ -573,11 +587,17 @@ private class VertexDragListener(
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 if (grab == null) return false
-                val dropAt = last.takeIf { dragging && event.actionMasked == MotionEvent.ACTION_UP }
-                grab = null
-                dragging = false
-                last = null
-                onDrop(dropAt)
+                val released = event.actionMasked == MotionEvent.ACTION_UP
+                if (released && !dragging) onTap(PointF(event.x, event.y))
+                finish(dropAt = last.takeIf { dragging && released })
+                return true
+            }
+
+            // Lifting the finger that holds the vertex ends the drag where it was; another
+            // finger left on the glass must not take the vertex over and make it jump.
+            MotionEvent.ACTION_POINTER_UP -> {
+                if (grab == null) return false
+                if (event.getPointerId(event.actionIndex) == pointerId) finish(dropAt = last.takeIf { dragging })
                 return true
             }
 
@@ -585,6 +605,15 @@ private class VertexDragListener(
             // the map never saw the first finger, so it could not make sense of the pair.
             else -> return grab != null
         }
+    }
+
+    private fun finish(dropAt: GeoPoint?) {
+        val wasHeld = grab != null
+        grab = null
+        dragging = false
+        last = null
+        pointerId = MotionEvent.INVALID_POINTER_ID
+        if (wasHeld) onDrop(dropAt)
     }
 }
 
