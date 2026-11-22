@@ -7,7 +7,9 @@ import android.net.Uri
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -44,6 +46,22 @@ class KhaoYaiContentRepository(
     private val state by lazy { MutableStateFlow(loadSaved() ?: loadSample()) }
 
     val content: StateFlow<KhaoYaiContent> get() = state.asStateFlow()
+
+    private val activeTrailId = MutableStateFlow<String?>(null)
+
+    /**
+     * The trail being walked, if any: the map shows its stations and pops them up. Follows
+     * admin edits, and goes back to null if the trail is deleted mid-walk.
+     */
+    val activeTrail: Flow<Trail?> by lazy { combine(state, activeTrailId) { c, id -> id?.let(c::trail) } }
+
+    fun startTrail(id: String) {
+        activeTrailId.value = id
+    }
+
+    fun endTrail() {
+        activeTrailId.value = null
+    }
 
     /** Author and licence of each bundled photo, keyed by its asset path. */
     val photoCredits: Map<String, PhotoCredit> by lazy {

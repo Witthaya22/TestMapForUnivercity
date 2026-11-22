@@ -175,10 +175,15 @@ private fun KhaoYaiNavHost(
         }
 
         composable(KhaoYaiRoutes.TRAIL, arguments = idArgument) { entry ->
+            val trailId = entry.id()
             TrailDetailScreen(
-                trail = content.trail(entry.id()),
+                trail = content.trail(trailId),
                 onBack = { navController.popBackStack() },
-                onStartNavigation = { navController.navigate(KhaoYaiRoutes.navigation()) },
+                onStartNavigation = {
+                    // The map picks the walked trail up from here and shows its stations.
+                    repository.startTrail(trailId)
+                    navController.navigate(KhaoYaiRoutes.navigation())
+                },
             )
         }
 

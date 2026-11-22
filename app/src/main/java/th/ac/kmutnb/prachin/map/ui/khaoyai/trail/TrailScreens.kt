@@ -226,27 +226,7 @@ fun TrailDetailScreen(
         return
     }
     Scaffold(
-        bottomBar = {
-            Surface(shadowElevation = 8.dp) {
-                Button(
-                    onClick = onStartNavigation,
-                    enabled = trail.isOpen,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(16.dp)
-                        .height(52.dp),
-                ) {
-                    Icon(painterResource(R.drawable.ic_navigation), contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        stringResource(if (trail.isOpen) R.string.trail_start_navigation else R.string.trail_closed),
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-        },
+        bottomBar = { TrailAccessPanel(trail = trail, onStart = onStartNavigation) },
     ) { padding ->
         LazyColumn(contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)) {
             item {
