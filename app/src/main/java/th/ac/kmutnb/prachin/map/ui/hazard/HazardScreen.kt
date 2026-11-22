@@ -111,6 +111,7 @@ fun HazardScreen(
 
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
     var showList by rememberSaveable { mutableStateOf(false) }
+    var confirmDeleteAll by rememberSaveable { mutableStateOf(false) }
     // Centred on the first fix only. Marking hazards means panning around to look at
     // radii, and a camera that snapped back every second would make that impossible.
     var hasCentred by remember { mutableStateOf(false) }
@@ -343,6 +344,28 @@ fun HazardScreen(
             onImport = {
                 showList = false
                 importLauncher.launch(arrayOf("*/*"))
+            },
+            onDeleteAll = {
+                showList = false
+                confirmDeleteAll = true
+            },
+        )
+    }
+
+    if (confirmDeleteAll) {
+        AlertDialog(
+            onDismissRequest = { confirmDeleteAll = false },
+            text = { Text(stringResource(R.string.hazard_delete_all_confirm, state.hazards.size)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDeleteAll = false
+                    viewModel.deleteAll()
+                }) {
+                    Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDeleteAll = false }) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }
@@ -758,6 +781,7 @@ private fun HazardListSheet(
     onSelect: (String) -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
+    onDeleteAll: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -832,6 +856,11 @@ private fun HazardListSheet(
                 }
                 OutlinedButton(onClick = onImport, modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.hazard_import))
+                }
+            }
+            if (hazards.isNotEmpty()) {
+                TextButton(onClick = onDeleteAll, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.hazard_delete_all), color = MaterialTheme.colorScheme.error)
                 }
             }
         }

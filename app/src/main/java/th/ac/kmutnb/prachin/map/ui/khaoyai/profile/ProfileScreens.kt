@@ -53,6 +53,7 @@ fun ProfileTab(
     contentPadding: PaddingValues,
     onOpenNavigation: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenHistory: () -> Unit,
     onOpenAdmin: (() -> Unit)?,
     onLogout: () -> Unit,
 ) {
@@ -114,6 +115,8 @@ fun ProfileTab(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         ) {
             MenuRow(R.drawable.ic_navigation, stringResource(R.string.profile_navigation), onOpenNavigation)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            MenuRow(R.drawable.ic_schedule, stringResource(R.string.history_title), onOpenHistory)
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             MenuRow(R.drawable.ic_info, stringResource(R.string.profile_about), onOpenAbout)
             if (onOpenAdmin != null) {

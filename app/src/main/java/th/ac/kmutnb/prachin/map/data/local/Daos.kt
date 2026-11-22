@@ -199,6 +199,9 @@ interface RouteHistoryDao {
     @Insert
     suspend fun insert(entry: RouteHistoryEntity): Long
 
+    @Query("DELETE FROM route_history WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("DELETE FROM route_history")
     suspend fun clear()
 }

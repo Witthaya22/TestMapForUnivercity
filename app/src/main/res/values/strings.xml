@@ -714,6 +714,14 @@
     <string name="admin_error_required">ต้องกรอก</string>
     <string name="admin_error_number">ใส่ตัวเลขที่มากกว่า 0</string>
     <string name="admin_error_date">ใช้รูปแบบ 2026-11-22</string>
+    <string name="history_title">ประวัติการเดินของฉัน</string>
+    <string name="history_empty">ยังไม่มีประวัติ — เดินนำทางจนถึงจุดหมายแล้วจะบันทึกไว้ที่นี่</string>
+    <string name="history_item_summary">%1$.2f กม. · %2$d นาที · %3$s</string>
+    <string name="history_unknown_place">(จุดที่ถูกลบไปแล้ว)</string>
+    <string name="history_clear">ล้างประวัติทั้งหมด</string>
+    <string name="history_clear_confirm">ลบประวัติการเดินทั้ง %1$d รายการ?</string>
+    <string name="hazard_delete_all">ลบจุดอันตรายทั้งหมด</string>
+    <string name="hazard_delete_all_confirm">ลบจุดอันตรายทั้ง %1$d จุด? ถ้าต้องการเก็บไว้ ให้ส่งออกไฟล์ก่อน</string>
     <string name="admin_tools_title">เครื่องมือแผนที่และเส้นทาง</string>
     <string name="admin_tools_subtitle">ผู้ใช้ทั่วไปไม่เห็นเมนูเหล่านี้ — เดินเก็บ แก้ไข ปักจุด จัดการแผนที่</string>
     <string name="admin_tool_map">แผนที่นำทาง (แก้ไขสถานที่ได้ กดค้างเพื่อเพิ่มจุด)</string>

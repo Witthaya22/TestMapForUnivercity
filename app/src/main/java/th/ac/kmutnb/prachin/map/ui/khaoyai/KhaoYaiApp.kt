@@ -33,6 +33,7 @@ import th.ac.kmutnb.prachin.map.ui.khaoyai.auth.SignUpScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.nature.SpeciesDetailScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.news.NewsDetailScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.profile.AboutScreen
+import th.ac.kmutnb.prachin.map.ui.khaoyai.profile.RouteHistoryScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.trail.TrailDetailScreen
 
 object KhaoYaiRoutes {
@@ -41,6 +42,7 @@ object KhaoYaiRoutes {
     const val FORGOT_PASSWORD = "ky/forgot_password"
     const val MAIN = "ky/main"
     const val ABOUT = "ky/about"
+    const val HISTORY = "ky/history"
 
     /** Reached by signing in as "admin"; see `KhaoYaiAuth`. */
     const val ADMIN = "ky/admin"
@@ -148,6 +150,7 @@ private fun KhaoYaiNavHost(
                 onOpenSpecies = { navController.navigate(KhaoYaiRoutes.species(it)) },
                 onOpenNews = { navController.navigate(KhaoYaiRoutes.news(it)) },
                 onOpenAbout = { navController.navigate(KhaoYaiRoutes.ABOUT) },
+                onOpenHistory = { navController.navigate(KhaoYaiRoutes.HISTORY) },
                 // Switching back and forth pops to the earlier copy instead of stacking more.
                 onOpenAdmin = { navController.navigate(KhaoYaiRoutes.ADMIN) { popUpTo(KhaoYaiRoutes.ADMIN) { inclusive = true } } },
                 onLogout = ::logout,
@@ -195,6 +198,10 @@ private fun KhaoYaiNavHost(
 
         composable(KhaoYaiRoutes.ABOUT) {
             AboutScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(KhaoYaiRoutes.HISTORY) {
+            RouteHistoryScreen(onBack = { navController.popBackStack() })
         }
 
         composable(

@@ -257,6 +257,12 @@ class HazardViewModel(
         _uiState.update { it.copy(selected = null) }
     }
 
+    /** Clears every hazard; the list sheet asks first. Export is the way to keep a copy. */
+    fun deleteAll() {
+        viewModelScope.launch { container.hazardRepository.deleteAll() }
+        _uiState.update { it.copy(selected = null) }
+    }
+
     // ----------------------------------------------------------------------------------
     // Alert sounds
     // ----------------------------------------------------------------------------------

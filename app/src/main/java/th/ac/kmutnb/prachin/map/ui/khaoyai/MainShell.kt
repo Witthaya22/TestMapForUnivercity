@@ -40,6 +40,7 @@ fun MainShell(
     onOpenSpecies: (String) -> Unit,
     onOpenNews: (String) -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenHistory: () -> Unit,
     onOpenAdmin: () -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -96,6 +97,7 @@ fun MainShell(
                 contentPadding = padding,
                 onOpenNavigation = onOpenNavigation,
                 onOpenAbout = onOpenAbout,
+                onOpenHistory = onOpenHistory,
                 onOpenAdmin = onOpenAdmin.takeIf { session.isAdmin },
                 onLogout = onLogout,
             )
