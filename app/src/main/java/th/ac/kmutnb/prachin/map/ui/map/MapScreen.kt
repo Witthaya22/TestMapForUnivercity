@@ -616,5 +616,11 @@ private fun vibrate(context: android.content.Context) {
         @Suppress("DEPRECATION")
         context.getSystemService(Vibrator::class.java)
     } ?: return
-    vibrator.vibrate(VibrationEffect.createOneShot(500L, VibrationEffect.DEFAULT_AMPLITUDE))
+    // VibrationEffect is API 26; minSdk is 24, where calling it crashed on arrival.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createOneShot(500L, VibrationEffect.DEFAULT_AMPLITUDE))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(500L)
+    }
 }
