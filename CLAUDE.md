@@ -122,8 +122,14 @@
 | `ui/khaoyai/KhaoYaiApp.kt` | **รากของแอปหลักเขาใหญ่** — route ทั้งหมด + ห่อระบบนำทางเดิม (`AppNavHost`) เป็นปลายทางหนึ่ง |
 | `ui/khaoyai/KhaoYaiComponents.kt` | UI ที่หน้าแอปหลักใช้ร่วมกัน — เพิ่มหน้าใหม่ให้ใช้ซ้ำจากที่นี่ ห้ามก๊อป |
 | `ui/khaoyai/KhaoYaiSession.kt` | กติกาเข้าสู่ระบบ (ยังไม่มีฐานข้อมูล: `admin` = ผู้ดูแล) |
-| `data/khaoyai/` + `assets/data/khaoyai_content.json` | เส้นทาง/ข่าว/สัตว์-พืช — ข้อมูลตัวอย่าง แก้จากหน้าผู้ดูแลได้ (ในหน่วยความจำ) |
-| `data/local/AppDatabase.kt` | Room version **8** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/khaoyai/` + `assets/data/khaoyai_content.json` | เส้นทาง/ข่าว/สัตว์-พืช — **ข้อมูลจริงจากเว็บอุทยาน** แก้จากหน้าผู้ดูแลได้ บันทึกที่ `filesDir/khaoyai/content.json` |
+| `data/khaoyai/TrailAccess.kt` | **ใครเริ่มเส้นทางได้จากที่ไหน** (ในเขต = รัศมีจากเส้น) — มีแค่เส้นทางสาธิตที่ `demoUnlocked` |
+| `navigation/StationMonitor.kt` | กติกาการเด้งจุดสื่อความหมาย (ครั้งเดียวต่อการเดิน · fix แย่กว่า 30 ม. ไม่เด้ง) — **คนละกติกากับ HazardMonitor อย่ารวม** |
+| `map/ForestMapLook.kt` | แต่งสีแผนที่ตอนรัน — แก้ paint ของ layer เดิมเท่านั้น |
+| `data/repository/SosRepository.kt` | SOS — **เก็บในเครื่องเดียวกัน ยังไม่ส่งถึงใคร** หน้าจอต้องบอกผู้ใช้ตรง ๆ เสมอ |
+| `assets/photos/` + `tools/fetch_photos.py` | รูปจาก Wikimedia Commons + `credits.json` — **ทุกรูปต้องมีเครดิต** (test บังคับ) |
+| `ui/AppNavigation.kt` `AppNavHost(isAdmin)` | ส่งสิทธิ์ลงไประบบนำทาง: ผู้ใช้ไม่เห็นเครื่องมือแก้/เดินเก็บ — **ของใหม่ที่แก้ข้อมูลได้ต้องผูกกับ `isAdmin`** |
+| `data/local/AppDatabase.kt` | Room version **9** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`, `sos_report`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
@@ -134,6 +140,7 @@ python3 tools/osm_import.py        # ดึงข้อมูลจาก OSM �
 python3 tools/geojson_validate.py  # ตรวจไฟล์พิกัดก่อน commit
 bash tools/build_tiles.sh          # สร้าง MBTiles ใหม่ (โหมด BUNDLED)
 python3 tools/make_alert_sounds.py # gen เสียงเตือนจุดอันตรายใหม่ลง res/raw/
+python3 tools/fetch_photos.py      # ดึงรูปจาก Wikimedia Commons (เช็ก license + เขียนเครดิต)
 ```
 
 > บนเครื่องนี้ Gradle จะเลือก JRE ของ VS Code (ไม่มี `jlink`) แล้ว `compileDebugJavaWithJavac` พัง
