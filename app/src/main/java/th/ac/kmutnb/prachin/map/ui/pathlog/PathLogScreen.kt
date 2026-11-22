@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.pathlog
 
+import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import android.graphics.PointF
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -366,6 +367,7 @@ private fun PathLogMapView(
         mapView.getMapAsync { map ->
             onMapReady(map)
             map.setStyle(Style.Builder().fromUri(styleUri)) { style ->
+                ForestMapLook.apply(style)
                 layerManager.attach(style)
                 map.cameraPosition = CameraPosition.Builder()
                     .target(LatLng(config.center.lat, config.center.lon))

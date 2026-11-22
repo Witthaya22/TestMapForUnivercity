@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.hazard
 
+import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import android.graphics.PointF
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -367,6 +368,7 @@ private fun HazardMapView(
         mapView.getMapAsync { map ->
             onMapReady(map)
             map.setStyle(Style.Builder().fromUri(styleUri)) { style ->
+                ForestMapLook.apply(style)
                 // Hazards first, so the walker's own dot is never hidden under a warning
                 // circle drawn on top of it.
                 hazardLayers.attach(style)

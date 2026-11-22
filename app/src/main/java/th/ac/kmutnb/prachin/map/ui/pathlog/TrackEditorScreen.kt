@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.pathlog
 
+import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -465,6 +466,7 @@ private fun TrackEditMapView(
     DisposableEffect(mapView, styleUri) {
         mapView.getMapAsync { map ->
             map.setStyle(Style.Builder().fromUri(styleUri)) { style ->
+                ForestMapLook.apply(style)
                 layerManager.attach(style)
                 onMapReady(map)
             }

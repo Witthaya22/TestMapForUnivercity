@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.map
 
+import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import android.graphics.PointF
 import android.os.Build
 import android.os.VibrationEffect
@@ -302,6 +303,7 @@ private fun CampusMapView(
         mapView.getMapAsync { map ->
             onMapReady(map)
             map.setStyle(Style.Builder().fromUri(styleUri)) { style ->
+                ForestMapLook.apply(style)
                 // Hazards first, so their shaded circles sit under the route line and the
                 // POI pins rather than hiding either.
                 hazardLayers.attach(style)
