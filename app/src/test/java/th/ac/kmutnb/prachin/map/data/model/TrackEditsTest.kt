@@ -137,6 +137,17 @@ class TrackEditsTest {
     }
 
     @Test
+    fun `a vertex dropped on either neighbour would stack, a pace away would not`() {
+        // Vertex 4 sits at 40 m between 30 m and 50 m.
+        assertTrue(TrackEdits.wouldStackOnMove(track, 4, at(30.2, 0.0)))
+        assertTrue(TrackEdits.wouldStackOnMove(track, 4, at(49.9, 0.0)))
+        assertFalse(TrackEdits.wouldStackOnMove(track, 4, at(42.0, 0.0)))
+        // The ends have one neighbour only; the vertex itself is not a neighbour.
+        assertTrue(TrackEdits.wouldStackOnMove(track, 0, at(10.1, 0.0)))
+        assertFalse(TrackEdits.wouldStackOnMove(track, 0, at(0.1, 0.0)))
+    }
+
+    @Test
     fun `deleting a point takes its record with it`() {
         val deleted = TrackEdits.deleteVertex(track, 6)
 
