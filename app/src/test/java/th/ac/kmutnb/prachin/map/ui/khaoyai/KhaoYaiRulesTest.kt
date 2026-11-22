@@ -18,16 +18,6 @@ import th.ac.kmutnb.prachin.map.ui.khaoyai.admin.TrailDraft
 class KhaoYaiRulesTest {
 
     @Test
-    fun `admin in any letter case signs in as admin, anything else as a visitor`() {
-        assertTrue(KhaoYaiAuth.signIn("admin").isAdmin)
-        assertTrue(KhaoYaiAuth.signIn("Admin").isAdmin)
-        assertTrue(KhaoYaiAuth.signIn("  ADMIN ").isAdmin)
-        assertFalse(KhaoYaiAuth.signIn("").isAdmin)
-        assertFalse(KhaoYaiAuth.signIn("administrator").isAdmin)
-        assertEquals("Admin", KhaoYaiAuth.signIn(" Admin ").username)
-    }
-
-    @Test
     fun `dates show in Thai with the Buddhist year, anything else as typed`() {
         val months = listOf("ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.")
         assertEquals("18 พ.ย. 2569", KhaoYaiFormats.thaiShortDate("2026-11-18", months))

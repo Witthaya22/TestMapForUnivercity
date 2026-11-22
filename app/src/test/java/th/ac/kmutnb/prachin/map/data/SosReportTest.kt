@@ -17,7 +17,7 @@ class SosReportTest {
 
     private val report = SosReport(
         id = "sos_1", createdAt = 1_000L, username = "นักเดินป่า", point = GeoPoint(14.438341, 101.372523),
-        accuracyMeters = 6.4f, category = SosCategory.INJURED, message = "ข้อเท้าพลิก", trailName = "กองแก้ว",
+        accuracyMeters = 6.4f, category = SosCategory.ACCIDENT, message = "ข้อเท้าพลิก", trailName = "กองแก้ว",
     )
 
     @Test
