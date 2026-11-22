@@ -189,6 +189,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 Fact(stringResource(R.string.about_fact_area_label), stringResource(R.string.about_fact_area), Modifier.weight(1f))
                 Fact(stringResource(R.string.about_fact_peak_label), stringResource(R.string.about_fact_peak), Modifier.weight(1f))
             }
+            Fact(stringResource(R.string.about_fact_hours_label), stringResource(R.string.about_fact_hours), Modifier.fillMaxWidth())
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -214,7 +215,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     MenuRow(
                         R.drawable.ic_call,
                         "${stringResource(label)}  $number",
-                        onClick = { dial(number) },
+                        onClick = { dial(number.filter(Char::isDigit)) },
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -237,8 +238,13 @@ private fun Fact(label: String, value: String, modifier: Modifier) {
     }
 }
 
-/** National hotlines; the park office's own number is still to be confirmed. */
+/**
+ * The park's own lines first - both answer emergencies around the clock according to
+ * khaoyainationalpark.com (22 Nov 2026) - then the national hotlines.
+ */
 private val EMERGENCY_NUMBERS = listOf(
+    R.string.about_call_visitor_center to "086-092-6529",
+    R.string.about_call_park_office to "086-092-6527",
     R.string.about_call_medical to "1669",
     R.string.about_call_tourist_police to "1155",
     R.string.about_call_dnp to "1362",

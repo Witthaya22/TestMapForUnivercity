@@ -603,12 +603,10 @@
     <string name="trail_duration_hours">%1$d ชม.</string>
     <string name="trail_duration_hours_minutes">%1$d ชม. %2$d นาที</string>
     <string name="trail_needs_guide">ต้องมีเจ้าหน้าที่นำทาง</string>
-    <string name="trail_self_guided">เดินเองได้</string>
     <string name="trail_closed">ปิดชั่วคราว</string>
     <string name="trail_start_point">จุดเริ่มต้น: %1$s</string>
     <string name="trail_about">เกี่ยวกับเส้นทาง</string>
     <string name="trail_stations_title">จุดสื่อความหมายระหว่างทาง</string>
-    <string name="trail_start_navigation">เริ่มนำทาง</string>
     <string name="trail_guide_warning">เส้นทางนี้ต้องลงทะเบียนและเดินกับเจ้าหน้าที่อุทยานเท่านั้น</string>
     <string name="trail_empty">ยังไม่มีเส้นทางในหมวดนี้</string>
     <string name="trail_not_found">ไม่พบเส้นทางนี้ อาจถูกลบไปแล้ว</string>
@@ -653,7 +651,6 @@
     <string name="profile_logout">ออกจากระบบ</string>
 
     <!-- เกี่ยวกับอุทยาน -->
-    <string name="about_title">เกี่ยวกับอุทยาน</string>
     <string name="about_intro">อุทยานแห่งชาติเขาใหญ่ประกาศจัดตั้งเมื่อ พ.ศ. 2505 เป็นอุทยานแห่งชาติแห่งแรกของประเทศไทย ครอบคลุมพื้นที่ 4 จังหวัด คือ นครราชสีมา สระบุรี ปราจีนบุรี และนครนายก และเป็นส่วนหนึ่งของกลุ่มป่าดงพญาเย็น–เขาใหญ่ ซึ่งได้รับการขึ้นทะเบียนเป็นมรดกโลกทางธรรมชาติเมื่อ พ.ศ. 2548</string>
     <string name="about_fact_founded_label">ก่อตั้ง</string>
     <string name="about_fact_founded">พ.ศ. 2505</string>
@@ -664,6 +661,10 @@
     <string name="about_ecosystem_title">ระบบนิเวศ</string>
     <string name="about_ecosystem_body">ป่าดิบชื้น ป่าดิบแล้ง ป่าดิบเขา ป่าเบญจพรรณ และทุ่งหญ้า เป็นบ้านของช้างป่า นกเงือก ชะนี กวาง และสัตว์ป่าอีกหลายร้อยชนิด</string>
     <string name="about_emergency_title">เบอร์ฉุกเฉิน (แตะเพื่อโทร)</string>
+    <string name="about_call_visitor_center">ศูนย์บริการนักท่องเที่ยว (แจ้งเหตุ 24 ชม.)</string>
+    <string name="about_call_park_office">ที่ทำการอุทยานฯ (แจ้งเหตุ 24 ชม.)</string>
+    <string name="about_fact_hours_label">เวลาเปิดอุทยาน</string>
+    <string name="about_fact_hours">06:00–18:00 น. · สอบถามข้อมูลท่องเที่ยว 08:30–16:30 น.</string>
     <string name="about_call_medical">เจ็บป่วยฉุกเฉิน</string>
     <string name="about_call_tourist_police">ตำรวจท่องเที่ยว</string>
     <string name="about_call_dnp">สายด่วนกรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช</string>
@@ -699,7 +700,6 @@
     <string name="admin_field_start">จุดเริ่มต้น</string>
     <string name="admin_field_summary">สรุปสั้น ๆ</string>
     <string name="admin_field_description">รายละเอียด</string>
-    <string name="admin_field_stations">จุดสื่อความหมาย (บรรทัดละจุด)</string>
     <string name="admin_field_needs_guide">ต้องมีเจ้าหน้าที่นำทาง</string>
     <string name="admin_field_is_open">เปิดให้เดิน</string>
     <string name="admin_field_title">หัวข้อ *</string>
