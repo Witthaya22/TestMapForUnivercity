@@ -229,8 +229,10 @@ fun AdminScreen(
             AdminSection.TRAILS -> TrailEditor(
                 initial = id?.let { content.trail(it) }?.let(TrailDraft::from) ?: TrailDraft(),
                 title = stringResource(if (id == null) section.addRes else section.editRes),
+                importPhoto = repository::importPhoto,
                 onSave = { draft ->
-                    draft.toTrail(id ?: newContentId(section.idPrefix))?.let {
+                    val path = id?.let { content.trail(it) }?.path.orEmpty()
+                    draft.toTrail(id ?: newContentId(section.idPrefix), path)?.let {
                         repository.upsertTrail(it)
                         saved()
                     }
@@ -241,6 +243,7 @@ fun AdminScreen(
             AdminSection.NEWS -> NewsEditor(
                 initial = id?.let { content.newsItem(it) }?.let(NewsDraft::from) ?: NewsDraft(date = today()),
                 title = stringResource(if (id == null) section.addRes else section.editRes),
+                importPhoto = repository::importPhoto,
                 onSave = { draft ->
                     draft.toNews(id ?: newContentId(section.idPrefix))?.let {
                         repository.upsertNews(it)
@@ -253,6 +256,7 @@ fun AdminScreen(
             AdminSection.SPECIES -> SpeciesEditor(
                 initial = id?.let { content.speciesItem(it) }?.let(SpeciesDraft::from) ?: SpeciesDraft(),
                 title = stringResource(if (id == null) section.addRes else section.editRes),
+                importPhoto = repository::importPhoto,
                 onSave = { draft ->
                     draft.toSpecies(id ?: newContentId(section.idPrefix))?.let {
                         repository.upsertSpecies(it)
@@ -486,178 +490,5 @@ private fun AdminRow(row: AdminRowData, onEdit: () -> Unit, onDelete: () -> Unit
                 Icon(painterResource(R.drawable.ic_delete), stringResource(R.string.action_delete), tint = MaterialTheme.colorScheme.error)
             }
         }
-    }
-}
-
-// --------------------------------------------------------------------------------------
-// Editors
-// --------------------------------------------------------------------------------------
-
-@Composable
-private fun TrailEditor(
-    initial: TrailDraft,
-    title: String,
-    onSave: (TrailDraft) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var d by rememberSaveable { mutableStateOf(initial) }
-    EditorDialog(title = title, canSave = d.isValid, onSave = { onSave(d) }, onDismiss = onDismiss) {
-        FormField(d.name, { d = d.copy(name = it) }, R.string.admin_field_name, required(d.nameMissing))
-        FormField(d.emoji, { d = d.copy(emoji = it) }, R.string.admin_field_emoji)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FormField(
-                d.distanceKm, { d = d.copy(distanceKm = it) }, R.string.admin_field_distance,
-                number(d.distanceInvalid), KeyboardType.Decimal, Modifier.weight(1f),
-            )
-            FormField(
-                d.durationMinutes, { d = d.copy(durationMinutes = it) }, R.string.admin_field_duration,
-                number(d.durationInvalid), KeyboardType.Number, Modifier.weight(1f),
-            )
-        }
-        Text(stringResource(R.string.admin_field_difficulty), style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TrailDifficulty.entries.forEach { level ->
-                FilterChip(
-                    selected = d.difficulty == level,
-                    onClick = { d = d.copy(difficulty = level) },
-                    label = { Text(difficultyLabel(level)) },
-                )
-            }
-        }
-        FormField(d.startPoint, { d = d.copy(startPoint = it) }, R.string.admin_field_start)
-        FormField(d.summary, { d = d.copy(summary = it) }, R.string.admin_field_summary, singleLine = false)
-        FormField(d.description, { d = d.copy(description = it) }, R.string.admin_field_description, singleLine = false, minLines = 3)
-        FormField(d.stations, { d = d.copy(stations = it) }, R.string.admin_field_stations, singleLine = false, minLines = 3)
-        SwitchRow(R.string.admin_field_needs_guide, d.needsGuide) { d = d.copy(needsGuide = it) }
-        SwitchRow(R.string.admin_field_is_open, d.isOpen) { d = d.copy(isOpen = it) }
-    }
-}
-
-@Composable
-private fun NewsEditor(
-    initial: NewsDraft,
-    title: String,
-    onSave: (NewsDraft) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var d by rememberSaveable { mutableStateOf(initial) }
-    EditorDialog(title = title, canSave = d.isValid, onSave = { onSave(d) }, onDismiss = onDismiss) {
-        FormField(d.title, { d = d.copy(title = it) }, R.string.admin_field_title, required(d.titleMissing))
-        FormField(d.emoji, { d = d.copy(emoji = it) }, R.string.admin_field_emoji)
-        FormField(
-            d.date, { d = d.copy(date = it) }, R.string.admin_field_date,
-            if (d.dateInvalid) stringResource(R.string.admin_error_date) else null,
-        )
-        FormField(d.category, { d = d.copy(category = it) }, R.string.admin_field_category)
-        FormField(d.summary, { d = d.copy(summary = it) }, R.string.admin_field_summary, singleLine = false)
-        FormField(d.body, { d = d.copy(body = it) }, R.string.admin_field_body, singleLine = false, minLines = 5)
-    }
-}
-
-@Composable
-private fun SpeciesEditor(
-    initial: SpeciesDraft,
-    title: String,
-    onSave: (SpeciesDraft) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var d by rememberSaveable { mutableStateOf(initial) }
-    EditorDialog(title = title, canSave = d.isValid, onSave = { onSave(d) }, onDismiss = onDismiss) {
-        Text(stringResource(R.string.admin_field_kind), style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SpeciesKind.entries.forEach { k ->
-                FilterChip(
-                    selected = d.kind == k,
-                    onClick = { d = d.copy(kind = k) },
-                    label = { Text(speciesKindLabel(k)) },
-                )
-            }
-        }
-        FormField(d.name, { d = d.copy(name = it) }, R.string.admin_field_name, required(d.nameMissing))
-        FormField(d.scientificName, { d = d.copy(scientificName = it) }, R.string.admin_field_scientific)
-        FormField(d.emoji, { d = d.copy(emoji = it) }, R.string.admin_field_emoji)
-        FormField(d.conservationStatus, { d = d.copy(conservationStatus = it) }, R.string.admin_field_status)
-        FormField(d.habitat, { d = d.copy(habitat = it) }, R.string.admin_field_habitat, singleLine = false)
-        FormField(d.description, { d = d.copy(description = it) }, R.string.admin_field_description, singleLine = false, minLines = 3)
-        FormField(d.tip, { d = d.copy(tip = it) }, R.string.admin_field_tip, singleLine = false)
-    }
-}
-
-@Composable
-private fun required(missing: Boolean): String? =
-    if (missing) stringResource(R.string.admin_error_required) else null
-
-@Composable
-private fun number(invalid: Boolean): String? =
-    if (invalid) stringResource(R.string.admin_error_number) else null
-
-/** A full-screen form with close on the left and save on the right. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun EditorDialog(
-    title: String,
-    canSave: Boolean,
-    onSave: () -> Unit,
-    onDismiss: () -> Unit,
-    fields: @Composable ColumnScope.() -> Unit,
-) {
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            Column(Modifier.imePadding()) {
-                TopAppBar(
-                    title = { Text(title, fontWeight = FontWeight.Bold) },
-                    navigationIcon = {
-                        IconButton(onClick = onDismiss) {
-                            Icon(painterResource(R.drawable.ic_close), stringResource(R.string.action_close))
-                        }
-                    },
-                    actions = {
-                        TextButton(onClick = onSave, enabled = canSave) {
-                            Text(stringResource(R.string.action_save), fontWeight = FontWeight.Bold)
-                        }
-                    },
-                )
-                Column(
-                    Modifier
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    content = fields,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FormField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    labelRes: Int,
-    error: String? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    modifier: Modifier = Modifier.fillMaxWidth(),
-    singleLine: Boolean = true,
-    minLines: Int = 1,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(stringResource(labelRes)) },
-        isError = error != null,
-        supportingText = error?.let { { Text(it) } },
-        singleLine = singleLine,
-        minLines = minLines,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        shape = RoundedCornerShape(12.dp),
-        modifier = modifier,
-    )
-}
-
-@Composable
-private fun SwitchRow(labelRes: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(stringResource(labelRes), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = onChange)
     }
 }

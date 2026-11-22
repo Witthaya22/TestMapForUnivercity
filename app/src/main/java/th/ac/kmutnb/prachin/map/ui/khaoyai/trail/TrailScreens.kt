@@ -49,6 +49,10 @@ import androidx.compose.ui.unit.sp
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
 import th.ac.kmutnb.prachin.map.data.khaoyai.TrailDifficulty
+import th.ac.kmutnb.prachin.map.data.khaoyai.TrailStation
+import th.ac.kmutnb.prachin.map.ui.khaoyai.ContentPhoto
+import th.ac.kmutnb.prachin.map.ui.khaoyai.HERO_PHOTO
+import th.ac.kmutnb.prachin.map.ui.khaoyai.PhotoCreditLine
 import th.ac.kmutnb.prachin.map.ui.khaoyai.DifficultyPill
 import th.ac.kmutnb.prachin.map.ui.khaoyai.EmojiBadge
 import th.ac.kmutnb.prachin.map.ui.khaoyai.FloatingBackButton
@@ -132,11 +136,9 @@ fun TrailFeatureCard(trail: Trail, onClick: () -> Unit) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(112.dp)
-                .background(ForestBrush),
+                .height(124.dp),
         ) {
-            LeafCorner(Modifier.align(Alignment.TopEnd), size = 52.dp, alpha = 0.3f)
-            Text(trail.emoji, fontSize = 44.sp, modifier = Modifier.align(Alignment.Center))
+            ContentPhoto(trail.photo, trail.emoji, Modifier.fillMaxSize(), contentDescription = trail.name)
             DifficultyPill(
                 trail.difficulty,
                 Modifier
@@ -169,7 +171,14 @@ private fun TrailRow(trail: Trail, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
-            EmojiBadge(trail.emoji, size = 64.dp, brush = ForestBrush)
+            ContentPhoto(
+                trail.photo,
+                trail.emoji,
+                Modifier
+                    .size(76.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                contentDescription = trail.name,
+            )
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(trail.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
@@ -241,7 +250,7 @@ fun TrailDetailScreen(
     ) { padding ->
         LazyColumn(contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)) {
             item {
-                HeroBanner(height = 280.dp) {
+                HeroBanner(height = 300.dp, photo = trail.photo.ifBlank { HERO_PHOTO }) {
                     FloatingBackButton(
                         onBack,
                         Modifier
@@ -269,7 +278,25 @@ fun TrailDetailScreen(
                     }
                 }
             }
-            item { StatsCard(trail) }
+            item {
+                PhotoCreditLine(trail.photo, Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp))
+                StatsCard(trail)
+            }
+            if (trail.openNote.isNotBlank() || trail.endPoint.isNotBlank()) {
+                item {
+                    Column(
+                        Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        if (trail.endPoint.isNotBlank()) {
+                            InfoChip(R.drawable.ic_place, stringResource(R.string.trail_end_point, trail.endPoint))
+                        }
+                        if (trail.openNote.isNotBlank()) {
+                            InfoChip(R.drawable.ic_schedule, trail.openNote)
+                        }
+                    }
+                }
+            }
             if (trail.needsGuide) {
                 item {
                     Surface(
@@ -296,7 +323,7 @@ fun TrailDetailScreen(
                 item {
                     DetailSection(stringResource(R.string.trail_stations_title)) {
                         trail.stations.forEachIndexed { index, station ->
-                            StationRow(number = index + 1, name = station, isLast = index == trail.stations.lastIndex)
+                            StationRow(number = index + 1, station = station, isLast = index == trail.stations.lastIndex)
                         }
                     }
                 }
@@ -360,7 +387,7 @@ private fun DetailSection(title: String, body: @Composable () -> Unit) {
 
 /** A numbered stop on a vertical line, like the posts along a real trail. */
 @Composable
-private fun StationRow(number: Int, name: String, isLast: Boolean) {
+private fun StationRow(number: Int, station: TrailStation, isLast: Boolean) {
     Row {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
@@ -381,12 +408,40 @@ private fun StationRow(number: Int, name: String, isLast: Boolean) {
                 Box(
                     Modifier
                         .width(2.dp)
-                        .height(26.dp)
+                        .height(if (station.description.isBlank()) 26.dp else 64.dp)
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
                 )
             }
         }
         Spacer(Modifier.width(14.dp))
-        Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 2.dp))
+        Column(
+            Modifier
+                .weight(1f)
+                .padding(top = 2.dp, bottom = 8.dp),
+        ) {
+            Text(
+                listOf(station.emoji, station.name).filter { it.isNotBlank() }.joinToString(" "),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+            if (station.description.isNotBlank()) {
+                Text(
+                    station.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        if (station.photo.isNotBlank()) {
+            ContentPhoto(
+                station.photo,
+                station.emoji,
+                Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+            )
+        }
     }
 }

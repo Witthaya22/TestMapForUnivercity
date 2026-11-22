@@ -1,10 +1,12 @@
 package th.ac.kmutnb.prachin.map.data.khaoyai
 
+import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import java.util.UUID
 
 /**
  * Everything the Khao Yai app shows apart from the map: nature trails, news, animals and
- * plants. Seeded from `assets/data/khaoyai_content.json` and edited from the admin screen.
+ * plants. Seeded from `assets/data/khaoyai_content.json`, edited from the admin screen and
+ * saved to the app's own storage from then on (see `KhaoYaiContentRepository`).
  */
 data class KhaoYaiContent(
     val trails: List<Trail> = emptyList(),
@@ -29,23 +31,64 @@ enum class TrailDifficulty(val id: String) {
     }
 }
 
+/**
+ * A point of interest along a trail - an old tree, an odd rock, a salt lick. Walking into
+ * [radiusMeters] of [point] brings its card up on the map (see `StationMonitor`).
+ * A station without a [point] is listed on the trail page but never pops up.
+ */
+data class TrailStation(
+    val id: String,
+    val name: String,
+    val emoji: String,
+    val description: String,
+    val point: GeoPoint?,
+    val radiusMeters: Int = DEFAULT_RADIUS_METERS,
+    /** A photo reference, see [PhotoRef]; blank for none. */
+    val photo: String = "",
+) {
+    companion object {
+        /** About a fix's error and a few paces: close enough to be looking at it. */
+        const val DEFAULT_RADIUS_METERS = 25
+    }
+}
+
 /** A nature study trail, walked on foot. */
 data class Trail(
     val id: String,
     val name: String,
     val emoji: String,
+    val photo: String,
     val distanceKm: Double,
     val durationMinutes: Int,
     val difficulty: TrailDifficulty,
+    /** Where the walk starts, in words, e.g. "the suspension bridge behind the visitor centre". */
     val startPoint: String,
+    val endPoint: String,
     val summary: String,
     val description: String,
-    /** Interpretation stations along the way, in walking order. */
-    val stations: List<String>,
+    val stations: List<TrailStation>,
     /** Some trails may only be walked with a park ranger. */
     val needsGuide: Boolean,
     val isOpen: Boolean,
-)
+    /** Opening hours or seasonal notes, shown as they are written. */
+    val openNote: String,
+    /** Where the walk starts on the ground; null when nobody has surveyed it yet. */
+    val trailhead: GeoPoint?,
+    /** The trail itself, when its line is known - from OpenStreetMap or walked in. */
+    val path: List<GeoPoint>,
+    /** How close to the trail one has to be before it can be started. */
+    val entryRadiusMeters: Int,
+    /**
+     * shortcut: lets this trail be started from anywhere, so the walking screens can be
+     * shown before anyone stands at a real trailhead. Turn it off for real trails.
+     */
+    val demoUnlocked: Boolean,
+    val sourceUrl: String,
+) {
+    companion object {
+        const val DEFAULT_ENTRY_RADIUS_METERS = 1_000
+    }
+}
 
 data class NewsItem(
     val id: String,
@@ -56,6 +99,10 @@ data class NewsItem(
     val category: String,
     val summary: String,
     val body: String,
+    val photo: String = "",
+    /** Who published it, e.g. the park or the national parks department. */
+    val sourceName: String = "",
+    val sourceUrl: String = "",
 )
 
 enum class SpeciesKind(val id: String) {
@@ -78,7 +125,23 @@ data class Species(
     val description: String,
     /** What a visitor should do on meeting it. */
     val tip: String,
+    val photo: String = "",
 )
+
+/**
+ * Where a photo lives. Bundled photos are asset paths (`photos/elephant.jpg`); photos an
+ * admin picked are copied into app storage and written `file:<path under filesDir>`.
+ */
+object PhotoRef {
+    const val FILE_PREFIX = "file:"
+
+    fun isFile(ref: String): Boolean = ref.startsWith(FILE_PREFIX)
+    fun filePath(ref: String): String = ref.removePrefix(FILE_PREFIX)
+    fun ofFile(relativePath: String): String = FILE_PREFIX + relativePath
+}
+
+/** Who took a bundled photo and under what licence; printed under it. */
+data class PhotoCredit(val author: String, val license: String, val source: String)
 
 /** Species of [kind] (all kinds when null) whose Thai or scientific name contains [query]. */
 fun filterSpecies(species: List<Species>, kind: SpeciesKind?, query: String): List<Species> {

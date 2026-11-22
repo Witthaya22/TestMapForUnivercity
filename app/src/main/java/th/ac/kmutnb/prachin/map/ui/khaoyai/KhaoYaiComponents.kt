@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,6 +46,9 @@ import th.ac.kmutnb.prachin.map.ui.theme.ForestDeep
 import th.ac.kmutnb.prachin.map.ui.theme.ForestGreen
 import th.ac.kmutnb.prachin.map.ui.theme.ForestLeaf
 import th.ac.kmutnb.prachin.map.ui.theme.ForestMoss
+
+/** The landscape photo behind the sign-in screen and the home header. */
+const val HERO_PHOTO = "photos/hero_khaoyai.jpg"
 
 /** Canopy green, dark at the bottom like the forest floor. */
 val ForestBrush: Brush = Brush.verticalGradient(listOf(ForestLeaf, ForestGreen, ForestDeep))
@@ -60,6 +64,8 @@ val MossBrush: Brush = Brush.linearGradient(listOf(ForestMoss, ForestLeaf))
 fun HeroBanner(
     modifier: Modifier = Modifier,
     height: Dp = 260.dp,
+    /** A real photo over the drawn landscape; the drawing shows while it loads, or if it fails. */
+    photo: String = HERO_PHOTO,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
@@ -71,6 +77,12 @@ fun HeroBanner(
             painter = painterResource(R.drawable.bg_khaoyai_hero),
             contentDescription = stringResource(R.string.ky_hero_image),
             contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
+        ContentPhoto(
+            photo = photo,
+            fallbackEmoji = "",
+            brush = SolidColor(Color.Transparent),
             modifier = Modifier.fillMaxSize(),
         )
         Box(
@@ -250,6 +262,15 @@ fun FloatingBackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
         IconButton(onClick = onBack) {
             Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.action_back))
         }
+    }
+}
+
+/** Opens [url] in whatever browser the phone has; nothing happens when there is none. */
+fun openLink(context: android.content.Context, url: String) {
+    try {
+        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+    } catch (_: android.content.ActivityNotFoundException) {
+        // No browser installed: the link is on screen to copy instead.
     }
 }
 

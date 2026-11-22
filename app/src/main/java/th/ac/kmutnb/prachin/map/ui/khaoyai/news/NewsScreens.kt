@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,7 +33,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.NewsItem
+import th.ac.kmutnb.prachin.map.ui.khaoyai.ContentPhoto
 import th.ac.kmutnb.prachin.map.ui.khaoyai.EmojiBadge
+import th.ac.kmutnb.prachin.map.ui.khaoyai.MossBrush
+import th.ac.kmutnb.prachin.map.ui.khaoyai.PhotoCreditLine
+import th.ac.kmutnb.prachin.map.ui.khaoyai.openLink
 import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiTopBar
 import th.ac.kmutnb.prachin.map.ui.khaoyai.NotFound
 import th.ac.kmutnb.prachin.map.ui.khaoyai.Pill
@@ -73,7 +81,14 @@ fun NewsCard(item: NewsItem, onClick: () -> Unit, modifier: Modifier = Modifier)
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
-            EmojiBadge(item.emoji, size = 52.dp)
+            ContentPhoto(
+                item.photo,
+                item.emoji,
+                Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(14.dp)),
+                brush = MossBrush,
+            )
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 NewsMeta(item)
@@ -123,7 +138,20 @@ fun NewsDetailScreen(item: NewsItem?, onBack: () -> Unit) {
                 .padding(20.dp)
                 .navigationBarsPadding(),
         ) {
-            EmojiBadge(item.emoji, size = 72.dp)
+            if (item.photo.isNotBlank()) {
+                ContentPhoto(
+                    item.photo,
+                    item.emoji,
+                    Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(20.dp)),
+                    contentDescription = item.title,
+                )
+                PhotoCreditLine(item.photo, Modifier.padding(top = 4.dp))
+            } else {
+                EmojiBadge(item.emoji, size = 72.dp)
+            }
             Spacer(Modifier.height(14.dp))
             NewsMeta(item)
             Spacer(Modifier.height(8.dp))
@@ -136,6 +164,20 @@ fun NewsDetailScreen(item: NewsItem?, onBack: () -> Unit) {
             )
             Spacer(Modifier.height(12.dp))
             Text(item.body, style = MaterialTheme.typography.bodyLarge)
+            if (item.sourceName.isNotBlank() || item.sourceUrl.isNotBlank()) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    stringResource(R.string.news_source, item.sourceName.ifBlank { item.sourceUrl }),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (item.sourceUrl.isNotBlank()) {
+                    val context = LocalContext.current
+                    OutlinedButton(onClick = { openLink(context, item.sourceUrl) }) {
+                        Text(stringResource(R.string.news_open_source))
+                    }
+                }
+            }
         }
     }
 }

@@ -47,7 +47,9 @@ import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.khaoyai.Species
 import th.ac.kmutnb.prachin.map.data.khaoyai.SpeciesKind
 import th.ac.kmutnb.prachin.map.data.khaoyai.filterSpecies
+import th.ac.kmutnb.prachin.map.ui.khaoyai.ContentPhoto
 import th.ac.kmutnb.prachin.map.ui.khaoyai.FloatingBackButton
+import th.ac.kmutnb.prachin.map.ui.khaoyai.PhotoCreditLine
 import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiTopBar
 import th.ac.kmutnb.prachin.map.ui.khaoyai.LeafCorner
 import th.ac.kmutnb.prachin.map.ui.khaoyai.NotFound
@@ -144,15 +146,15 @@ private fun SpeciesCard(species: Species, onClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        Box(
+        ContentPhoto(
+            species.photo,
+            species.emoji,
             Modifier
                 .fillMaxWidth()
-                .height(104.dp)
-                .background(kindBrush(species.kind)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(species.emoji, fontSize = 48.sp)
-        }
+                .height(116.dp),
+            brush = kindBrush(species.kind),
+            contentDescription = species.name,
+        )
         Column(Modifier.padding(12.dp)) {
             Text(
                 species.name,
@@ -192,14 +194,19 @@ fun SpeciesDetailScreen(species: Species?, onBack: () -> Unit) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .background(kindBrush(species.kind)),
+                .height(320.dp),
         ) {
-            LeafCorner(
+            ContentPhoto(
+                species.photo,
+                species.emoji,
+                Modifier.fillMaxSize(),
+                brush = kindBrush(species.kind),
+                contentDescription = species.name,
+            )
+            Box(
                 Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding(),
-                size = 72.dp,
-                alpha = 0.35f,
+                    .fillMaxSize()
+                    .background(Brush.verticalGradient(0.4f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.7f))),
             )
             FloatingBackButton(
                 onBack,
@@ -209,13 +216,9 @@ fun SpeciesDetailScreen(species: Species?, onBack: () -> Unit) {
             )
             Column(
                 Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(top = 56.dp, bottom = 28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .align(Alignment.BottomStart)
+                    .padding(20.dp),
             ) {
-                Text(species.emoji, fontSize = 88.sp)
-                Spacer(Modifier.height(8.dp))
                 Text(
                     species.name,
                     style = MaterialTheme.typography.headlineSmall,
@@ -236,6 +239,7 @@ fun SpeciesDetailScreen(species: Species?, onBack: () -> Unit) {
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            PhotoCreditLine(species.photo)
             FactCard("🛡", stringResource(R.string.species_status), species.conservationStatus)
             FactCard("📍", stringResource(R.string.species_habitat), species.habitat)
             FactCard("📖", stringResource(R.string.species_about), species.description)

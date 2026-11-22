@@ -42,7 +42,7 @@ class AppContainer(context: Context) {
 
     val campusRepository = CampusRepository(assetReader)
 
-    val khaoYaiContentRepository = KhaoYaiContentRepository(assetReader)
+    val khaoYaiContentRepository = KhaoYaiContentRepository(appContext, assetReader, applicationScope)
 
     val poiRepository = PoiRepository(
         poiDao = database.poiDao(),

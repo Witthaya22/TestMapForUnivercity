@@ -49,6 +49,9 @@ object AssetPaths {
     /** Sample trails, news, animals and plants for the Khao Yai app; see `docs/KHAOYAI_APP.md`. */
     const val KHAOYAI_CONTENT = "data/khaoyai_content.json"
 
+    /** Author and licence of every bundled photo, written by `tools/fetch_photos.py`. */
+    const val PHOTO_CREDITS = "photos/credits.json"
+
     /** Drop audio files in here and they become warning sounds; see `docs/HAZARDS.md`. */
     const val HAZARD_SOUNDS_DIR = "sounds"
 
