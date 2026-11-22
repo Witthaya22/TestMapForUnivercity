@@ -49,6 +49,8 @@ object Routes {
 @Composable
 fun AppNavHost(
     startDestination: String,
+    /** Who is signed in to the Khao Yai app: admins get the survey and editing tools. */
+    isAdmin: Boolean = true,
     navController: NavHostController = rememberNavController(),
 ) {
     // Hoisted above the NavHost so the map and the destination picker share one instance:
@@ -72,6 +74,7 @@ fun AppNavHost(
                 viewModel = mapViewModel,
                 onOpenPoiList = { navController.navigate(Routes.POI_LIST) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                canEditPlaces = isAdmin,
             )
         }
 
@@ -94,6 +97,7 @@ fun AppNavHost(
                 onOpenHazards = { navController.navigate(Routes.HAZARDS) },
                 onOpenHazardSounds = { navController.navigate(Routes.HAZARD_SOUNDS) },
                 onOpenGpsDebug = { navController.navigate(Routes.GPS_DEBUG) },
+                isAdmin = isAdmin,
             )
         }
 

@@ -163,6 +163,7 @@ fun PoiDetailSheet(
     poi: Poi,
     isArrival: Boolean,
     isNavigating: Boolean,
+    canEdit: Boolean,
     onDismiss: () -> Unit,
     onNavigateHere: () -> Unit,
     onAddWaypoint: () -> Unit,
@@ -183,7 +184,7 @@ fun PoiDetailSheet(
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (editing) {
+            if (editing && canEdit) {
                 PoiEditForm(
                     poi = poi,
                     onCancel = { editing = false },
@@ -245,8 +246,10 @@ fun PoiDetailSheet(
                     Text(stringResource(R.string.poi_detail_add_waypoint))
                 }
             }
-            TextButton(onClick = { editing = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.poi_detail_edit))
+            if (canEdit) {
+                TextButton(onClick = { editing = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.poi_detail_edit))
+                }
             }
         }
     }

@@ -8,11 +8,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -20,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import th.ac.kmutnb.prachin.map.MapApplication
 import th.ac.kmutnb.prachin.map.ui.AppNavHost
 import th.ac.kmutnb.prachin.map.ui.Routes
@@ -42,10 +45,16 @@ object KhaoYaiRoutes {
     /** Reached by signing in as "admin"; see `KhaoYaiAuth`. */
     const val ADMIN = "ky/admin"
 
-    /** The walking navigation built before this shell: map, routing, surveying. */
-    const val NAVIGATION = "ky/navigation"
-
     const val ARG_ID = "id"
+    const val ARG_START = "start"
+
+    /**
+     * The walking navigation built before this shell: map, routing, surveying. [ARG_START]
+     * opens it on one of its own screens (a `Routes` value) instead of the map.
+     */
+    const val NAVIGATION = "ky/navigation?$ARG_START={$ARG_START}"
+    fun navigation(start: String = Routes.MAP) = "ky/navigation?$ARG_START=$start"
+
     const val TRAIL = "ky/trail/{$ARG_ID}"
     const val SPECIES = "ky/species/{$ARG_ID}"
     const val NEWS = "ky/news/{$ARG_ID}"
@@ -56,40 +65,67 @@ object KhaoYaiRoutes {
     fun news(id: String) = "ky/news/$id"
 }
 
+/** What was stored about the last sign-in; [username] null means signed out. */
+private data class StoredSession(val username: String?)
+
 /**
- * The Khao Yai app: sign in, then the visitor tabs, with the existing walking navigation
- * (`AppNavHost`) as one destination inside it.
+ * The Khao Yai app: sign in, then the visitor tabs or the admin dashboard, with the
+ * existing walking navigation (`AppNavHost`) as one destination inside it.
  */
 @Composable
-fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
+fun KhaoYaiApp() {
     val context = LocalContext.current
-    val repository = remember { (context.applicationContext as MapApplication).container.khaoYaiContentRepository }
-    val content by repository.content.collectAsStateWithLifecycle()
+    val preferences = remember { (context.applicationContext as MapApplication).container.preferences }
+    // The sign-in is remembered across restarts; reading it is a disk hop, so hold an
+    // empty surface for that frame rather than flashing the sign-in screen.
+    val stored by produceState<StoredSession?>(initialValue = null) {
+        value = StoredSession(preferences.sessionUsername.first())
+    }
+    stored?.let { KhaoYaiNavHost(initialUsername = it.username) } ?: Box(Modifier.fillMaxSize())
+}
 
-    // Kept across rotation and process death, like the back stack it goes with.
-    var username by rememberSaveable { mutableStateOf<String?>(null) }
+@Composable
+private fun KhaoYaiNavHost(
+    initialUsername: String?,
+    navController: NavHostController = rememberNavController(),
+) {
+    val context = LocalContext.current
+    val container = remember { (context.applicationContext as MapApplication).container }
+    val repository = container.khaoYaiContentRepository
+    val content by repository.content.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+
+    var username by rememberSaveable { mutableStateOf(initialUsername) }
     val session = KhaoYaiAuth.signIn(username.orEmpty())
 
-    fun openHome(admin: Boolean) =
-        navController.navigate(if (admin) KhaoYaiRoutes.ADMIN else KhaoYaiRoutes.MAIN) {
-            popUpTo(KhaoYaiRoutes.LOGIN) { inclusive = true }
+    val startDestination = remember {
+        when {
+            initialUsername == null -> KhaoYaiRoutes.LOGIN
+            KhaoYaiAuth.signIn(initialUsername).isAdmin -> KhaoYaiRoutes.ADMIN
+            else -> KhaoYaiRoutes.MAIN
         }
+    }
+
+    fun signIn(typed: String) {
+        username = typed
+        scope.launch { container.preferences.setSessionUsername(typed) }
+        val target = if (KhaoYaiAuth.signIn(typed).isAdmin) KhaoYaiRoutes.ADMIN else KhaoYaiRoutes.MAIN
+        navController.navigate(target) { popUpTo(KhaoYaiRoutes.LOGIN) { inclusive = true } }
+    }
 
     fun logout() {
         username = null
+        scope.launch { container.preferences.setSessionUsername(null) }
         navController.navigate(KhaoYaiRoutes.LOGIN) {
             popUpTo(navController.graph.id) { inclusive = true }
         }
     }
 
-    NavHost(navController = navController, startDestination = KhaoYaiRoutes.LOGIN) {
+    NavHost(navController = navController, startDestination = startDestination) {
 
         composable(KhaoYaiRoutes.LOGIN) {
             LoginScreen(
-                onSignIn = { typed ->
-                    username = typed
-                    openHome(admin = KhaoYaiAuth.signIn(typed).isAdmin)
-                },
+                onSignIn = ::signIn,
                 onSignUp = { navController.navigate(KhaoYaiRoutes.SIGN_UP) },
                 onForgotPassword = { navController.navigate(KhaoYaiRoutes.FORGOT_PASSWORD) },
             )
@@ -107,11 +143,12 @@ fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
             MainShell(
                 session = session,
                 content = content,
-                onOpenNavigation = { navController.navigate(KhaoYaiRoutes.NAVIGATION) },
+                onOpenNavigation = { navController.navigate(KhaoYaiRoutes.navigation()) },
                 onOpenTrail = { navController.navigate(KhaoYaiRoutes.trail(it)) },
                 onOpenSpecies = { navController.navigate(KhaoYaiRoutes.species(it)) },
                 onOpenNews = { navController.navigate(KhaoYaiRoutes.news(it)) },
                 onOpenAbout = { navController.navigate(KhaoYaiRoutes.ABOUT) },
+                // Switching back and forth pops to the earlier copy instead of stacking more.
                 onOpenAdmin = { navController.navigate(KhaoYaiRoutes.ADMIN) { popUpTo(KhaoYaiRoutes.ADMIN) { inclusive = true } } },
                 onLogout = ::logout,
             )
@@ -126,10 +163,10 @@ fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
             AdminScreen(
                 content = content,
                 repository = repository,
-                // Switching back and forth pops to the earlier copy instead of stacking more.
                 onViewAsVisitor = {
                     navController.navigate(KhaoYaiRoutes.MAIN) { popUpTo(KhaoYaiRoutes.MAIN) { inclusive = true } }
                 },
+                onOpenTool = { route -> navController.navigate(KhaoYaiRoutes.navigation(route)) },
                 onLogout = ::logout,
             )
         }
@@ -138,7 +175,7 @@ fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
             TrailDetailScreen(
                 trail = content.trail(entry.id()),
                 onBack = { navController.popBackStack() },
-                onStartNavigation = { navController.navigate(KhaoYaiRoutes.NAVIGATION) },
+                onStartNavigation = { navController.navigate(KhaoYaiRoutes.navigation()) },
             )
         }
 
@@ -160,24 +197,33 @@ fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
             AboutScreen(onBack = { navController.popBackStack() })
         }
 
-        composable(KhaoYaiRoutes.NAVIGATION) {
-            NavigationFeature()
+        composable(
+            KhaoYaiRoutes.NAVIGATION,
+            arguments = listOf(
+                navArgument(KhaoYaiRoutes.ARG_START) {
+                    type = NavType.StringType
+                    defaultValue = Routes.MAP
+                },
+            ),
+        ) { entry ->
+            val start = entry.arguments?.getString(KhaoYaiRoutes.ARG_START) ?: Routes.MAP
+            // A visitor only ever gets the map, whatever the link asked for.
+            NavigationFeature(isAdmin = session.isAdmin, start = if (session.isAdmin) start else Routes.MAP)
         }
     }
 }
 
 private val idArgument = listOf(navArgument(KhaoYaiRoutes.ARG_ID) { type = NavType.StringType })
 
-private fun androidx.navigation.NavBackStackEntry.id(): String =
-    arguments?.getString(KhaoYaiRoutes.ARG_ID).orEmpty()
+private fun NavBackStackEntry.id(): String = arguments?.getString(KhaoYaiRoutes.ARG_ID).orEmpty()
 
 /**
  * The walking navigation as it was the whole app before: onboarding until an offline pack
- * is downloaded, the map after. Its own NavHost keeps its own back stack; back from its
+ * is downloaded, then [start]. Its own NavHost keeps its own back stack; back from its
  * first screen returns to the Khao Yai screens.
  */
 @Composable
-private fun NavigationFeature() {
+private fun NavigationFeature(isAdmin: Boolean, start: String) {
     val context = LocalContext.current
     val preferences = remember { (context.applicationContext as MapApplication).container.preferences }
     // Reading the flag is a disk hop: hold an empty surface for that frame or two rather
@@ -187,7 +233,7 @@ private fun NavigationFeature() {
     }
     when (offlineReady) {
         null -> Box(Modifier.fillMaxSize())
-        true -> AppNavHost(startDestination = Routes.MAP)
-        false -> AppNavHost(startDestination = Routes.ONBOARDING)
+        true -> AppNavHost(startDestination = start, isAdmin = isAdmin)
+        false -> AppNavHost(startDestination = Routes.ONBOARDING, isAdmin = isAdmin)
     }
 }

@@ -71,6 +71,8 @@ import th.ac.kmutnb.prachin.map.data.khaoyai.newContentId
 import th.ac.kmutnb.prachin.map.ui.khaoyai.EmojiBadge
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ForestBrush
 import th.ac.kmutnb.prachin.map.ui.khaoyai.LeafCorner
+import th.ac.kmutnb.prachin.map.ui.khaoyai.MenuRow
+import th.ac.kmutnb.prachin.map.ui.Routes
 import th.ac.kmutnb.prachin.map.ui.khaoyai.difficultyLabel
 import th.ac.kmutnb.prachin.map.ui.khaoyai.speciesKindLabel
 import th.ac.kmutnb.prachin.map.ui.khaoyai.thaiDate
@@ -97,6 +99,8 @@ fun AdminScreen(
     content: KhaoYaiContent,
     repository: KhaoYaiContentRepository,
     onViewAsVisitor: () -> Unit,
+    /** Opens one of the walking navigation's own screens, by its `Routes` value. */
+    onOpenTool: (String) -> Unit,
     onLogout: () -> Unit,
 ) {
     var section by rememberSaveable { mutableStateOf(AdminSection.TRAILS) }
@@ -176,6 +180,7 @@ fun AdminScreen(
                     }
                 }
             }
+            item { MapToolsCard(onOpenTool) }
             item {
                 Row(
                     Modifier
@@ -383,6 +388,49 @@ private fun AdminHeader(onViewAsVisitor: () -> Unit, onReset: () -> Unit, onLogo
                     Text(stringResource(R.string.admin_reset), color = Color.White)
                 }
             }
+        }
+    }
+}
+
+/**
+ * The surveying and editing screens of the walking navigation, which visitors never see:
+ * walk a trail in, correct it point by point, pin hazards, place POIs, manage the map pack.
+ */
+@Composable
+private fun MapToolsCard(onOpenTool: (String) -> Unit) {
+    val tools = listOf(
+        Triple(R.drawable.ic_navigation, R.string.admin_tool_map, Routes.MAP),
+        Triple(R.drawable.ic_walk, R.string.admin_tool_path_log, Routes.PATH_LOG),
+        Triple(R.drawable.ic_schedule, R.string.admin_tool_path_readout, Routes.PATH_READOUT),
+        Triple(R.drawable.ic_place, R.string.admin_tool_survey, Routes.SURVEY),
+        Triple(R.drawable.ic_my_location, R.string.admin_tool_gps_log, Routes.GPS_LOG),
+        Triple(R.drawable.ic_shield, R.string.admin_tool_hazards, Routes.HAZARDS),
+        Triple(R.drawable.ic_info, R.string.admin_tool_hazard_sounds, Routes.HAZARD_SOUNDS),
+        Triple(R.drawable.ic_layers, R.string.admin_tool_offline, Routes.OFFLINE_MANAGER),
+        Triple(R.drawable.ic_settings, R.string.admin_tool_settings, Routes.SETTINGS),
+    )
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+    ) {
+        Text(
+            stringResource(R.string.admin_tools_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp),
+        )
+        Text(
+            stringResource(R.string.admin_tools_subtitle),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        tools.forEach { (icon, label, route) ->
+            MenuRow(icon, stringResource(label), onClick = { onOpenTool(route) })
         }
     }
 }

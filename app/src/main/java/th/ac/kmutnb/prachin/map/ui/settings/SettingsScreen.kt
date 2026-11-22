@@ -53,6 +53,8 @@ fun SettingsScreen(
     onOpenHazards: () -> Unit,
     onOpenHazardSounds: () -> Unit,
     onOpenGpsDebug: () -> Unit,
+    /** Visitors see their own preferences only; the survey and data tools are for admins. */
+    isAdmin: Boolean = true,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -115,6 +117,7 @@ fun SettingsScreen(
                 onClick = onOpenOfflineManager,
             )
 
+            if (isAdmin) {
             Text(
                 text = stringResource(R.string.settings_tile_source),
                 style = MaterialTheme.typography.titleSmall,
@@ -140,6 +143,7 @@ fun SettingsScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 )
             }
+            }
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_navigation))
@@ -155,6 +159,7 @@ fun SettingsScreen(
                 onCheckedChange = viewModel::setKeepScreenOn,
             )
 
+            if (isAdmin) {
             SwitchRow(
                 title = stringResource(R.string.settings_surveyed_only),
                 checked = state.surveyedPathsOnly,
@@ -174,14 +179,17 @@ fun SettingsScreen(
                 },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
+            }
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_hazard))
 
-            ClickableRow(
-                title = stringResource(R.string.settings_hazard_manage),
-                onClick = onOpenHazards,
-            )
+            if (isAdmin) {
+                ClickableRow(
+                    title = stringResource(R.string.settings_hazard_manage),
+                    onClick = onOpenHazards,
+                )
+            }
             SwitchRow(
                 title = stringResource(R.string.settings_hazard_alerts),
                 checked = state.hazardAlerts,
@@ -215,6 +223,7 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
+            if (isAdmin) {
             ClickableRow(
                 title = stringResource(R.string.settings_hazard_sound_manage),
                 onClick = onOpenHazardSounds,
@@ -276,6 +285,7 @@ fun SettingsScreen(
                     onClick = onOpenGpsDebug,
                 )
             }
+            }
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_about))
@@ -285,8 +295,8 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    // Seven taps here reveal the GPS debug screen.
-                    .clickable(onClick = viewModel::onLogoTapped)
+                    // Seven taps here reveal the GPS debug screen - for admins only.
+                    .clickable(enabled = isAdmin, onClick = viewModel::onLogoTapped)
                     .padding(16.dp),
             )
             Text(

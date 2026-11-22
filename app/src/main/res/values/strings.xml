@@ -714,4 +714,15 @@
     <string name="admin_error_required">ต้องกรอก</string>
     <string name="admin_error_number">ใส่ตัวเลขที่มากกว่า 0</string>
     <string name="admin_error_date">ใช้รูปแบบ 2026-11-22</string>
+    <string name="admin_tools_title">เครื่องมือแผนที่และเส้นทาง</string>
+    <string name="admin_tools_subtitle">ผู้ใช้ทั่วไปไม่เห็นเมนูเหล่านี้ — เดินเก็บ แก้ไข ปักจุด จัดการแผนที่</string>
+    <string name="admin_tool_map">แผนที่นำทาง (แก้ไขสถานที่ได้ กดค้างเพื่อเพิ่มจุด)</string>
+    <string name="admin_tool_path_log">เดินเก็บเส้นทาง / แก้ไขเส้นทาง (แผนที่)</string>
+    <string name="admin_tool_path_readout">เดินเก็บเส้นทาง (ตัวเลข)</string>
+    <string name="admin_tool_survey">สำรวจพิกัดสถานที่ (POI)</string>
+    <string name="admin_tool_gps_log">เก็บพิกัด GPS</string>
+    <string name="admin_tool_hazards">ปักและแก้ไขจุดอันตราย</string>
+    <string name="admin_tool_hazard_sounds">คลังเสียงเตือน</string>
+    <string name="admin_tool_offline">จัดการแผนที่ออฟไลน์</string>
+    <string name="admin_tool_settings">ตั้งค่าทั้งหมด (รวมเมนูผู้ดูแล)</string>
 </resources>

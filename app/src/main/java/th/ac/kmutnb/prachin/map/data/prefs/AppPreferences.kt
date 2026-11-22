@@ -66,6 +66,18 @@ class AppPreferences(context: Context) {
      */
     val hazardSound: Flow<Boolean> = store.data.map { it[KEY_HAZARD_SOUND] ?: true }
 
+    /**
+     * Who is signed in to the Khao Yai app: null when signed out. An empty string is a
+     * visitor who signed in without a name, which is a real session, not a missing one.
+     */
+    val sessionUsername: Flow<String?> = store.data.map { it[KEY_SESSION_USERNAME] }
+
+    suspend fun setSessionUsername(username: String?) {
+        store.edit { prefs ->
+            if (username == null) prefs.remove(KEY_SESSION_USERNAME) else prefs[KEY_SESSION_USERNAME] = username
+        }
+    }
+
     suspend fun setOfflineMapReady(ready: Boolean, downloadedAt: Long = System.currentTimeMillis()) {
         store.edit {
             it[KEY_OFFLINE_READY] = ready
@@ -145,5 +157,6 @@ class AppPreferences(context: Context) {
         val KEY_HAZARD_ALERTS = booleanPreferencesKey("hazard_alerts")
         val KEY_HAZARD_VOICE = booleanPreferencesKey("hazard_voice")
         val KEY_HAZARD_SOUND = booleanPreferencesKey("hazard_sound")
+        val KEY_SESSION_USERNAME = stringPreferencesKey("session_username")
     }
 }

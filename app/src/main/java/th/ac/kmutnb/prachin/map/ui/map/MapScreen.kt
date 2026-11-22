@@ -68,6 +68,8 @@ import kotlin.math.roundToInt
 fun MapScreen(
     onOpenPoiList: () -> Unit,
     onOpenSettings: () -> Unit,
+    /** Admins add places by long-pressing and edit them from the detail sheet; visitors only navigate. */
+    canEditPlaces: Boolean = true,
     viewModel: MapViewModel = viewModel(factory = MapViewModel.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -119,7 +121,7 @@ fun MapScreen(
                 onMapReady = { mapLibreMap = it },
                 onPoiTapped = viewModel::onPoiTapped,
                 onHazardTapped = viewModel::showHazardDetail,
-                onLongPressed = viewModel::onMapLongPressed,
+                onLongPressed = { point -> if (canEditPlaces) viewModel.onMapLongPressed(point) },
             )
 
             // --- overlays pushed into the map ------------------------------------------
@@ -250,6 +252,7 @@ fun MapScreen(
             poi = poi,
             isArrival = state.detailIsArrival,
             isNavigating = state.isNavigating,
+            canEdit = canEditPlaces,
             onDismiss = viewModel::dismissDetail,
             onNavigateHere = { viewModel.setSingleDestination(poi) },
             onAddWaypoint = { viewModel.addWaypoint(poi) },
