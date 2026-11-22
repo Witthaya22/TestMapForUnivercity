@@ -822,9 +822,11 @@ class MapViewModel(
     ) {
         viewModelScope.launch {
             container.poiRepository.updateDetails(poiId, name, description, note, category)
-            _uiState.update { state ->
-                state.copy(detailPoi = state.pois.firstOrNull { it.id == poiId })
-            }
+            // Read back from the table: state.pois still holds the list from before the
+            // write, so taking the POI from there showed the old name after saving.
+            val updated = container.poiRepository.find(poiId)
+            _uiState.update { it.copy(detailPoi = updated) }
+            effectChannel.send(MapEffect.Message(R.string.poi_edit_saved))
         }
     }
 
