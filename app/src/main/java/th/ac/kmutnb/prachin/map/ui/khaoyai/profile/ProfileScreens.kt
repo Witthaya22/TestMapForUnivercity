@@ -46,12 +46,14 @@ import th.ac.kmutnb.prachin.map.ui.khaoyai.MenuRow
 import th.ac.kmutnb.prachin.map.ui.khaoyai.Pill
 import th.ac.kmutnb.prachin.map.ui.theme.HornbillAmberLight
 
+/** @param onOpenAdmin shown only to an admin; null hides the row. */
 @Composable
 fun ProfileTab(
     session: KhaoYaiSession,
     contentPadding: PaddingValues,
     onOpenNavigation: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenAdmin: (() -> Unit)?,
     onLogout: () -> Unit,
 ) {
     val name = session.username.ifBlank { stringResource(R.string.home_guest_name) }
@@ -114,6 +116,15 @@ fun ProfileTab(
             MenuRow(R.drawable.ic_navigation, stringResource(R.string.profile_navigation), onOpenNavigation)
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             MenuRow(R.drawable.ic_info, stringResource(R.string.profile_about), onOpenAbout)
+            if (onOpenAdmin != null) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                MenuRow(
+                    R.drawable.ic_shield,
+                    stringResource(R.string.admin_title),
+                    onOpenAdmin,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                )
+            }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             MenuRow(
                 R.drawable.ic_logout,

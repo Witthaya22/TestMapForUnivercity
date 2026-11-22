@@ -40,6 +40,7 @@ fun MainShell(
     onOpenSpecies: (String) -> Unit,
     onOpenNews: (String) -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenAdmin: () -> Unit,
     onLogout: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(MainTab.HOME) }
@@ -95,6 +96,7 @@ fun MainShell(
                 contentPadding = padding,
                 onOpenNavigation = onOpenNavigation,
                 onOpenAbout = onOpenAbout,
+                onOpenAdmin = onOpenAdmin.takeIf { session.isAdmin },
                 onLogout = onLogout,
             )
         }

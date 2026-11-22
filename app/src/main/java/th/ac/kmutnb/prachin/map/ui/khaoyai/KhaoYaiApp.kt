@@ -3,6 +3,7 @@ package th.ac.kmutnb.prachin.map.ui.khaoyai
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.first
 import th.ac.kmutnb.prachin.map.MapApplication
 import th.ac.kmutnb.prachin.map.ui.AppNavHost
 import th.ac.kmutnb.prachin.map.ui.Routes
+import th.ac.kmutnb.prachin.map.ui.khaoyai.admin.AdminScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.auth.ForgotPasswordScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.auth.LoginScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.auth.SignUpScreen
@@ -36,6 +38,9 @@ object KhaoYaiRoutes {
     const val FORGOT_PASSWORD = "ky/forgot_password"
     const val MAIN = "ky/main"
     const val ABOUT = "ky/about"
+
+    /** Reached by signing in as "admin"; see `KhaoYaiAuth`. */
+    const val ADMIN = "ky/admin"
 
     /** The walking navigation built before this shell: map, routing, surveying. */
     const val NAVIGATION = "ky/navigation"
@@ -65,9 +70,10 @@ fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
     var username by rememberSaveable { mutableStateOf<String?>(null) }
     val session = KhaoYaiAuth.signIn(username.orEmpty())
 
-    fun openHome() = navController.navigate(KhaoYaiRoutes.MAIN) {
-        popUpTo(KhaoYaiRoutes.LOGIN) { inclusive = true }
-    }
+    fun openHome(admin: Boolean) =
+        navController.navigate(if (admin) KhaoYaiRoutes.ADMIN else KhaoYaiRoutes.MAIN) {
+            popUpTo(KhaoYaiRoutes.LOGIN) { inclusive = true }
+        }
 
     fun logout() {
         username = null
@@ -82,7 +88,7 @@ fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
             LoginScreen(
                 onSignIn = { typed ->
                     username = typed
-                    openHome()
+                    openHome(admin = KhaoYaiAuth.signIn(typed).isAdmin)
                 },
                 onSignUp = { navController.navigate(KhaoYaiRoutes.SIGN_UP) },
                 onForgotPassword = { navController.navigate(KhaoYaiRoutes.FORGOT_PASSWORD) },
@@ -106,6 +112,24 @@ fun KhaoYaiApp(navController: NavHostController = rememberNavController()) {
                 onOpenSpecies = { navController.navigate(KhaoYaiRoutes.species(it)) },
                 onOpenNews = { navController.navigate(KhaoYaiRoutes.news(it)) },
                 onOpenAbout = { navController.navigate(KhaoYaiRoutes.ABOUT) },
+                onOpenAdmin = { navController.navigate(KhaoYaiRoutes.ADMIN) { popUpTo(KhaoYaiRoutes.ADMIN) { inclusive = true } } },
+                onLogout = ::logout,
+            )
+        }
+
+        composable(KhaoYaiRoutes.ADMIN) {
+            if (!session.isAdmin) {
+                // Only a restored back stack can land here signed out of admin.
+                LaunchedEffect(Unit) { logout() }
+                return@composable
+            }
+            AdminScreen(
+                content = content,
+                repository = repository,
+                // Switching back and forth pops to the earlier copy instead of stacking more.
+                onViewAsVisitor = {
+                    navController.navigate(KhaoYaiRoutes.MAIN) { popUpTo(KhaoYaiRoutes.MAIN) { inclusive = true } }
+                },
                 onLogout = ::logout,
             )
         }
