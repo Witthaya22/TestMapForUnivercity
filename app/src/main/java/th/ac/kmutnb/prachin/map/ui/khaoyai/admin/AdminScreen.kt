@@ -47,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -101,8 +102,12 @@ fun AdminScreen(
     onViewAsVisitor: () -> Unit,
     /** Opens one of the walking navigation's own screens, by its `Routes` value. */
     onOpenTool: (String) -> Unit,
+    onOpenSos: () -> Unit,
     onLogout: () -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sosRepository = remember { (context.applicationContext as th.ac.kmutnb.prachin.map.MapApplication).container.sosRepository }
+    val newSos by sosRepository.newCount.collectAsStateWithLifecycle(initialValue = 0)
     var section by rememberSaveable { mutableStateOf(AdminSection.TRAILS) }
     // Which form is open: the section, and the item id (null for a new item).
     var editing by rememberSaveable { mutableStateOf(false) }
@@ -180,6 +185,7 @@ fun AdminScreen(
                     }
                 }
             }
+            item { SosCard(newSos, onOpenSos) }
             item { MapToolsCard(onOpenTool) }
             item {
                 Row(
@@ -392,6 +398,34 @@ private fun AdminHeader(onViewAsVisitor: () -> Unit, onReset: () -> Unit, onLogo
                     Text(stringResource(R.string.admin_reset), color = Color.White)
                 }
             }
+        }
+    }
+}
+
+/** Calls for help come first on the dashboard: red while any is still untaken. */
+@Composable
+private fun SosCard(newCount: Int, onOpen: () -> Unit) {
+    Card(
+        onClick = onOpen,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (newCount > 0) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
+        ),
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("🆘", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.sos_admin_title), fontWeight = FontWeight.Bold)
+                Text(
+                    if (newCount > 0) stringResource(R.string.sos_admin_new_count, newCount) else stringResource(R.string.sos_admin_none_new),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
         }
     }
 }

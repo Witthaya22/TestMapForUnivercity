@@ -15,8 +15,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         HazardPointEntity::class,
         HazardSoundEntity::class,
         RouteHistoryEntity::class,
+        SosReportEntity::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,6 +33,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun hazardSoundDao(): HazardSoundDao
 
     abstract fun routeHistoryDao(): RouteHistoryDao
+
+    abstract fun sosReportDao(): SosReportDao
 
     companion object {
         private const val NAME = "kmutnb_map.db"
@@ -239,6 +242,31 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Adds the table behind SOS calls for help. A new table only: nothing already
+         * stored is touched, and a call sent before an update must survive it.
+         */
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `sos_report` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`createdAt` INTEGER NOT NULL, " +
+                        "`username` TEXT NOT NULL, " +
+                        "`lat` REAL, " +
+                        "`lon` REAL, " +
+                        "`accuracyMeters` REAL, " +
+                        "`category` TEXT NOT NULL, " +
+                        "`message` TEXT NOT NULL, " +
+                        "`trailName` TEXT NOT NULL, " +
+                        "`status` TEXT NOT NULL, " +
+                        "`handledAt` INTEGER, " +
+                        "`adminNote` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -255,6 +283,7 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_5_6,
                 MIGRATION_6_7,
                 MIGRATION_7_8,
+                MIGRATION_8_9,
             ).build().also { instance = it }
         }
     }

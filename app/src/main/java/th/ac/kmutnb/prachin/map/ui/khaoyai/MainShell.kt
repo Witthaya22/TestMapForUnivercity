@@ -41,6 +41,7 @@ fun MainShell(
     onOpenNews: (String) -> Unit,
     onOpenAbout: () -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenSos: () -> Unit,
     onOpenAdmin: () -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -78,6 +79,7 @@ fun MainShell(
                 onOpenNews = { tab = MainTab.NEWS },
                 onOpenNewsItem = onOpenNews,
                 onOpenAbout = onOpenAbout,
+                onOpenSos = onOpenSos,
             )
 
             MainTab.TRAILS -> TrailsTab(content.trails, padding, onOpenTrail)
@@ -98,6 +100,7 @@ fun MainShell(
                 onOpenNavigation = onOpenNavigation,
                 onOpenAbout = onOpenAbout,
                 onOpenHistory = onOpenHistory,
+                onOpenSos = onOpenSos,
                 onOpenAdmin = onOpenAdmin.takeIf { session.isAdmin },
                 onLogout = onLogout,
             )

@@ -34,7 +34,7 @@ import th.ac.kmutnb.prachin.map.ui.khaoyai.PhotoCreditLine
 
 /** Which trail is being walked, how many stations it has on the map, and the way out. */
 @Composable
-fun ActiveTrailBanner(trail: Trail, onEnd: () -> Unit) {
+fun ActiveTrailBanner(trail: Trail, onEnd: () -> Unit, onSos: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.tertiaryContainer,
         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
@@ -55,6 +55,9 @@ fun ActiveTrailBanner(trail: Trail, onEnd: () -> Unit) {
                     stringResource(R.string.station_walking_hint, trail.stations.count { it.point != null }),
                     style = MaterialTheme.typography.bodySmall,
                 )
+            }
+            TextButton(onClick = onSos) {
+                Text(stringResource(R.string.sos_short), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
             TextButton(onClick = onEnd) { Text(stringResource(R.string.station_end_trail)) }
         }

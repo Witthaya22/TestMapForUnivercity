@@ -51,6 +51,8 @@ fun AppNavHost(
     startDestination: String,
     /** Who is signed in to the Khao Yai app: admins get the survey and editing tools. */
     isAdmin: Boolean = true,
+    /** Opens the Khao Yai SOS screen, which lives outside this NavHost. */
+    onOpenSos: () -> Unit = {},
     navController: NavHostController = rememberNavController(),
 ) {
     // Hoisted above the NavHost so the map and the destination picker share one instance:
@@ -75,6 +77,7 @@ fun AppNavHost(
                 onOpenPoiList = { navController.navigate(Routes.POI_LIST) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 canEditPlaces = isAdmin,
+                onOpenSos = onOpenSos,
             )
         }
 

@@ -71,6 +71,7 @@ fun MapScreen(
     onOpenSettings: () -> Unit,
     /** Admins add places by long-pressing and edit them from the detail sheet; visitors only navigate. */
     canEditPlaces: Boolean = true,
+    onOpenSos: () -> Unit = {},
     viewModel: MapViewModel = viewModel(factory = MapViewModel.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -185,7 +186,7 @@ fun MapScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 state.activeTrail?.let { trail ->
-                    ActiveTrailBanner(trail = trail, onEnd = viewModel::endTrail)
+                    ActiveTrailBanner(trail = trail, onEnd = viewModel::endTrail, onSos = onOpenSos)
                 }
                 HazardBanner(state.hazardAlerts)
                 GpsStatusBanner(state.locationState)

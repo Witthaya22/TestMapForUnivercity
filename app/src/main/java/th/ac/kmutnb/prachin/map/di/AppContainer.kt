@@ -16,6 +16,7 @@ import th.ac.kmutnb.prachin.map.data.repository.HazardSoundRepository
 import th.ac.kmutnb.prachin.map.data.repository.OfflineMapRepository
 import th.ac.kmutnb.prachin.map.data.repository.PoiRepository
 import th.ac.kmutnb.prachin.map.data.repository.RouteNetworkRepository
+import th.ac.kmutnb.prachin.map.data.repository.SosRepository
 import th.ac.kmutnb.prachin.map.data.repository.TrackLogRepository
 import th.ac.kmutnb.prachin.map.core.sound.HazardSoundPlayer
 import th.ac.kmutnb.prachin.map.core.speech.SpeechAnnouncer
@@ -51,6 +52,8 @@ class AppContainer(context: Context) {
     )
 
     val routeHistoryDao = database.routeHistoryDao()
+
+    val sosRepository = SosRepository(database.sosReportDao())
 
     val trackLogRepository = TrackLogRepository(database.trackLogDao())
 

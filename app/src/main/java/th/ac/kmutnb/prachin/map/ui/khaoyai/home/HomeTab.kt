@@ -62,9 +62,10 @@ fun HomeTab(
     onOpenNews: () -> Unit,
     onOpenNewsItem: (String) -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenSos: () -> Unit,
 ) {
     LazyColumn(contentPadding = contentPadding) {
-        item { Hero(session, content) }
+        item { Hero(session, content, onOpenSos) }
         item {
             NavigationCard(
                 onClick = onOpenNavigation,
@@ -120,16 +121,25 @@ fun HomeTab(
 }
 
 @Composable
-private fun Hero(session: KhaoYaiSession, content: KhaoYaiContent) {
+private fun Hero(session: KhaoYaiSession, content: KhaoYaiContent, onOpenSos: () -> Unit) {
     HeroBanner(height = 320.dp) {
-        LeafCorner(
-            Modifier
+        Surface(
+            onClick = onOpenSos,
+            modifier = Modifier
                 .align(Alignment.TopEnd)
                 .statusBarsPadding()
-                .padding(4.dp),
-            size = 56.dp,
-            alpha = 0.75f,
-        )
+                .padding(16.dp),
+            shape = RoundedCornerShape(50),
+            color = Color(0xFFD32F2F),
+            contentColor = Color.White,
+            shadowElevation = 4.dp,
+        ) {
+            Text(
+                stringResource(R.string.sos_short),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+            )
+        }
         Surface(
             modifier = Modifier
                 .align(Alignment.TopStart)

@@ -27,6 +27,8 @@ import th.ac.kmutnb.prachin.map.MapApplication
 import th.ac.kmutnb.prachin.map.ui.AppNavHost
 import th.ac.kmutnb.prachin.map.ui.Routes
 import th.ac.kmutnb.prachin.map.ui.khaoyai.admin.AdminScreen
+import th.ac.kmutnb.prachin.map.ui.khaoyai.admin.SosAdminScreen
+import th.ac.kmutnb.prachin.map.ui.khaoyai.sos.SosScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.auth.ForgotPasswordScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.auth.LoginScreen
 import th.ac.kmutnb.prachin.map.ui.khaoyai.auth.SignUpScreen
@@ -43,6 +45,8 @@ object KhaoYaiRoutes {
     const val MAIN = "ky/main"
     const val ABOUT = "ky/about"
     const val HISTORY = "ky/history"
+    const val SOS = "ky/sos"
+    const val ADMIN_SOS = "ky/admin/sos"
 
     /** Reached by signing in as "admin"; see `KhaoYaiAuth`. */
     const val ADMIN = "ky/admin"
@@ -151,6 +155,7 @@ private fun KhaoYaiNavHost(
                 onOpenNews = { navController.navigate(KhaoYaiRoutes.news(it)) },
                 onOpenAbout = { navController.navigate(KhaoYaiRoutes.ABOUT) },
                 onOpenHistory = { navController.navigate(KhaoYaiRoutes.HISTORY) },
+                onOpenSos = { navController.navigate(KhaoYaiRoutes.SOS) },
                 // Switching back and forth pops to the earlier copy instead of stacking more.
                 onOpenAdmin = { navController.navigate(KhaoYaiRoutes.ADMIN) { popUpTo(KhaoYaiRoutes.ADMIN) { inclusive = true } } },
                 onLogout = ::logout,
@@ -170,6 +175,7 @@ private fun KhaoYaiNavHost(
                     navController.navigate(KhaoYaiRoutes.MAIN) { popUpTo(KhaoYaiRoutes.MAIN) { inclusive = true } }
                 },
                 onOpenTool = { route -> navController.navigate(KhaoYaiRoutes.navigation(route)) },
+                onOpenSos = { navController.navigate(KhaoYaiRoutes.ADMIN_SOS) },
                 onLogout = ::logout,
             )
         }
@@ -209,6 +215,18 @@ private fun KhaoYaiNavHost(
             RouteHistoryScreen(onBack = { navController.popBackStack() })
         }
 
+        composable(KhaoYaiRoutes.SOS) {
+            SosScreen(username = session.username, onBack = { navController.popBackStack() })
+        }
+
+        composable(KhaoYaiRoutes.ADMIN_SOS) {
+            if (!session.isAdmin) {
+                LaunchedEffect(Unit) { navController.popBackStack() }
+                return@composable
+            }
+            SosAdminScreen(onBack = { navController.popBackStack() })
+        }
+
         composable(
             KhaoYaiRoutes.NAVIGATION,
             arguments = listOf(
@@ -220,7 +238,11 @@ private fun KhaoYaiNavHost(
         ) { entry ->
             val start = entry.arguments?.getString(KhaoYaiRoutes.ARG_START) ?: Routes.MAP
             // A visitor only ever gets the map, whatever the link asked for.
-            NavigationFeature(isAdmin = session.isAdmin, start = if (session.isAdmin) start else Routes.MAP)
+            NavigationFeature(
+                isAdmin = session.isAdmin,
+                start = if (session.isAdmin) start else Routes.MAP,
+                onOpenSos = { navController.navigate(KhaoYaiRoutes.SOS) },
+            )
         }
     }
 }
@@ -235,7 +257,7 @@ private fun NavBackStackEntry.id(): String = arguments?.getString(KhaoYaiRoutes.
  * first screen returns to the Khao Yai screens.
  */
 @Composable
-private fun NavigationFeature(isAdmin: Boolean, start: String) {
+private fun NavigationFeature(isAdmin: Boolean, start: String, onOpenSos: () -> Unit) {
     val context = LocalContext.current
     val preferences = remember { (context.applicationContext as MapApplication).container.preferences }
     // Reading the flag is a disk hop: hold an empty surface for that frame or two rather
@@ -245,7 +267,7 @@ private fun NavigationFeature(isAdmin: Boolean, start: String) {
     }
     when (offlineReady) {
         null -> Box(Modifier.fillMaxSize())
-        true -> AppNavHost(startDestination = start, isAdmin = isAdmin)
-        false -> AppNavHost(startDestination = Routes.ONBOARDING, isAdmin = isAdmin)
+        true -> AppNavHost(startDestination = start, isAdmin = isAdmin, onOpenSos = onOpenSos)
+        false -> AppNavHost(startDestination = Routes.ONBOARDING, isAdmin = isAdmin, onOpenSos = onOpenSos)
     }
 }
