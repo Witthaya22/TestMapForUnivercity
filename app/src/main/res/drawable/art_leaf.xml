@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drawn for this app: a single leaf with its midrib, used as decoration. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path android:fillColor="#FF3E8E5E"
+        android:pathData="M14,82C10,44 34,14 84,12C86,58 58,86 14,82Z" />
+    <path android:fillColor="#FF8DBF6A"
+        android:pathData="M22,76C24,52 42,28 74,20C70,52 52,72 22,76Z" />
+    <path android:strokeColor="#FF1F6B45" android:strokeWidth="2.5" android:strokeLineCap="round"
+        android:pathData="M12,86L78,18M36,62L34,44M48,50L48,34M58,40L62,28M42,58L58,58M54,46L68,46" />
+</vector>

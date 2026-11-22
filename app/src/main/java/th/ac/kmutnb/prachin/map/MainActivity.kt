@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import th.ac.kmutnb.prachin.map.ui.AppNavHost
 import th.ac.kmutnb.prachin.map.ui.Routes
-import th.ac.kmutnb.prachin.map.ui.theme.KmutnbMapTheme
+import th.ac.kmutnb.prachin.map.ui.theme.KhaoYaiTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            KmutnbMapTheme {
+            KhaoYaiTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,

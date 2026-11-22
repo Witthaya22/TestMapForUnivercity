@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drawn for this app (no third-party artwork): dawn sky over layered forest ridges. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="400dp"
+    android:height="240dp"
+    android:viewportWidth="400"
+    android:viewportHeight="240">
+    <path android:pathData="M0,0h400v240h-400z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0" android:startY="0"
+                android:endX="0" android:endY="200"
+                android:startColor="#FF6FC3A0"
+                android:centerColor="#FFB9E2C2"
+                android:endColor="#FFF6F1D6" />
+        </aapt:attr>
+    </path>
+    <!-- Sun and its glow. -->
+    <path android:fillColor="#40FFF3C4" android:pathData="M300,84m-58,0a58,58 0,1 1,116 0a58,58 0,1 1,-116 0" />
+    <path android:fillColor="#FFFFE29A" android:pathData="M300,84m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
+    <!-- Mist bands. -->
+    <path android:fillColor="#66FFFFFF" android:pathData="M30,70h120a8,8 0,0 1,0 16h-120a8,8 0,0 1,0 -16z" />
+    <path android:fillColor="#4DFFFFFF" android:pathData="M210,118h150a7,7 0,0 1,0 14h-150a7,7 0,0 1,0 -14z" />
+    <!-- Far ridge. -->
+    <path android:fillColor="#FF9CCDA6"
+        android:pathData="M0,150L48,112L92,134L150,84L206,126L262,98L318,132L362,108L400,124L400,240L0,240Z" />
+    <!-- Middle ridge. -->
+    <path android:fillColor="#FF5FA574"
+        android:pathData="M0,172Q46,138 98,160T196,150T298,166T400,146L400,240L0,240Z" />
+    <!-- Near canopy. -->
+    <path android:fillColor="#FF2F7049"
+        android:pathData="M0,200Q84,170 164,194T322,186T400,190L400,240L0,240Z" />
+    <!-- Trees on the near ridge. -->
+    <path android:fillColor="#FF1C4A30"
+        android:pathData="M28,204l14,-38l14,38zM40,204h4v10h-4zM70,196l11,-30l11,30zM118,200l16,-44l16,44zM130,200h5v10h-5zM248,192l12,-34l12,34zM286,190l15,-42l15,42zM298,190h5v10h-5zM346,194l11,-30l11,30zM376,196l10,-26l10,26z" />
+    <!-- Foreground. -->
+    <path android:fillColor="#FF14432B"
+        android:pathData="M0,222Q100,206 200,220T400,214L400,240L0,240Z" />
+</vector>
