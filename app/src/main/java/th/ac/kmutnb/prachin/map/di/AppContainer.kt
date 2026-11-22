@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import th.ac.kmutnb.prachin.map.data.assets.AndroidAssetReader
 import th.ac.kmutnb.prachin.map.data.assets.AssetReader
+import th.ac.kmutnb.prachin.map.data.khaoyai.KhaoYaiContentRepository
 import th.ac.kmutnb.prachin.map.data.local.AppDatabase
 import th.ac.kmutnb.prachin.map.data.prefs.AppPreferences
 import th.ac.kmutnb.prachin.map.data.repository.CampusRepository
@@ -40,6 +41,8 @@ class AppContainer(context: Context) {
     private val database = AppDatabase.get(appContext)
 
     val campusRepository = CampusRepository(assetReader)
+
+    val khaoYaiContentRepository = KhaoYaiContentRepository(assetReader)
 
     val poiRepository = PoiRepository(
         poiDao = database.poiDao(),

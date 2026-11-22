@@ -46,6 +46,9 @@ object AssetPaths {
     const val POIS = "data/pois.geojson"
     const val PATHS = "data/paths.geojson"
 
+    /** Sample trails, news, animals and plants for the Khao Yai app; see `docs/KHAOYAI_APP.md`. */
+    const val KHAOYAI_CONTENT = "data/khaoyai_content.json"
+
     /** Drop audio files in here and they become warning sounds; see `docs/HAZARDS.md`. */
     const val HAZARD_SOUNDS_DIR = "sounds"
 
