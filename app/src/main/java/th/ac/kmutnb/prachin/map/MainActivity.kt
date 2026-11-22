@@ -5,18 +5,13 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import th.ac.kmutnb.prachin.map.ui.AppNavHost
-import th.ac.kmutnb.prachin.map.ui.Routes
+import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiApp
 import th.ac.kmutnb.prachin.map.ui.theme.KhaoYaiTheme
 
 class MainActivity : ComponentActivity() {
@@ -46,18 +41,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    // Onboarding is skipped once a pack has been downloaded. Reading the flag
-                    // is a disk hop, so hold an empty surface for the frame or two it takes
-                    // rather than starting on the wrong screen and jumping.
-                    val offlineReady by produceState<Boolean?>(initialValue = null) {
-                        value = container.preferences.offlineMapReady.first()
-                    }
-
-                    when (offlineReady) {
-                        null -> Box(Modifier.fillMaxSize())
-                        true -> AppNavHost(startDestination = Routes.MAP)
-                        false -> AppNavHost(startDestination = Routes.ONBOARDING)
-                    }
+                    // Sign-in first; the walking navigation is one destination inside.
+                    KhaoYaiApp()
                 }
             }
         }

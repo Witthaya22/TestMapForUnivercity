@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">นำทาง มจพ. ปราจีนบุรี</string>
+    <string name="app_name">เดินป่าเขาใหญ่</string>
 
     <!-- ทั่วไป -->
     <string name="action_ok">ตกลง</string>
@@ -525,4 +525,146 @@
     <string name="gps_debug_no_fix">ยังไม่มีสัญญาณ</string>
     <string name="gps_debug_hint">ถ้าความแม่นยำดีแต่ระยะถึงเส้นทางไกลมาก แปลว่าข้อมูลแผนที่ผิด ไม่ใช่ GPS</string>
     <string name="gps_debug_seconds_ago">%1$d วินาทีที่แล้ว</string>
+
+    <!-- ===================================================================== -->
+    <!-- แอปเขาใหญ่ (โครงแอปหลัก) — ดู docs/KHAOYAI_APP.md                      -->
+    <!-- ===================================================================== -->
+    <string name="ky_brand_title">เขาใหญ่</string>
+    <string name="ky_brand_subtitle">เส้นทางศึกษาธรรมชาติ อุทยานแห่งชาติเขาใหญ่</string>
+    <string name="ky_sample_notice">ข้อมูลในแอปตอนนี้เป็นข้อมูลตัวอย่าง ตรวจสอบกับอุทยานก่อนออกเดินจริง</string>
+    <string name="ky_hero_image">ภาพวาดทิวเขาและผืนป่าเขาใหญ่ยามเช้า</string>
+
+    <!-- เข้าสู่ระบบ / สมัคร / ลืมรหัสผ่าน (ตัวอย่าง ยังไม่มีฐานข้อมูล) -->
+    <string name="login_title">ยินดีต้อนรับสู่ผืนป่า</string>
+    <string name="login_subtitle">เข้าสู่ระบบเพื่อเริ่มเดินศึกษาธรรมชาติ</string>
+    <string name="login_username">ชื่อผู้ใช้</string>
+    <string name="login_password">รหัสผ่าน</string>
+    <string name="login_show_password">แสดงรหัสผ่าน</string>
+    <string name="login_hide_password">ซ่อนรหัสผ่าน</string>
+    <string name="login_submit">เข้าสู่ระบบ</string>
+    <string name="login_forgot">ลืมรหัสผ่าน?</string>
+    <string name="login_no_account">ยังไม่มีบัญชี?</string>
+    <string name="login_sign_up">สมัครสมาชิก</string>
+    <string name="login_demo_hint">โหมดทดลอง: กดเข้าสู่ระบบได้เลยโดยไม่ต้องกรอกข้อมูล</string>
+    <string name="signup_title">สมัครสมาชิก</string>
+    <string name="signup_subtitle">สร้างบัญชีเพื่อเก็บเส้นทางที่เดินและสัตว์ที่พบ</string>
+    <string name="signup_name">ชื่อที่แสดง</string>
+    <string name="signup_email">อีเมล</string>
+    <string name="signup_confirm_password">ยืนยันรหัสผ่าน</string>
+    <string name="signup_submit">สร้างบัญชี</string>
+    <string name="signup_done">สมัครสมาชิกแล้ว (ตัวอย่าง ยังไม่ได้บันทึกจริง)</string>
+    <string name="signup_password_mismatch">รหัสผ่านทั้งสองช่องไม่ตรงกัน</string>
+    <string name="forgot_title">ลืมรหัสผ่าน</string>
+    <string name="forgot_subtitle">กรอกอีเมลที่ใช้สมัคร แล้วเราจะส่งลิงก์ตั้งรหัสผ่านใหม่ให้</string>
+    <string name="forgot_submit">ส่งลิงก์ตั้งรหัสผ่านใหม่</string>
+    <string name="forgot_done">ส่งลิงก์แล้ว (ตัวอย่าง ยังไม่ได้ส่งอีเมลจริง)</string>
+    <string name="auth_back_to_login">กลับไปหน้าเข้าสู่ระบบ</string>
+
+    <!-- แท็บหลัก -->
+    <string name="tab_home">หน้าแรก</string>
+    <string name="tab_trails">เส้นทาง</string>
+    <string name="tab_nature">ธรรมชาติ</string>
+    <string name="tab_news">ข่าวสาร</string>
+    <string name="tab_profile">ฉัน</string>
+
+    <!-- หน้าแรก -->
+    <string name="home_greeting">สวัสดี, %1$s</string>
+    <string name="home_guest_name">นักท่องเที่ยว</string>
+    <string name="home_hero_title">อุทยานแห่งชาติเขาใหญ่</string>
+    <string name="home_hero_subtitle">มรดกโลกทางธรรมชาติ ผืนป่าดงพญาเย็น–เขาใหญ่</string>
+    <string name="home_stat_trails">%1$d เส้นทาง</string>
+    <string name="home_stat_species">%1$d ชนิดพันธุ์</string>
+    <string name="home_stat_news">%1$d ข่าว</string>
+    <string name="home_nav_card_title">นำทางเส้นทางศึกษาธรรมชาติ</string>
+    <string name="home_nav_card_body">แผนที่ออฟไลน์ เดินตามเส้นทางด้วย GPS ใช้ได้แม้ไม่มีสัญญาณโทรศัพท์</string>
+    <string name="home_nav_card_action">เปิดแผนที่นำทาง</string>
+    <string name="home_menu_trails">เส้นทาง</string>
+    <string name="home_menu_animals">สัตว์ป่า</string>
+    <string name="home_menu_plants">พืชพรรณ</string>
+    <string name="home_menu_about">เกี่ยวกับอุทยาน</string>
+    <string name="home_section_trails">เส้นทางแนะนำ</string>
+    <string name="home_section_news">ข่าวสารล่าสุด</string>
+    <string name="home_section_rules">เดินป่าอย่างเป็นมิตรกับธรรมชาติ</string>
+    <string name="action_see_all">ดูทั้งหมด</string>
+    <string name="rule_no_feeding">ไม่ให้อาหารสัตว์ป่า อาหารคนทำให้สัตว์ป่วยและเข้าหาคน</string>
+    <string name="rule_stay_on_trail">เดินในเส้นทางเท่านั้น ไม่เก็บพืช หิน หรือสัตว์ออกจากป่า</string>
+    <string name="rule_take_trash">ขยะที่นำเข้าไป ต้องนำกลับออกมาทุกชิ้น</string>
+    <string name="rule_keep_quiet">พูดเบา ๆ ไม่เปิดเพลง จะได้ยินเสียงนกและชะนี</string>
+    <string name="rule_elephant">พบช้างป่า อยู่ห่างอย่างน้อย 30 ม. ไม่ใช้แฟลช ไม่ส่งเสียง</string>
+
+    <!-- เส้นทาง -->
+    <string name="trails_title">เส้นทางศึกษาธรรมชาติ</string>
+    <string name="filter_all">ทั้งหมด</string>
+    <string name="difficulty_easy">ง่าย</string>
+    <string name="difficulty_moderate">ปานกลาง</string>
+    <string name="difficulty_hard">ยาก</string>
+    <string name="trail_distance">%1$.1f กม.</string>
+    <string name="trail_duration_minutes">%1$d นาที</string>
+    <string name="trail_duration_hours">%1$d ชม.</string>
+    <string name="trail_duration_hours_minutes">%1$d ชม. %2$d นาที</string>
+    <string name="trail_needs_guide">ต้องมีเจ้าหน้าที่นำทาง</string>
+    <string name="trail_self_guided">เดินเองได้</string>
+    <string name="trail_closed">ปิดชั่วคราว</string>
+    <string name="trail_start_point">จุดเริ่มต้น: %1$s</string>
+    <string name="trail_about">เกี่ยวกับเส้นทาง</string>
+    <string name="trail_stations_title">จุดสื่อความหมายระหว่างทาง</string>
+    <string name="trail_start_navigation">เริ่มนำทาง</string>
+    <string name="trail_guide_warning">เส้นทางนี้ต้องลงทะเบียนและเดินกับเจ้าหน้าที่อุทยานเท่านั้น</string>
+    <string name="trail_empty">ยังไม่มีเส้นทางในหมวดนี้</string>
+    <string name="trail_not_found">ไม่พบเส้นทางนี้ อาจถูกลบไปแล้ว</string>
+
+    <!-- สัตว์ป่าและพืชพรรณ -->
+    <string name="nature_title">สัตว์ป่าและพืชพรรณ</string>
+    <string name="nature_search">ค้นหาชื่อไทยหรือชื่อวิทยาศาสตร์</string>
+    <string name="nature_empty">ไม่พบชนิดพันธุ์ที่ค้นหา</string>
+    <string name="species_kind_animal">สัตว์ป่า</string>
+    <string name="species_kind_plant">พืชพรรณ</string>
+    <string name="species_status">สถานภาพ</string>
+    <string name="species_habitat">ถิ่นที่พบ</string>
+    <string name="species_about">รู้จักให้มากขึ้น</string>
+    <string name="species_tip">ถ้าพบเจอ ควรทำอย่างไร</string>
+    <string name="species_not_found">ไม่พบข้อมูลนี้ อาจถูกลบไปแล้ว</string>
+
+    <!-- ข่าวสาร -->
+    <string name="news_title">ข่าวสารและประกาศ</string>
+    <string name="news_empty">ยังไม่มีข่าวสาร</string>
+    <string name="news_not_found">ไม่พบข่าวนี้ อาจถูกลบไปแล้ว</string>
+    <string-array name="thai_month_short">
+        <item>ม.ค.</item>
+        <item>ก.พ.</item>
+        <item>มี.ค.</item>
+        <item>เม.ย.</item>
+        <item>พ.ค.</item>
+        <item>มิ.ย.</item>
+        <item>ก.ค.</item>
+        <item>ส.ค.</item>
+        <item>ก.ย.</item>
+        <item>ต.ค.</item>
+        <item>พ.ย.</item>
+        <item>ธ.ค.</item>
+    </string-array>
+
+    <!-- โปรไฟล์ -->
+    <string name="profile_role_user">นักท่องเที่ยว</string>
+    <string name="profile_role_admin">ผู้ดูแลระบบ</string>
+    <string name="profile_demo_note">บัญชีทดลอง ยังไม่ได้เชื่อมต่อฐานข้อมูล</string>
+    <string name="profile_navigation">แผนที่นำทาง</string>
+    <string name="profile_about">เกี่ยวกับอุทยานแห่งชาติเขาใหญ่</string>
+    <string name="profile_logout">ออกจากระบบ</string>
+
+    <!-- เกี่ยวกับอุทยาน -->
+    <string name="about_title">เกี่ยวกับอุทยาน</string>
+    <string name="about_intro">อุทยานแห่งชาติเขาใหญ่ประกาศจัดตั้งเมื่อ พ.ศ. 2505 เป็นอุทยานแห่งชาติแห่งแรกของประเทศไทย ครอบคลุมพื้นที่ 4 จังหวัด คือ นครราชสีมา สระบุรี ปราจีนบุรี และนครนายก และเป็นส่วนหนึ่งของกลุ่มป่าดงพญาเย็น–เขาใหญ่ ซึ่งได้รับการขึ้นทะเบียนเป็นมรดกโลกทางธรรมชาติเมื่อ พ.ศ. 2548</string>
+    <string name="about_fact_founded_label">ก่อตั้ง</string>
+    <string name="about_fact_founded">พ.ศ. 2505</string>
+    <string name="about_fact_area_label">พื้นที่</string>
+    <string name="about_fact_area">≈ 2,168 ตร.กม.</string>
+    <string name="about_fact_peak_label">เขาร่ม (ยอดสูงสุด)</string>
+    <string name="about_fact_peak">1,351 ม.</string>
+    <string name="about_ecosystem_title">ระบบนิเวศ</string>
+    <string name="about_ecosystem_body">ป่าดิบชื้น ป่าดิบแล้ง ป่าดิบเขา ป่าเบญจพรรณ และทุ่งหญ้า เป็นบ้านของช้างป่า นกเงือก ชะนี กวาง และสัตว์ป่าอีกหลายร้อยชนิด</string>
+    <string name="about_emergency_title">เบอร์ฉุกเฉิน (แตะเพื่อโทร)</string>
+    <string name="about_call_medical">เจ็บป่วยฉุกเฉิน</string>
+    <string name="about_call_tourist_police">ตำรวจท่องเที่ยว</string>
+    <string name="about_call_dnp">สายด่วนกรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช</string>
 </resources>

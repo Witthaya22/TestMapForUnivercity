@@ -80,6 +80,15 @@ data class Species(
     val tip: String,
 )
 
+/** Species of [kind] (all kinds when null) whose Thai or scientific name contains [query]. */
+fun filterSpecies(species: List<Species>, kind: SpeciesKind?, query: String): List<Species> {
+    val q = query.trim()
+    return species.filter { s ->
+        (kind == null || s.kind == kind) &&
+            (q.isEmpty() || s.name.contains(q, ignoreCase = true) || s.scientificName.contains(q, ignoreCase = true))
+    }
+}
+
 /** Replaces the item with the same id where it stands, or appends it when it is new. */
 fun <T> List<T>.upsertBy(item: T, id: (T) -> String): List<T> {
     val key = id(item)
