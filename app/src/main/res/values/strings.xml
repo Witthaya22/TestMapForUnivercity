@@ -754,6 +754,11 @@
     <string name="news_source">ที่มา: %1$s</string>
     <string name="news_open_source">เปิดต้นฉบับ (ต้องใช้อินเทอร์เน็ต)</string>
     <string name="trail_end_point">จุดสิ้นสุด: %1$s</string>
+    <string name="station_walking">กำลังเดิน: %1$s</string>
+    <string name="station_walking_hint">จุดสื่อความหมายบนแผนที่ %1$d จุด · เดินถึงแล้วเรื่องราวจะเด้งขึ้นเอง</string>
+    <string name="station_end_trail">จบเส้นทาง</string>
+    <string name="station_arrived">ถึงจุดสื่อความหมายแล้ว</string>
+    <string name="station_continue">เดินต่อ</string>
     <string name="access_demo">เส้นทางสาธิต — กดเข้าได้จากทุกที่</string>
     <string name="access_closed">เส้นทางนี้ปิดชั่วคราว</string>
     <string name="access_need_permission">ต้องใช้ตำแหน่งเพื่อตรวจว่าคุณอยู่ในเขตเส้นทางแล้วหรือยัง</string>

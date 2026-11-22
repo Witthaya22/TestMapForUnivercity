@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.map
 
+import th.ac.kmutnb.prachin.map.map.StationLayerManager
 import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import android.graphics.PointF
 import android.os.Build
@@ -78,12 +79,14 @@ fun MapScreen(
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
     val layerManager = remember { MapLayerManager(context) }
     val hazardLayers = remember { HazardLayerManager() }
+    val stationLayers = remember { StationLayerManager() }
     var dangerAlert by remember { mutableStateOf<HazardAlert?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.effects.collectLatest { effect ->
             when (effect) {
                 MapEffect.VibrateArrival -> vibrate(context)
+                MapEffect.StationReached -> vibrate(context, millis = 200L)
                 is MapEffect.Message -> snackbarHostState.showSnackbar(context.getString(effect.messageRes))
                 is MapEffect.MessageWith ->
                     snackbarHostState.showSnackbar(context.getString(effect.messageRes, effect.arg))
@@ -118,13 +121,18 @@ fun MapScreen(
                 styleUri = styleUri,
                 layerManager = layerManager,
                 hazardLayers = hazardLayers,
+                stationLayers = stationLayers,
                 onMapReady = { mapLibreMap = it },
                 onPoiTapped = viewModel::onPoiTapped,
                 onHazardTapped = viewModel::showHazardDetail,
+                onStationTapped = viewModel::showStation,
                 onLongPressed = { point -> if (canEditPlaces) viewModel.onMapLongPressed(point) },
             )
 
             // --- overlays pushed into the map ------------------------------------------
+            LaunchedEffect(state.activeTrail) {
+                stationLayers.setTrail(state.activeTrail)
+            }
             LaunchedEffect(state.pois, state.network.unroutablePoiIds, layerManager.isAttached) {
                 if (layerManager.isAttached) {
                     layerManager.setPois(state.pois, state.network.unroutablePoiIds.toSet())
@@ -176,6 +184,9 @@ fun MapScreen(
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                state.activeTrail?.let { trail ->
+                    ActiveTrailBanner(trail = trail, onEnd = viewModel::endTrail)
+                }
                 HazardBanner(state.hazardAlerts)
                 GpsStatusBanner(state.locationState)
                 // Both answer "should I trust what I am looking at", and they answer it
@@ -264,6 +275,10 @@ fun MapScreen(
         )
     }
 
+    state.openStation?.let { station ->
+        StationSheet(station = station, onDismiss = viewModel::dismissStation)
+    }
+
     state.detailHazard?.let { hazard ->
         HazardInfoSheet(hazard = hazard, onDismiss = viewModel::dismissHazardDetail)
     }
@@ -295,9 +310,11 @@ private fun CampusMapView(
     styleUri: String,
     layerManager: MapLayerManager,
     hazardLayers: HazardLayerManager,
+    stationLayers: StationLayerManager,
     onMapReady: (MapLibreMap) -> Unit,
     onPoiTapped: (String) -> Unit,
     onHazardTapped: (String) -> Unit,
+    onStationTapped: (String) -> Unit,
     onLongPressed: (GeoPoint) -> Unit,
 ) {
     val mapView = rememberMapViewWithLifecycle()
@@ -311,6 +328,8 @@ private fun CampusMapView(
                 // POI pins rather than hiding either.
                 hazardLayers.attach(style)
                 layerManager.attach(style)
+                // On top: a station marker is what someone walking a trail taps most.
+                stationLayers.attach(style)
                 map.cameraPosition = CameraPosition.Builder()
                     .target(LatLng(config.center.lat, config.center.lon))
                     .zoom(config.defaultZoom)
@@ -336,6 +355,12 @@ private fun CampusMapView(
             map.addOnMapClickListener { latLng ->
                 val projected = map.projection.toScreenLocation(latLng)
                 val screenPoint = PointF(projected.x, projected.y)
+                val stationId = map.queryRenderedFeatures(screenPoint, StationLayerManager.LAYER_STATIONS)
+                    .firstNotNullOfOrNull { it.getStringProperty(StationLayerManager.PROPERTY_ID) }
+                if (stationId != null) {
+                    onStationTapped(stationId)
+                    return@addOnMapClickListener true
+                }
                 // POIs win a tap that hits both: the pin is the smaller target and the one
                 // the user aimed at, while a hazard circle can be tens of metres wide.
                 val poiId = map.queryRenderedFeatures(screenPoint, MapLayerManager.LAYER_POIS)
@@ -368,6 +393,7 @@ private fun CampusMapView(
         onDispose {
             layerManager.detach()
             hazardLayers.detach()
+            stationLayers.detach()
         }
     }
 
@@ -614,7 +640,7 @@ private fun ConfigProblemOverlay(message: String, modifier: Modifier = Modifier)
 
 private const val WEAK_SIGNAL_METERS = 15f
 
-private fun vibrate(context: android.content.Context) {
+private fun vibrate(context: android.content.Context, millis: Long = 500L) {
     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         context.getSystemService(VibratorManager::class.java)?.defaultVibrator
     } else {
@@ -623,9 +649,9 @@ private fun vibrate(context: android.content.Context) {
     } ?: return
     // VibrationEffect is API 26; minSdk is 24, where calling it crashed on arrival.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        vibrator.vibrate(VibrationEffect.createOneShot(500L, VibrationEffect.DEFAULT_AMPLITUDE))
+        vibrator.vibrate(VibrationEffect.createOneShot(millis, VibrationEffect.DEFAULT_AMPLITUDE))
     } else {
         @Suppress("DEPRECATION")
-        vibrator.vibrate(500L)
+        vibrator.vibrate(millis)
     }
 }

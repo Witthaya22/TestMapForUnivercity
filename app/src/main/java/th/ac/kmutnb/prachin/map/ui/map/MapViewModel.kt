@@ -1,5 +1,8 @@
 package th.ac.kmutnb.prachin.map.ui.map
 
+import th.ac.kmutnb.prachin.map.data.khaoyai.Trail
+import th.ac.kmutnb.prachin.map.data.khaoyai.TrailStation
+import th.ac.kmutnb.prachin.map.navigation.StationMonitor
 import android.app.Application
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
@@ -61,6 +64,11 @@ data class MapUiState(
 
     val pois: List<Poi> = emptyList(),
     val network: RouteNetwork = RouteNetwork.EMPTY,
+
+    /** The nature trail being walked, picked on its page; its stations are on the map. */
+    val activeTrail: Trail? = null,
+    /** The station whose story is open, popped up on arrival or tapped on the map. */
+    val openStation: TrailStation? = null,
     val locationState: LocationState = LocationState.Searching(null, SatelliteInfo.UNKNOWN, null),
 
     /** Destinations chosen so far, in visiting order. */
@@ -149,6 +157,9 @@ data class MapUiState(
 
 /** One-shot side effects: things that happen rather than things that are true. */
 sealed interface MapEffect {
+    /** Walked into a trail station: a short buzz says look at the phone. */
+    data object StationReached : MapEffect
+
     data object VibrateArrival : MapEffect
     data class Message(@param:StringRes val messageRes: Int) : MapEffect
 
@@ -193,6 +204,9 @@ class MapViewModel(
     /** Decides whether the drawn dot is held on the route line. Display only. */
     private val routeSnapper = RouteSnapper()
 
+    /** Pops each station of the walked trail once, on arrival. */
+    private val stationMonitor = StationMonitor()
+
     private var hazardAlertsEnabled = true
     private var hazardVoiceEnabled = true
     private var hazardSoundEnabled = true
@@ -209,6 +223,18 @@ class MapViewModel(
 
     init {
         loadConfig()
+
+        viewModelScope.launch {
+            container.khaoYaiContentRepository.activeTrail.collect { trail ->
+                if (trail?.id != _uiState.value.activeTrail?.id) stationMonitor.reset()
+                _uiState.update { state ->
+                    state.copy(
+                        activeTrail = trail,
+                        openStation = state.openStation?.takeIf { open -> trail?.stations?.any { it.id == open.id } == true },
+                    )
+                }
+            }
+        }
 
         viewModelScope.launch {
             container.poiRepository.pois.collect { pois ->
@@ -307,6 +333,7 @@ class MapViewModel(
         if (state !is LocationState.Available) return
         adjustIntervalForSpeed(state.fix.speedMps)
         checkHazards(state.fix.point)
+        checkStations(state.fix.point, state.fix.accuracyMeters)
 
         val activeEngine = engine ?: return
         // The engine is always given the raw fix. Snapping is a decision about the
@@ -363,6 +390,32 @@ class MapViewModel(
                 effectChannel.send(MapEffect.Message(R.string.nav_off_route))
             }
         }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Trail stations
+    // ----------------------------------------------------------------------------------
+
+    /** Opens the nearest station just walked into; one at a time, never over another. */
+    private fun checkStations(position: GeoPoint, accuracyMeters: Float) {
+        val trail = _uiState.value.activeTrail ?: return
+        val entered = stationMonitor.onPosition(trail.id, trail.stations, position, accuracyMeters)
+        val first = entered.firstOrNull() ?: return
+        if (_uiState.value.openStation != null) return
+        _uiState.update { it.copy(openStation = first) }
+        viewModelScope.launch { effectChannel.send(MapEffect.StationReached) }
+    }
+
+    fun showStation(id: String) = _uiState.update { state ->
+        state.copy(openStation = state.activeTrail?.stations?.firstOrNull { it.id == id })
+    }
+
+    fun dismissStation() = _uiState.update { it.copy(openStation = null) }
+
+    /** Leaves the trail: its line and stations go from the map. */
+    fun endTrail() {
+        container.khaoYaiContentRepository.endTrail()
+        _uiState.update { it.copy(openStation = null) }
     }
 
     // ----------------------------------------------------------------------------------
