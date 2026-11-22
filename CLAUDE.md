@@ -1,6 +1,11 @@
 # CLAUDE.md — บริบทโปรเจกต์สำหรับ AI Agent
 
 ## โปรเจกต์นี้คืออะไร
+> **ตั้งแต่ 22 พ.ย. 2026 แอปนี้คือแอปเส้นทางศึกษาธรรมชาติ อุทยานแห่งชาติเขาใหญ่**
+> ระบบแผนที่นำทางที่อธิบายข้างล่างทั้งหมดเป็น **ฟีเจอร์หนึ่ง** ของแอปนั้น (ปลายทาง `ky/navigation`)
+> แอปหลัก (เข้าสู่ระบบ · หน้าแรก · เส้นทาง · สัตว์/พืช · ข่าว · ผู้ดูแล) อยู่ที่ `ui/khaoyai/` — อ่าน `docs/KHAOYAI_APP.md`
+> ข้อมูลแผนที่ (`campus_config.json` / `pois` / `paths`) **ยังเป็นของ มจพ.** จนกว่าจะ import เขาใหญ่
+
 แอป Android (Kotlin) แผนที่นำทางในพื้นที่ **มจพ. วิทยาเขตปราจีนบุรี**
 ทำงาน **ออฟไลน์ 100%** หลังดาวน์โหลดแผนที่ครั้งแรก
 
@@ -114,6 +119,10 @@
 | `core/sound/HazardSoundPlayer.kt` | เล่นเสียงเตือนนำ แล้วค่อยให้ `SpeechAnnouncer` พูด |
 | `tools/make_alert_sounds.py` | gen ไฟล์เสียงตัวอย่างใน `res/raw/` (ไม่ได้โหลดมาจากไหน) |
 | `ui/hazard/HazardScreen.kt` | หน้าปักและจัดการจุดอันตราย |
+| `ui/khaoyai/KhaoYaiApp.kt` | **รากของแอปหลักเขาใหญ่** — route ทั้งหมด + ห่อระบบนำทางเดิม (`AppNavHost`) เป็นปลายทางหนึ่ง |
+| `ui/khaoyai/KhaoYaiComponents.kt` | UI ที่หน้าแอปหลักใช้ร่วมกัน — เพิ่มหน้าใหม่ให้ใช้ซ้ำจากที่นี่ ห้ามก๊อป |
+| `ui/khaoyai/KhaoYaiSession.kt` | กติกาเข้าสู่ระบบ (ยังไม่มีฐานข้อมูล: `admin` = ผู้ดูแล) |
+| `data/khaoyai/` + `assets/data/khaoyai_content.json` | เส้นทาง/ข่าว/สัตว์-พืช — ข้อมูลตัวอย่าง แก้จากหน้าผู้ดูแลได้ (ในหน่วยความจำ) |
 | `data/local/AppDatabase.kt` | Room version **8** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
 
 ## คำสั่งที่ใช้บ่อย
@@ -135,6 +144,7 @@ python3 tools/make_alert_sounds.py # gen เสียงเตือนจุด
 | หัวข้อ | อ่าน |
 |---|---|
 | **สถานะล่าสุด / branch / อะไรพังอยู่** | **`docs/STATUS.md` — อ่านก่อนเป็นอันดับแรก** |
+| **แอปหลักเขาใหญ่ / ทำอะไรต่อ / ฟีเจอร์ที่แนะนำ** | **`docs/KHAOYAI_APP.md` — อ่านต่อจาก STATUS** |
 | พิกัดไม่ตรง / ความแม่นยำ GPS | `docs/ACCURACY.md` |
 | รูปแบบไฟล์ GeoJSON และ config | `docs/DATA_FORMAT.md` |
 | กลไกออฟไลน์ / จอขาว | `docs/OFFLINE.md` |
