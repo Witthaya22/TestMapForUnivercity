@@ -243,5 +243,5 @@ object TrackLogExporter {
     private const val TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ssXXX"
     private const val FILE_STAMP_PATTERN = "yyyyMMdd_HHmm"
     private const val CRLF = "\r\n"
-    private const val UTF8_BOM = "FEFF"
+    private const val UTF8_BOM = "\uFEFF"
 }
