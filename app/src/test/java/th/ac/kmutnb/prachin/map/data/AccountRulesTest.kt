@@ -77,6 +77,14 @@ class AccountRulesTest {
     }
 
     @Test
+    fun `the avatar letter skips a Thai leading vowel`() {
+        assertEquals("จ", AccountRules.initial("เจ้าหน้าที่อุทยาน"))
+        assertEquals("ส", AccountRules.initial("สมชาย ใจดี"))
+        assertEquals("A", AccountRules.initial(" anna"))
+        assertEquals("?", AccountRules.initial(""))
+    }
+
+    @Test
     fun `officers find a tourist by name, Tourist ID, username or phone`() {
         val t = UserAccount("i", "KY69-000042", "anna_s", "Anna Schmidt", "0812345678", "e", "de", UserRole.TOURIST, emptySet(), 0L)
         assertTrue(t.matches("anna"))
