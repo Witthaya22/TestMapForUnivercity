@@ -53,8 +53,15 @@ fun AppNavHost(
     isAdmin: Boolean = true,
     /** Opens the Khao Yai SOS screen, which lives outside this NavHost. */
     onOpenSos: () -> Unit = {},
+    /**
+     * Leaves this NavHost for the screens around it. Needed because a tool opened straight
+     * from the staff dashboard is the first screen here: popping it pops nothing, and its
+     * back arrow used to do nothing at all.
+     */
+    onExit: () -> Unit = {},
     navController: NavHostController = rememberNavController(),
 ) {
+    val back: () -> Unit = { if (!navController.popBackStack()) onExit() }
     // Hoisted above the NavHost so the map and the destination picker share one instance:
     // picking a POI in the list has to reach the same route being planned on the map.
     val mapViewModel: MapViewModel = viewModel(factory = MapViewModel.Factory)
@@ -63,6 +70,7 @@ fun AppNavHost(
 
         composable(Routes.ONBOARDING) {
             OnboardingScreen(
+                onExit = back,
                 onFinished = {
                     navController.navigate(Routes.MAP) {
                         popUpTo(Routes.ONBOARDING) { inclusive = true }
@@ -78,19 +86,20 @@ fun AppNavHost(
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 canEditPlaces = isAdmin,
                 onOpenSos = onOpenSos,
+                onExit = back,
             )
         }
 
         composable(Routes.POI_LIST) {
             PoiListScreen(
                 viewModel = mapViewModel,
-                onBack = { navController.popBackStack() },
+                onBack = back,
             )
         }
 
         composable(Routes.SETTINGS) {
             SettingsScreen(
-                onBack = { navController.popBackStack() },
+                onBack = back,
                 onOpenOfflineManager = { navController.navigate(Routes.OFFLINE_MANAGER) },
                 onOpenSurvey = { navController.navigate(Routes.SURVEY) },
                 onOpenGpsLog = { navController.navigate(Routes.GPS_LOG) },
@@ -105,39 +114,39 @@ fun AppNavHost(
         }
 
         composable(Routes.OFFLINE_MANAGER) {
-            OfflineMapManagerScreen(onBack = { navController.popBackStack() })
+            OfflineMapManagerScreen(onBack = back)
         }
 
         composable(Routes.SURVEY) {
-            SurveyorScreen(onBack = { navController.popBackStack() })
+            SurveyorScreen(onBack = back)
         }
 
         composable(Routes.GPS_READOUT) {
-            GpsReadoutScreen(onBack = { navController.popBackStack() })
+            GpsReadoutScreen(onBack = back)
         }
 
         composable(Routes.HAZARDS) {
-            HazardScreen(onBack = { navController.popBackStack() })
+            HazardScreen(onBack = back)
         }
 
         composable(Routes.HAZARD_SOUNDS) {
-            HazardSoundScreen(onBack = { navController.popBackStack() })
+            HazardSoundScreen(onBack = back)
         }
 
         composable(Routes.GPS_LOG) {
-            GpsLogScreen(onBack = { navController.popBackStack() })
+            GpsLogScreen(onBack = back)
         }
 
         composable(Routes.PATH_LOG) {
             PathLogScreen(
-                onBack = { navController.popBackStack() },
+                onBack = back,
                 onOpenTrack = { id -> navController.navigate(Routes.trackEditor(id)) },
             )
         }
 
         composable(Routes.PATH_READOUT) {
             PathReadoutScreen(
-                onBack = { navController.popBackStack() },
+                onBack = back,
                 onOpenTrack = { id -> navController.navigate(Routes.trackEditor(id)) },
             )
         }
@@ -148,12 +157,12 @@ fun AppNavHost(
         ) { entry ->
             TrackEditorScreen(
                 trackId = entry.arguments?.getString(Routes.ARG_TRACK_ID).orEmpty(),
-                onBack = { navController.popBackStack() },
+                onBack = back,
             )
         }
 
         composable(Routes.GPS_DEBUG) {
-            GpsDebugScreen(onBack = { navController.popBackStack() })
+            GpsDebugScreen(onBack = back)
         }
     }
 }

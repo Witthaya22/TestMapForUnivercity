@@ -292,6 +292,7 @@ private fun KhaoYaiNavHost(
                 isAdmin = canEdit,
                 start = if (canEdit) start else Routes.MAP,
                 onOpenSos = { navController.navigate(KhaoYaiRoutes.SOS) },
+                onExit = { navController.popBackStack() },
             )
         }
     }
@@ -320,7 +321,7 @@ private fun NavBackStackEntry.id(): String = arguments?.getString(KhaoYaiRoutes.
  * first screen returns to the Khao Yai screens.
  */
 @Composable
-private fun NavigationFeature(isAdmin: Boolean, start: String, onOpenSos: () -> Unit) {
+private fun NavigationFeature(isAdmin: Boolean, start: String, onOpenSos: () -> Unit, onExit: () -> Unit) {
     val context = LocalContext.current
     val preferences = remember { (context.applicationContext as MapApplication).container.preferences }
     // Reading the flag is a disk hop: hold an empty surface for that frame or two rather
@@ -330,7 +331,7 @@ private fun NavigationFeature(isAdmin: Boolean, start: String, onOpenSos: () -> 
     }
     when (offlineReady) {
         null -> Box(Modifier.fillMaxSize())
-        true -> AppNavHost(startDestination = start, isAdmin = isAdmin, onOpenSos = onOpenSos)
-        false -> AppNavHost(startDestination = Routes.ONBOARDING, isAdmin = isAdmin, onOpenSos = onOpenSos)
+        true -> AppNavHost(startDestination = start, isAdmin = isAdmin, onOpenSos = onOpenSos, onExit = onExit)
+        false -> AppNavHost(startDestination = Routes.ONBOARDING, isAdmin = isAdmin, onOpenSos = onOpenSos, onExit = onExit)
     }
 }

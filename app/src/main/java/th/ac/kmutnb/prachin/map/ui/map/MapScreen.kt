@@ -72,6 +72,8 @@ fun MapScreen(
     /** Admins add places by long-pressing and edit them from the detail sheet; visitors only navigate. */
     canEditPlaces: Boolean = true,
     onOpenSos: () -> Unit = {},
+    /** Back to the screen the map was opened from; the map is otherwise a dead end. */
+    onExit: (() -> Unit)? = null,
     viewModel: MapViewModel = viewModel(factory = MapViewModel.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -190,6 +192,15 @@ fun MapScreen(
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                if (onExit != null) {
+                    SmallFloatingActionButton(
+                        onClick = onExit,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                    ) {
+                        Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.action_back))
+                    }
+                }
                 state.activeTrail?.let { trail ->
                     ActiveTrailBanner(trail = trail, guide = state.trailGuide, onEnd = viewModel::endTrail, onSos = onOpenSos)
                 }

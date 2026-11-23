@@ -19,7 +19,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +51,8 @@ import th.ac.kmutnb.prachin.map.ui.common.messageRes
 @Composable
 fun OnboardingScreen(
     onFinished: () -> Unit,
+    /** Leaves without downloading; null hides the button. */
+    onExit: (() -> Unit)? = null,
     viewModel: OnboardingViewModel = viewModel(factory = OnboardingViewModel.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -86,6 +90,13 @@ fun OnboardingScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            if (onExit != null) {
+                androidx.compose.material3.TextButton(onClick = onExit) {
+                    Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = null)
+                    androidx.compose.foundation.layout.Spacer(Modifier.padding(start = 6.dp))
+                    Text(stringResource(R.string.action_back))
+                }
+            }
             val problem = state.configProblem
             if (problem != null) {
                 ConfigProblemCard(
