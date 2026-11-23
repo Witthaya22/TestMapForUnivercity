@@ -208,7 +208,7 @@ private fun NavigationCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
     ) {
         Box(Modifier.background(ForestBrush)) {
-            LeafCorner(Modifier.align(Alignment.TopEnd), size = 60.dp, alpha = 0.35f)
+            LeafCorner(Modifier.align(Alignment.BottomEnd), size = 60.dp, alpha = 0.25f)
             Column(Modifier.padding(20.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -264,12 +264,12 @@ private fun QuickMenu(
         modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceAround,
     ) {
         QuickMenuItem("🌲", stringResource(R.string.home_menu_trails), onTrails)
         QuickMenuItem("🐘", stringResource(R.string.home_menu_animals), onAnimals)
         QuickMenuItem("🌿", stringResource(R.string.home_menu_plants), onPlants)
-        QuickMenuItem("⛰", stringResource(R.string.home_menu_about), onAbout)
+        QuickMenuItem("🏞", stringResource(R.string.home_menu_about), onAbout)
     }
 }
 
@@ -279,8 +279,8 @@ private fun QuickMenuItem(emoji: String, label: String, onClick: () -> Unit) {
         Modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(8.dp)
-            .width(72.dp),
+            .padding(vertical = 8.dp, horizontal = 2.dp)
+            .width(84.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
@@ -293,7 +293,12 @@ private fun QuickMenuItem(emoji: String, label: String, onClick: () -> Unit) {
             Text(emoji, fontSize = 26.sp)
         }
         Spacer(Modifier.height(6.dp))
-        Text(label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 2,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        )
     }
 }
 
@@ -302,7 +307,7 @@ private fun Rules(modifier: Modifier = Modifier) {
     val rules = listOf(
         "🍌" to R.string.rule_no_feeding,
         "🌱" to R.string.rule_stay_on_trail,
-        "♻" to R.string.rule_take_trash,
+        "♻️" to R.string.rule_take_trash,
         "🤫" to R.string.rule_keep_quiet,
         "🐘" to R.string.rule_elephant,
     )

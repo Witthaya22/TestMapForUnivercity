@@ -160,7 +160,7 @@ fun TrailFeatureCard(trail: Trail, onClick: () -> Unit) {
                 .fillMaxWidth()
                 .height(124.dp),
         ) {
-            ContentPhoto(trail.photo, trail.emoji, Modifier.fillMaxSize(), contentDescription = trail.name)
+            ContentPhoto(trail.photo, trail.emoji, Modifier.fillMaxSize(), contentDescription = trail.name, landscapeFallback = true)
             DifficultyPill(
                 trail.difficulty,
                 Modifier
@@ -200,6 +200,7 @@ private fun TrailRow(trail: Trail, onClick: () -> Unit) {
                     .size(76.dp)
                     .clip(RoundedCornerShape(16.dp)),
                 contentDescription = trail.name,
+                landscapeFallback = true,
             )
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {

@@ -198,7 +198,7 @@ private fun StaffDashboard(
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     SummaryCard("🥾", Reports.onTrailNow(tourists, now), R.string.staff_sum_on_trail, MaterialTheme.colorScheme.primaryContainer, Modifier.weight(1f), onOpenTourists)
                     SummaryCard("👥", tourists.size, R.string.staff_sum_tourists, MaterialTheme.colorScheme.surfaceContainerLowest, Modifier.weight(1f), onOpenTourists)
-                    SummaryCard("⚠", hazards.size, R.string.staff_sum_hazards, MaterialTheme.colorScheme.surfaceContainerLowest, Modifier.weight(1f)) {
+                    SummaryCard("⚠️", hazards.size, R.string.staff_sum_hazards, MaterialTheme.colorScheme.surfaceContainerLowest, Modifier.weight(1f)) {
                         onOpenTool(th.ac.kmutnb.prachin.map.ui.Routes.HAZARDS)
                     }
                 }

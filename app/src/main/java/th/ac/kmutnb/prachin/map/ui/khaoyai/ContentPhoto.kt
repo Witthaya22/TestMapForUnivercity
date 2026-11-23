@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
@@ -47,6 +48,8 @@ fun ContentPhoto(
     modifier: Modifier = Modifier,
     brush: Brush = ForestBrush,
     contentDescription: String? = null,
+    /** With no photo, show the drawn Khao Yai landscape behind the emoji instead of a flat colour. */
+    landscapeFallback: Boolean = false,
 ) {
     val context = LocalContext.current
     BoxWithConstraints(modifier.background(brush), contentAlignment = Alignment.Center) {
@@ -59,6 +62,14 @@ fun ContentPhoto(
         }
         val loaded = bitmap
         if (loaded == null) {
+            if (landscapeFallback) {
+                Image(
+                    painter = painterResource(R.drawable.bg_khaoyai_hero),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
             Text(fallbackEmoji, fontSize = (maxHeight.value * 0.4f).coerceIn(18f, 72f).sp)
         } else {
             Image(
