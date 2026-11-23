@@ -129,7 +129,11 @@
 | `data/repository/SosRepository.kt` | SOS — **เก็บในเครื่องเดียวกัน ยังไม่ส่งถึงใคร** หน้าจอต้องบอกผู้ใช้ตรง ๆ เสมอ |
 | `assets/photos/` + `tools/fetch_photos.py` | รูปจาก Wikimedia Commons + `credits.json` — **ทุกรูปต้องมีเครดิต** (test บังคับ) |
 | `ui/AppNavigation.kt` `AppNavHost(isAdmin)` | ส่งสิทธิ์ลงไประบบนำทาง: ผู้ใช้ไม่เห็นเครื่องมือแก้/เดินเก็บ — **ของใหม่ที่แก้ข้อมูลได้ต้องผูกกับ `isAdmin`** |
-| `data/local/AppDatabase.kt` | Room version **9** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`, `sos_report`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `data/local/AppDatabase.kt` | Room version **10** (`poi`, `track_log`, `gps_point`, `hazard_point`, `hazard_sound`, `route_history`, `sos_report`, `user_account`, `tourist_position`) — เพิ่มตารางต้องเขียน migration จริง ห้าม destructive |
+| `ForAiReadDontCommit/ForAIReadFunctionsInProject.pdf` | **แบบเสนอโครงงาน** — 3 บทบาท นักท่องเที่ยว/เจ้าหน้าที่/ผู้ดูแล · ตารางเทียบอยู่ `KHAOYAI_APP.md` §2.1 · ห้าม commit ไฟล์นี้ |
+| `data/repository/AccountRepository.kt` | บัญชี สมัคร เข้าสู่ระบบ OTP Session — รหัสผ่าน PBKDF2 (`core/security/PasswordHasher.kt`) |
+| `navigation/TrailGuide.kt` | ปักหมุดบนเส้นทาง + เตือนออกนอกเส้นทาง + จุดต่อไป — ค่าชดเชยต่อเส้นทาง `Trail.gpsToleranceMeters` |
+| `ui/khaoyai/staff/` | หน้าของเจ้าหน้าที่/ผู้ดูแล: ภาพรวม ค้นหานักท่องเที่ยว รายงาน จัดการผู้ใช้ — ทุกหน้าผ่าน `StaffGate` |
 
 ## คำสั่งที่ใช้บ่อย
 ```bash
