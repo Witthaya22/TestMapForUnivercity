@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.settings
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -91,6 +92,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

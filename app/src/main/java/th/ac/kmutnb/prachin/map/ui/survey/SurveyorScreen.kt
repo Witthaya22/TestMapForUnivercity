@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.survey
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -81,6 +82,7 @@ fun SurveyorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.survey_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

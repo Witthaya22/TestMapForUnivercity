@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.settings
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +50,7 @@ fun OfflineMapManagerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.offline_manager_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

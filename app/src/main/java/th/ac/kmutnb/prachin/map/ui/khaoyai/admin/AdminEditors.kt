@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.khaoyai.admin
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -447,6 +448,7 @@ private fun EditorDialog(
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.imePadding()) {
                 TopAppBar(
+                    colors = forestTopBarColors(),
                     title = { Text(title, fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {

@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.poi
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -84,6 +85,7 @@ fun PoiListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.poi_list_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

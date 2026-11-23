@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.hazard
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -103,6 +104,7 @@ fun HazardSoundScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.hazard_sound_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

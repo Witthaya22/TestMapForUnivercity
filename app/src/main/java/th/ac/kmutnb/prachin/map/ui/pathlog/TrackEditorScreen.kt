@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.pathlog
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -147,6 +148,7 @@ fun TrackEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = {
                     Text(stringResource(R.string.trackedit_title, state.draft?.code.orEmpty()))
                 },

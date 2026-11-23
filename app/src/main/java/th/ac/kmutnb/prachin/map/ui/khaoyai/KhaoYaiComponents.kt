@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.khaoyai
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -239,6 +240,7 @@ fun SampleNotice(modifier: Modifier = Modifier) {
 @Composable
 fun KhaoYaiTopBar(title: String, onBack: (() -> Unit)? = null) {
     TopAppBar(
+        colors = forestTopBarColors(),
         title = { Text(title, fontWeight = FontWeight.Bold) },
         navigationIcon = {
             if (onBack != null) {

@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.pathlog
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import android.graphics.PointF
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -125,6 +126,7 @@ fun PathLogScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.pathlog_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.pathlog
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import android.os.SystemClock
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -110,6 +111,7 @@ fun PathReadoutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.pathreadout_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

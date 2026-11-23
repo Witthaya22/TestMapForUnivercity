@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.gpslog
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import android.os.SystemClock
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -100,6 +101,7 @@ fun GpsReadoutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.gpsreadout_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

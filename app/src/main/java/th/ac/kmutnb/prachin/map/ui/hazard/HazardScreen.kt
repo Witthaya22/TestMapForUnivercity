@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.hazard
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import android.graphics.PointF
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -177,6 +178,7 @@ fun HazardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.hazard_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

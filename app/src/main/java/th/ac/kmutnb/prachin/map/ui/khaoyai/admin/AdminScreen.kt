@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.khaoyai.admin
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -346,6 +347,7 @@ private fun adminRows(section: AdminSection, content: KhaoYaiContent): List<Admi
 @Composable
 private fun ContentTopBar(onBack: () -> Unit, onReset: (() -> Unit)?) {
     androidx.compose.material3.TopAppBar(
+        colors = forestTopBarColors(),
         title = { Text(stringResource(R.string.admin_title), fontWeight = FontWeight.Bold) },
         navigationIcon = {
             IconButton(onClick = onBack) {

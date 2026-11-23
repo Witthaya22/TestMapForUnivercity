@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.gpslog
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import th.ac.kmutnb.prachin.map.map.ForestMapLook
 import android.graphics.PointF
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -132,6 +133,7 @@ fun GpsLogScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.gpslog_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

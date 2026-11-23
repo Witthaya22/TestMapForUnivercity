@@ -1,5 +1,6 @@
 package th.ac.kmutnb.prachin.map.ui.debug
 
+import th.ac.kmutnb.prachin.map.ui.theme.forestTopBarColors
 import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ fun GpsDebugScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = forestTopBarColors(),
                 title = { Text(stringResource(R.string.gps_debug_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
