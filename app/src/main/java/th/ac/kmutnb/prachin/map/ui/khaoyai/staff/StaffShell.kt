@@ -1,6 +1,5 @@
 package th.ac.kmutnb.prachin.map.ui.khaoyai.staff
 
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,8 +22,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import th.ac.kmutnb.prachin.map.ui.khaoyai.GlassNavigationBar
+import th.ac.kmutnb.prachin.map.ui.khaoyai.forestNavItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -99,18 +99,14 @@ fun StaffShell(
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest, tonalElevation = 6.dp) {
+            GlassNavigationBar {
                 tabs.forEach { item ->
                     NavigationBarItem(
                         selected = tab == item,
                         onClick = { tab = item },
                         icon = { Icon(painterResource(item.iconRes), contentDescription = null) },
                         label = { Text(stringResource(item.labelRes)) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        ),
+                        colors = forestNavItemColors(),
                     )
                 }
             }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,7 +55,8 @@ import th.ac.kmutnb.prachin.map.ui.theme.ForestLeaf
 import th.ac.kmutnb.prachin.map.ui.theme.ForestMoss
 
 /** The landscape photo behind the sign-in screen and the home header. */
-const val HERO_PHOTO = "photos/hero_khaoyai.jpg"
+// Hill evergreen forest: green all year, where the old grassland photo looked dry and yellow.
+const val HERO_PHOTO = "photos/hill_forest.jpg"
 
 /** Canopy green, dark at the bottom like the forest floor. */
 val ForestBrush: Brush = Brush.verticalGradient(listOf(ForestLeaf, ForestGreen, ForestDeep))
@@ -285,6 +290,28 @@ fun SearchField(value: String, onValueChange: (String) -> Unit, placeholder: Str
             .padding(horizontal = 16.dp, vertical = 12.dp),
     )
 }
+
+/**
+ * The bottom tab bar of the tourist and staff shells: frosted white with rounded top
+ * corners, so lists scrolling under it show through faintly.
+ */
+@Composable
+fun GlassNavigationBar(content: @Composable RowScope.() -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.92f),
+        shadowElevation = 16.dp,
+    ) {
+        NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp, content = content)
+    }
+}
+
+@Composable
+fun forestNavItemColors(): NavigationBarItemColors = NavigationBarItemDefaults.colors(
+    selectedIconColor = MaterialTheme.colorScheme.primary,
+    selectedTextColor = MaterialTheme.colorScheme.primary,
+    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+)
 
 /** A round translucent back button for screens whose header is a picture. */
 @Composable

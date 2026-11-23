@@ -24,9 +24,9 @@ private val LightColors = lightColorScheme(
     tertiaryContainer = Color(0xFFFFE6B3),
     onTertiaryContainer = Color(0xFF3D2900),
     error = ErrorRed,
-    background = ForestCream,
+    background = Color(0xFFF3F8F4),
     onBackground = Color(0xFF17201A),
-    surface = ForestCream,
+    surface = Color(0xFFF3F8F4),
     onSurface = Color(0xFF17201A),
     surfaceVariant = Color(0xFFDCE7D9),
     onSurfaceVariant = Color(0xFF414A42),
@@ -79,16 +79,16 @@ fun KhaoYaiTheme(
 }
 
 /**
- * The one top bar colour for every screen, old map screens and new Khao Yai screens alike:
- * a light canopy green. Light rather than full green so the text buttons some screens put
- * in their bar (in the primary colour) stay readable on it.
+ * The one top bar for every screen, old map screens and new Khao Yai screens alike: the
+ * page colour itself with a deep green title, so the bar and the page read as one surface.
+ * Text buttons some screens put in the bar (in the primary colour) stay readable on it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun forestTopBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-    containerColor = MaterialTheme.colorScheme.primaryContainer,
-    scrolledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+    containerColor = MaterialTheme.colorScheme.background,
+    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    actionIconContentColor = MaterialTheme.colorScheme.primary,
 )

@@ -1,6 +1,8 @@
 package th.ac.kmutnb.prachin.map.ui.khaoyai.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -44,11 +45,9 @@ import th.ac.kmutnb.prachin.map.data.khaoyai.SpeciesKind
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ForestBrush
 import th.ac.kmutnb.prachin.map.ui.khaoyai.HeroBanner
 import th.ac.kmutnb.prachin.map.data.model.UserAccount
-import th.ac.kmutnb.prachin.map.ui.khaoyai.LeafCorner
 import th.ac.kmutnb.prachin.map.ui.khaoyai.SectionHeader
 import th.ac.kmutnb.prachin.map.ui.khaoyai.news.NewsCard
 import th.ac.kmutnb.prachin.map.ui.khaoyai.trail.TrailFeatureCard
-import th.ac.kmutnb.prachin.map.ui.theme.HornbillAmber
 
 @Composable
 fun HomeTab(
@@ -65,14 +64,15 @@ fun HomeTab(
     onOpenSos: () -> Unit,
 ) {
     LazyColumn(contentPadding = contentPadding) {
-        item { Hero(account, content, onOpenSos) }
         item {
-            NavigationCard(
-                onClick = onOpenNavigation,
-                modifier = Modifier
-                    .offset(y = (-28).dp)
-                    .padding(horizontal = 16.dp),
-            )
+            // The card overlaps the photo's foot; padding (not offset) so no gap is left below.
+            Box {
+                Hero(account, content, onOpenSos)
+                NavigationCard(
+                    onClick = onOpenNavigation,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 292.dp),
+                )
+            }
         }
         item {
             QuickMenu(
@@ -80,7 +80,7 @@ fun HomeTab(
                 onAnimals = { onOpenNature(SpeciesKind.ANIMAL) },
                 onPlants = { onOpenNature(SpeciesKind.PLANT) },
                 onAbout = onOpenAbout,
-                modifier = Modifier.offset(y = (-12).dp),
+                modifier = Modifier.padding(top = 12.dp),
             )
         }
         item {
@@ -122,7 +122,7 @@ fun HomeTab(
 
 @Composable
 private fun Hero(account: UserAccount, content: KhaoYaiContent, onOpenSos: () -> Unit) {
-    HeroBanner(height = 320.dp) {
+    HeroBanner(height = 340.dp) {
         Surface(
             onClick = onOpenSos,
             modifier = Modifier
@@ -146,8 +146,9 @@ private fun Hero(account: UserAccount, content: KhaoYaiContent, onOpenSos: () ->
                 .statusBarsPadding()
                 .padding(16.dp),
             shape = RoundedCornerShape(50),
-            color = Color.Black.copy(alpha = 0.25f),
+            color = Color.White.copy(alpha = 0.22f),
             contentColor = Color.White,
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.45f)),
         ) {
             Text(
                 text = stringResource(
@@ -161,7 +162,7 @@ private fun Hero(account: UserAccount, content: KhaoYaiContent, onOpenSos: () ->
         Column(
             Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 20.dp, end = 20.dp, bottom = 44.dp),
+                .padding(start = 20.dp, end = 20.dp, bottom = 64.dp),
         ) {
             Text(
                 text = stringResource(R.string.home_hero_title),
@@ -190,6 +191,7 @@ private fun StatPill(text: String) {
         shape = RoundedCornerShape(50),
         color = Color.White.copy(alpha = 0.2f),
         contentColor = Color.White,
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
     ) {
         Text(
             text = text,
@@ -204,18 +206,18 @@ private fun NavigationCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.88f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
     ) {
-        Box(Modifier.background(ForestBrush)) {
-            LeafCorner(Modifier.align(Alignment.BottomEnd), size = 60.dp, alpha = 0.25f)
+        Box {
             Column(Modifier.padding(20.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         Modifier
                             .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.18f)),
+                            .background(ForestBrush),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(painterResource(R.drawable.ic_walk), contentDescription = null, tint = Color.White)
@@ -225,22 +227,22 @@ private fun NavigationCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
                         text = stringResource(R.string.home_nav_card_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.home_nav_card_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
                 Button(
                     onClick = onClick,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = HornbillAmber,
-                        contentColor = Color(0xFF2E1F00),
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White,
                     ),
                 ) {
                     Icon(painterResource(R.drawable.ic_navigation), contentDescription = null, modifier = Modifier.size(18.dp))
@@ -285,9 +287,10 @@ private fun QuickMenuItem(emoji: String, label: String, onClick: () -> Unit) {
     ) {
         Box(
             Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer),
+                .size(58.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                .border(1.dp, MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center,
         ) {
             Text(emoji, fontSize = 26.sp)

@@ -1,12 +1,12 @@
 package th.ac.kmutnb.prachin.map.ui.khaoyai
 
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import th.ac.kmutnb.prachin.map.ui.khaoyai.GlassNavigationBar
+import th.ac.kmutnb.prachin.map.ui.khaoyai.forestNavItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,18 +59,14 @@ fun MainShell(
         // Each tab handles the status bar itself, so the home picture can run under it.
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest, tonalElevation = 6.dp) {
+            GlassNavigationBar {
                 MainTab.entries.forEach { item ->
                     NavigationBarItem(
                         selected = tab == item,
                         onClick = { tab = item },
                         icon = { Icon(painterResource(item.iconRes), contentDescription = null) },
                         label = { Text(stringResource(item.labelRes)) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        ),
+                        colors = forestNavItemColors(),
                     )
                 }
             }
