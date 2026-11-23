@@ -25,3 +25,9 @@ __pycache__/
 
 # Kotlin compiler daemon session files
 /.kotlin/
+
+# Android Studio project files - per machine, never shared
+/.idea/
+
+# Documents for AI context only (the project proposal); never committed - see CLAUDE.md
+/ForAiReadDontCommit/
