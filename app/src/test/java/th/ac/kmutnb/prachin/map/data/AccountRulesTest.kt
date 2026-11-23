@@ -77,6 +77,16 @@ class AccountRulesTest {
     }
 
     @Test
+    fun `officers find a tourist by name, Tourist ID, username or phone`() {
+        val t = UserAccount("i", "KY69-000042", "anna_s", "Anna Schmidt", "0812345678", "e", "de", UserRole.TOURIST, emptySet(), 0L)
+        assertTrue(t.matches("anna"))
+        assertTrue(t.matches(" 000042 "))
+        assertTrue(t.matches("ANNA_S"))
+        assertTrue(t.matches("081234"))
+        assertFalse(t.matches("John"))
+    }
+
+    @Test
     fun `passwords are stored salted and checked in constant shape`() {
         val a = PasswordHasher.hash("Khaoyai2569")
         val b = PasswordHasher.hash("Khaoyai2569")
