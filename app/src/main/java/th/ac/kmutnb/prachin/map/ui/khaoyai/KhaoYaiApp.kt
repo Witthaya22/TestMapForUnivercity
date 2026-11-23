@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -119,17 +121,23 @@ private fun KhaoYaiNavHost(
     val repository = container.khaoYaiContentRepository
     val content by repository.content.collectAsStateWithLifecycle()
     val currentUser by container.accountRepository.currentUser.collectAsStateWithLifecycle()
-    // The live account once loaded; the restored one for the first frames.
-    val account = currentUser ?: restoredAccount
+    // The live account, with a fallback for the frames before the database flow catches up:
+    // the account restored at launch or just signed in. Cleared on sign-out, so the old user
+    // never lingers behind the sign-in screen; set on sign-in, so a fresh sign-in is never
+    // bounced back out by a momentary null.
+    var fallback by remember { mutableStateOf(restoredAccount) }
+    val account = currentUser ?: fallback
     val scope = rememberCoroutineScope()
 
     val startDestination = remember { restoredAccount?.let(KhaoYaiRoutes::home) ?: KhaoYaiRoutes.LOGIN }
 
-    fun goHome(signedIn: UserAccount) = navController.navigate(KhaoYaiRoutes.home(signedIn)) {
-        popUpTo(navController.graph.id) { inclusive = true }
+    fun goHome(signedIn: UserAccount) {
+        fallback = signedIn
+        navController.navigate(KhaoYaiRoutes.home(signedIn)) { popUpTo(navController.graph.id) { inclusive = true } }
     }
 
     fun logout() {
+        fallback = null
         scope.launch {
             repository.endTrail()
             container.accountRepository.signOut()

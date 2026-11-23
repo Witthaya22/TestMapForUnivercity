@@ -107,7 +107,7 @@ class AccountRepository(
         if (problems.isNotEmpty()) return RegisterResult.Invalid(problems)
         val entity = UserAccountEntity(
             id = "user_${UUID.randomUUID()}",
-            memberId = AccountRules.memberId(role, buddhistYear(), dao.countRole(role.id) + 1),
+            memberId = AccountRules.memberId(role, buddhistYear(), AccountRules.nextSequence(dao.memberIds(role.id))),
             username = form.username.trim(),
             passwordHash = PasswordHasher.hash(form.password),
             fullName = form.fullName.trim(),

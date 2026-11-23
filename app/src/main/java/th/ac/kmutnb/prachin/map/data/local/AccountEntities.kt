@@ -58,8 +58,8 @@ interface UserAccountDao {
     @Query("SELECT * FROM user_account WHERE email = :email COLLATE NOCASE LIMIT 1")
     suspend fun findByEmail(email: String): UserAccountEntity?
 
-    @Query("SELECT COUNT(*) FROM user_account WHERE role = :role")
-    suspend fun countRole(role: String): Int
+    @Query("SELECT memberId FROM user_account WHERE role = :role")
+    suspend fun memberIds(role: String): List<String>
 
     @Query("SELECT COUNT(*) FROM user_account")
     suspend fun count(): Int

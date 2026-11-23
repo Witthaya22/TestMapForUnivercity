@@ -126,6 +126,14 @@ object AccountRules {
         return "%s%02d-%06d".format(prefix, buddhistYear % 100, sequence)
     }
 
+    /**
+     * One past the highest running number in use. Not the count plus one: once accounts are
+     * deleted (the demo ones are, in a batch) the count falls and would hand out an id that
+     * a remaining account still has.
+     */
+    fun nextSequence(existingIds: List<String>): Int =
+        (existingIds.mapNotNull { it.substringAfterLast('-').toIntOrNull() }.maxOrNull() ?: 0) + 1
+
     /** `t***@gmail.com`, so the OTP screen says where the code went without showing it all. */
     fun maskEmail(email: String): String {
         val at = email.indexOf('@')
