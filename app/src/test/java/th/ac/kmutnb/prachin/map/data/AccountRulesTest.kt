@@ -51,6 +51,14 @@ class AccountRulesTest {
     }
 
     @Test
+    fun `the next member id follows the highest in use, not the count`() {
+        // KY69-000002..000007 were demo accounts and got deleted; 000008 is a real one left.
+        assertEquals(9, AccountRules.nextSequence(listOf("KY69-000001", "KY69-000008")))
+        assertEquals(1, AccountRules.nextSequence(emptyList()))
+        assertEquals(4, AccountRules.nextSequence(listOf("KY69-000003", "broken")))
+    }
+
+    @Test
     fun `the OTP screen says where the code went without showing the whole address`() {
         assertEquals("s*****@mail.com", AccountRules.maskEmail("somchai@mail.com"))
         assertEquals("a@b.co", AccountRules.maskEmail("a@b.co"))
