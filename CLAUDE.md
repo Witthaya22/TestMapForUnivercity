@@ -148,8 +148,14 @@ python3 tools/fetch_photos.py      # ดึงรูปจาก Wikimedia Commo
 ```
 
 > บนเครื่องนี้ Gradle จะเลือก JRE ของ VS Code (ไม่มี `jlink`) แล้ว `compileDebugJavaWithJavac` พัง
-> ต้องตั้ง `JAVA_HOME` เป็น JBR ของ Android Studio ก่อนสั่ง build
-> PowerShell: `$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`
+> `.claude/settings.json` ตั้ง `JAVA_HOME` เป็น JBR ของ Android Studio ให้ทุก session แล้ว
+> ถ้าสั่ง build เองนอก Claude Code — PowerShell: `$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`
+
+## Skill ของโปรเจกต์ (`.claude/skills/`)
+| skill | ใช้เมื่อ |
+|---|---|
+| `verify-and-ship` | จบงานทุกครั้ง: build → test → ติดตั้ง → เปิดแอป → เช็ค crash → commit แยกส่วน → STATUS |
+| `room-migration` | แตะ `AppDatabase` / `@Entity` / `app/schemas/` — migration ต้องตรง schema ทุกตัวอักษร |
 
 ## เอกสารที่ต้องอ่านก่อนแก้เรื่องนั้น ๆ
 | หัวข้อ | อ่าน |
