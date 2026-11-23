@@ -865,7 +865,7 @@
     <string name="staff_menu_content">จัดการข้อมูล: เส้นทาง จุดพัก ข่าว สัตว์-พืช</string>
     <string name="staff_menu_trails">อัปเดตเส้นทาง จุดท่องเที่ยว จุดพัก</string>
     <string name="staff_demo_title">ข้อมูลตัวอย่าง</string>
-    <string name="staff_demo_body">นักท่องเที่ยวตัวอย่าง 6 คนบนเส้นทาง และการแจ้งเหตุตัวอย่างย้อนหลัง 3 เดือน ใช้ทดลองหน้าค้นหา แผนที่ และรายงาน ทุกรายการมีป้าย \"ตัวอย่าง\"</string>
+    <string name="staff_demo_body">นักท่องเที่ยวตัวอย่าง 6 คน และการแจ้งเหตุตัวอย่างย้อนหลัง 3 เดือน ใช้ทดลองหน้าค้นหา หน้าแจ้งเหตุ และรายงาน ทุกรายการมีป้าย \"ตัวอย่าง\"</string>
     <string name="staff_demo_clear">ลบข้อมูลตัวอย่าง</string>
     <string name="staff_demo_seed">สร้างใหม่</string>
     <string name="staff_demo_clear_confirm">ลบนักท่องเที่ยวและการแจ้งเหตุที่เป็นตัวอย่างทั้งหมด?</string>

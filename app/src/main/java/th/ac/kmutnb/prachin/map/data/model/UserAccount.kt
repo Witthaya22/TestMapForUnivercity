@@ -144,6 +144,10 @@ object AccountRules {
     fun nextSequence(existingIds: List<String>): Int =
         (existingIds.mapNotNull { it.substringAfterLast('-').toIntOrNull() }.maxOrNull() ?: 0) + 1
 
+    /** The letter on an avatar: the first consonant, skipping a Thai leading vowel. */
+    fun initial(name: String): String =
+        name.trim().firstOrNull { it.isLetter() && it !in "เแโใไ" }?.uppercase() ?: "?"
+
     /** `t***@gmail.com`, so the OTP screen says where the code went without showing it all. */
     fun maskEmail(email: String): String {
         val at = email.indexOf('@')

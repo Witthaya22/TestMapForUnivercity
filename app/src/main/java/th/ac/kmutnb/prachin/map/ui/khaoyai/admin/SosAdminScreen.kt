@@ -45,6 +45,7 @@ import th.ac.kmutnb.prachin.map.data.model.SosReport
 import th.ac.kmutnb.prachin.map.data.model.SosRules
 import th.ac.kmutnb.prachin.map.data.model.SosStatus
 import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiTopBar
+import th.ac.kmutnb.prachin.map.ui.khaoyai.SearchField
 import th.ac.kmutnb.prachin.map.ui.khaoyai.Pill
 import th.ac.kmutnb.prachin.map.ui.khaoyai.openLink
 import th.ac.kmutnb.prachin.map.ui.khaoyai.staff.MapMarker
@@ -79,21 +80,16 @@ fun SosAdminScreen(onBack: (() -> Unit)?, onOpenTourist: (String) -> Unit, canDe
     Column(Modifier.fillMaxSize()) {
         KhaoYaiTopBar(title = stringResource(R.string.sos_admin_title), onBack = onBack)
         StaffMap(
-            markers = ordered.mapNotNull { r -> r.point?.let { MapMarker(r.id, it, statusColour(r.status)) } },
+            // Drawn in order, last on top: reversed so the new calls are not buried under old ones.
+            markers = ordered.reversed().mapNotNull { r -> r.point?.let { MapMarker(r.id, it, statusColour(r.status)) } },
             modifier = Modifier.fillMaxWidth().height(240.dp),
         )
+        SearchField(value = query, onValueChange = { query = it }, placeholder = stringResource(R.string.sos_admin_search))
         LazyColumn(
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.weight(1f),
         ) {
-            item {
-                OutlinedTextField(
-                    value = query, onValueChange = { query = it }, singleLine = true,
-                    placeholder = { Text(stringResource(R.string.sos_admin_search)) },
-                    shape = RoundedCornerShape(50), modifier = Modifier.fillMaxWidth(),
-                )
-            }
             item {
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     FilterChip(selected = filter == null, onClick = { filter = null }, label = { Text("${stringResource(R.string.filter_all)} (${reports.size})") })

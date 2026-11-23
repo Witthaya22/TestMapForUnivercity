@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import th.ac.kmutnb.prachin.map.R
+import th.ac.kmutnb.prachin.map.data.model.AccountRules
 import th.ac.kmutnb.prachin.map.ui.khaoyai.FloatingBackButton
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ForestBrush
 import th.ac.kmutnb.prachin.map.ui.khaoyai.HeroBanner
@@ -98,7 +99,7 @@ fun ProfileTab(
                         .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(name.take(1).uppercase(), fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(AccountRules.initial(name), fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(name, style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)

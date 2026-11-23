@@ -34,6 +34,7 @@ private val LightColors = lightColorScheme(
     surfaceContainerLow = Color(0xFFEFF5EB),
     surfaceContainer = ForestMist,
     surfaceContainerHigh = Color(0xFFDDEBDA),
+    surfaceContainerHighest = Color(0xFFD3E4D0),
     outline = Color(0xFF717A71),
     outlineVariant = Color(0xFFC1CCBF),
 )
@@ -62,6 +63,7 @@ private val DarkColors = darkColorScheme(
     surfaceContainerLow = Color(0xFF172019),
     surfaceContainer = Color(0xFF1B241D),
     surfaceContainerHigh = Color(0xFF252F27),
+    surfaceContainerHighest = Color(0xFF303A32),
     outline = Color(0xFF8B948A),
     outlineVariant = Color(0xFF414A42),
 )

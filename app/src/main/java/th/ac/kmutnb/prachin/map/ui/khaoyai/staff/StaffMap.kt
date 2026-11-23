@@ -22,7 +22,6 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.CircleLayer
-import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.sources.GeoJsonSource
 import th.ac.kmutnb.prachin.map.MapApplication
@@ -36,8 +35,8 @@ import th.ac.kmutnb.prachin.map.map.rememberMapViewWithLifecycle
 data class MapMarker(val id: String, val point: GeoPoint, val colour: Int)
 
 /**
- * The offline basemap with [markers], and [line] (a walked history) under them. Framed on
- * whatever is drawn, or on the campus when nothing is. Tapping a marker reports its id.
+ * The offline basemap with [markers]. Framed on whatever is drawn, or on the campus when
+ * nothing is.
  *
  * Positions outside the downloaded pack still show where they are, on plain background:
  * there are no tiles to draw there offline.
@@ -46,8 +45,6 @@ data class MapMarker(val id: String, val point: GeoPoint, val colour: Int)
 fun StaffMap(
     markers: List<MapMarker>,
     modifier: Modifier = Modifier,
-    line: List<GeoPoint> = emptyList(),
-    onMarkerTapped: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val container = remember { (context.applicationContext as MapApplication).container }
@@ -60,7 +57,6 @@ fun StaffMap(
     val mapView = rememberMapViewWithLifecycle()
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }
-    val tapped by androidx.compose.runtime.rememberUpdatedState(onMarkerTapped)
 
     val uri = styleUri
     if (uri != null) {
@@ -72,15 +68,7 @@ fun StaffMap(
                 m.uiSettings.isLogoEnabled = false
                 m.setStyle(Style.Builder().fromUri(uri)) { s ->
                     ForestMapLook.apply(s)
-                    s.addSource(GeoJsonSource(SOURCE_LINE, MapGeoJson.EMPTY_COLLECTION))
                     s.addSource(GeoJsonSource(SOURCE_POINTS, MapGeoJson.EMPTY_COLLECTION))
-                    s.addLayer(
-                        LineLayer(LAYER_LINE, SOURCE_LINE).withProperties(
-                            PropertyFactory.lineColor(0xFF1E88E5.toInt()),
-                            PropertyFactory.lineWidth(3.5f),
-                            PropertyFactory.lineOpacity(0.8f),
-                        ),
-                    )
                     s.addLayer(
                         CircleLayer(LAYER_POINTS, SOURCE_POINTS).withProperties(
                             PropertyFactory.circleRadius(9f),
@@ -91,18 +79,12 @@ fun StaffMap(
                     )
                     style = s
                 }
-                m.addOnMapClickListener { latLng ->
-                    val id = m.queryRenderedFeatures(m.projection.toScreenLocation(latLng), LAYER_POINTS)
-                        .firstNotNullOfOrNull { it.getStringProperty(PROPERTY_ID) }
-                    if (id != null) tapped(id)
-                    id != null
-                }
             }
             onDispose { style = null }
         }
     }
 
-    LaunchedEffect(style, markers, line, config) {
+    LaunchedEffect(style, markers, config) {
         val s = style ?: return@LaunchedEffect
         val m = map ?: return@LaunchedEffect
         val features = JsonArray()
@@ -118,10 +100,7 @@ fun StaffMap(
             )
         }
         s.getSourceAs<GeoJsonSource>(SOURCE_POINTS)?.setGeoJson(MapGeoJson.documentOf(features))
-        s.getSourceAs<GeoJsonSource>(SOURCE_LINE)?.setGeoJson(
-            if (line.size >= 2) MapGeoJson.line(line) else MapGeoJson.EMPTY_COLLECTION,
-        )
-        val points = markers.map { it.point } + line
+        val points = markers.map { it.point }
         when {
             points.size >= 2 -> runCatching {
                 m.moveCamera(
@@ -140,8 +119,6 @@ fun StaffMap(
 }
 
 private const val SOURCE_POINTS = "staff-points"
-private const val SOURCE_LINE = "staff-line"
 private const val LAYER_POINTS = "staff-point-layer"
-private const val LAYER_LINE = "staff-line-layer"
 private const val PROPERTY_ID = "id"
 private const val PROPERTY_COLOUR = "colour"
