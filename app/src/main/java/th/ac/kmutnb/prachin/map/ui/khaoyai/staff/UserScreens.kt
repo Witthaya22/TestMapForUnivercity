@@ -217,7 +217,6 @@ fun UserEditScreen(userId: String?, currentUserId: String, onBack: () -> Unit) {
                 TextButton(onClick = {
                     confirmDelete = false
                     scope.launch {
-                        container.trackingRepository.deleteFor(userId)
                         repo.delete(userId)
                         onBack()
                     }

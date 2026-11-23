@@ -10,6 +10,7 @@
     <string name="action_save">บันทึก</string>
     <string name="action_delete">ลบ</string>
     <string name="action_edit">แก้ไข</string>
+    <string name="action_clear">ล้าง</string>
     <string name="action_back">ย้อนกลับ</string>
     <string name="action_continue">ถัดไป</string>
     <string name="action_open_app_settings">ไปที่ตั้งค่าแอป</string>
@@ -811,7 +812,7 @@
     <string name="role_officer">เจ้าหน้าที่อุทยาน</string>
     <string name="role_admin">ผู้ดูแลระบบ</string>
     <string name="permission_manage_sos">รับและจัดการเหตุฉุกเฉิน</string>
-    <string name="permission_view_tourists">ดูตำแหน่งและค้นหานักท่องเที่ยว</string>
+    <string name="permission_view_tourists">ค้นหาและดูข้อมูลนักท่องเที่ยว</string>
     <string name="permission_edit_trails">อัปเดตเส้นทาง จุดพัก จุดเสี่ยง และเครื่องมือแผนที่</string>
     <string name="permission_view_reports">ดูสรุปภาคสนามและออกรายงาน</string>
     <string name="account_error_username">ชื่อผู้ใช้ 4–20 ตัว ใช้ได้เฉพาะ a-z A-Z 0-9 _ .</string>
@@ -856,10 +857,9 @@
     <string name="staff_sum_sos_new">SOS ใหม่</string>
     <string name="staff_sum_sos_active">กำลังช่วยเหลือ</string>
     <string name="staff_sum_sos_today">แจ้งเหตุวันนี้</string>
-    <string name="staff_sum_on_trail">อยู่บนเส้นทาง (3 ชม.)</string>
     <string name="staff_sum_tourists">นักท่องเที่ยวทั้งหมด</string>
     <string name="staff_sum_hazards">จุดเสี่ยงที่เปิดใช้</string>
-    <string name="staff_sync_pending">รอส่งขึ้นเซิร์ฟเวอร์: ตำแหน่ง %1$d รายการ · SOS %2$d เรื่อง — ยังไม่มีเซิร์ฟเวอร์ ข้อมูลเก็บในเครื่องนี้ (Backend ทำภายหลัง)</string>
+    <string name="staff_sync_pending">SOS รอส่งขึ้นเซิร์ฟเวอร์ %1$d เรื่อง — ยังไม่มีเซิร์ฟเวอร์ ข้อมูลเก็บในเครื่องนี้ (Backend ทำภายหลัง)</string>
     <string name="staff_menu_reports">รายงานสรุป (รายวัน / เดือน / ปี)</string>
     <string name="staff_menu_users">จัดการผู้ใช้ และสิทธิ์เจ้าหน้าที่</string>
     <string name="staff_menu_content">จัดการข้อมูล: เส้นทาง จุดพัก ข่าว สัตว์-พืช</string>
@@ -872,22 +872,18 @@
     <string name="staff_demo_seed_confirm">ลบข้อมูลตัวอย่างเดิมแล้วสร้างชุดใหม่?</string>
     <string name="tourists_title">ค้นหานักท่องเที่ยว</string>
     <string name="tourists_search">ชื่อ, Tourist ID, ชื่อผู้ใช้ หรือเบอร์โทร</string>
-    <string name="tourists_only_on_trail">อยู่บนเส้นทางตอนนี้</string>
-    <string name="tourists_count">%1$d คน</string>
+    <string name="tourists_count">พบ %1$d คน</string>
+    <string name="tourists_type_to_search">พิมพ์ชื่อ, Tourist ID, ชื่อผู้ใช้ หรือเบอร์โทร เพื่อค้นหาจากนักท่องเที่ยว %1$d คน</string>
+    <string name="tourists_more">แสดง %1$d คนแรกจาก %2$d คน — พิมพ์เพิ่มเพื่อให้แคบลง</string>
+    <string name="tourists_edit">แก้ไขข้อมูล</string>
+    <string name="tourists_view_only">เจ้าหน้าที่ดูข้อมูลและโทรติดต่อได้ · แก้ไขบัญชีได้เฉพาะผู้ดูแลระบบ</string>
     <string name="tourists_empty">ไม่พบนักท่องเที่ยว</string>
-    <string name="tourists_on_trail">บนเส้นทาง</string>
     <string name="tourists_row">%1$s · %2$s · %3$s</string>
-    <string name="tourists_never_seen">ยังไม่มีตำแหน่ง (ยังไม่ได้เริ่มเดินเส้นทาง)</string>
-    <string name="tourists_last_seen">ตำแหน่งล่าสุด %1$s · %2$s · ± %3$.0f ม.</string>
     <string name="tourists_not_found">ไม่พบนักท่องเที่ยวคนนี้</string>
     <string name="tourists_detail_ids">Tourist ID %1$s · %2$s</string>
     <string name="tourists_detail_contact">โทร %1$s · %2$s · สัญชาติ %3$s</string>
-    <string name="tourists_detail_history">เส้นทางที่เดินผ่านมา: %1$d จุด (เส้นสีฟ้าบนแผนที่)</string>
     <string name="tourists_detail_calls">การแจ้งเหตุของคนนี้ (%1$d)</string>
     <string name="tourists_call">โทรหา</string>
-    <string name="ago_minutes">%1$d นาทีที่แล้ว</string>
-    <string name="ago_hours">%1$d ชม. ที่แล้ว</string>
-    <string name="ago_days">%1$d วันที่แล้ว</string>
     <string name="report_title">รายงานสรุป</string>
     <string name="report_with_demo">รวมข้อมูลตัวอย่าง</string>
     <string name="report_total">เหตุฉุกเฉินทั้งหมด %1$d เรื่อง</string>
@@ -932,7 +928,6 @@
     <string name="sos_nearest_directions">เส้นทางไปที่นี่</string>
     <string name="sos_admin_search">ค้นหาจากชื่อ หรือ Tourist ID</string>
     <string name="sos_admin_called_from">แจ้งจาก %1$.6f, %2$.6f (± %3$.0f ม.)</string>
-    <string name="sos_admin_latest">ตำแหน่งล่าสุดหลังแจ้ง %1$s · ขยับไป %2$.0f ม.</string>
     <string name="sos_admin_mark">บันทึก: %1$s</string>
     <string name="sos_admin_open_tourist">ดูนักท่องเที่ยว</string>
 

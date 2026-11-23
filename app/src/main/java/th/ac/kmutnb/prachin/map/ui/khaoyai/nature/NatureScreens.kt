@@ -51,6 +51,7 @@ import th.ac.kmutnb.prachin.map.ui.khaoyai.ContentPhoto
 import th.ac.kmutnb.prachin.map.ui.khaoyai.FloatingBackButton
 import th.ac.kmutnb.prachin.map.ui.khaoyai.PhotoCreditLine
 import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiTopBar
+import th.ac.kmutnb.prachin.map.ui.khaoyai.SearchField
 import th.ac.kmutnb.prachin.map.ui.khaoyai.LeafCorner
 import th.ac.kmutnb.prachin.map.ui.khaoyai.NotFound
 import th.ac.kmutnb.prachin.map.ui.khaoyai.Pill
@@ -84,19 +85,9 @@ fun NatureTab(
 
     Column(Modifier.fillMaxSize()) {
         KhaoYaiTopBar(title = stringResource(R.string.nature_title))
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            placeholder = { Text(stringResource(R.string.nature_search)) },
-            leadingIcon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
-            singleLine = true,
-            shape = RoundedCornerShape(50),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-        )
+        SearchField(value = query, onValueChange = { query = it }, placeholder = stringResource(R.string.nature_search))
         Row(
-            Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             FilterChip(

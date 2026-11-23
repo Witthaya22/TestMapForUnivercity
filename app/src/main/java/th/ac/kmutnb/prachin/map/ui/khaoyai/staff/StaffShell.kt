@@ -50,6 +50,7 @@ import th.ac.kmutnb.prachin.map.MapApplication
 import th.ac.kmutnb.prachin.map.R
 import th.ac.kmutnb.prachin.map.data.model.Permission
 import th.ac.kmutnb.prachin.map.data.model.Reports
+import th.ac.kmutnb.prachin.map.data.model.UserRole
 import th.ac.kmutnb.prachin.map.data.model.SosStatus
 import th.ac.kmutnb.prachin.map.data.model.UserAccount
 import th.ac.kmutnb.prachin.map.ui.khaoyai.ForestBrush
@@ -127,7 +128,7 @@ fun StaffShell(
                     onOpenTool = onOpenTool,
                     onViewAsTourist = onViewAsTourist,
                 )
-                StaffTab.SOS -> SosAdminScreen(onBack = null, onOpenTourist = onOpenTourist)
+                StaffTab.SOS -> SosAdminScreen(onBack = null, onOpenTourist = onOpenTourist, canDelete = account.isAdmin)
                 StaffTab.TOURISTS -> TouristSearchTab(onOpenTourist = onOpenTourist)
                 StaffTab.ME -> ProfileTab(
                     account = account,
@@ -158,9 +159,8 @@ private fun StaffDashboard(
     val context = LocalContext.current
     val container = remember { (context.applicationContext as MapApplication).container }
     val reports by container.sosRepository.reports.collectAsStateWithLifecycle(initialValue = emptyList())
-    val tourists by container.trackingRepository.trackedTourists.collectAsStateWithLifecycle(initialValue = emptyList())
+    val accounts by container.accountRepository.accounts.collectAsStateWithLifecycle(initialValue = emptyList())
     val hazards by container.hazardRepository.activeHazards.collectAsStateWithLifecycle(initialValue = emptyList())
-    val unsyncedPositions by container.trackingRepository.unsynced.collectAsStateWithLifecycle(initialValue = 0)
     val unsyncedSos by container.sosRepository.unsynced.collectAsStateWithLifecycle(initialValue = 0)
     val scope = rememberCoroutineScope()
     var confirmDemo by rememberSaveable { mutableStateOf<Boolean?>(null) }
@@ -196,8 +196,7 @@ private fun StaffDashboard(
                     SummaryCard("📅", Reports.today(reports, now), R.string.staff_sum_sos_today, MaterialTheme.colorScheme.surfaceContainerLowest, Modifier.weight(1f), onOpenSos)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SummaryCard("🥾", Reports.onTrailNow(tourists, now), R.string.staff_sum_on_trail, MaterialTheme.colorScheme.primaryContainer, Modifier.weight(1f), onOpenTourists)
-                    SummaryCard("👥", tourists.size, R.string.staff_sum_tourists, MaterialTheme.colorScheme.surfaceContainerLowest, Modifier.weight(1f), onOpenTourists)
+                    SummaryCard("👥", accounts.count { it.role == UserRole.TOURIST }, R.string.staff_sum_tourists, MaterialTheme.colorScheme.primaryContainer, Modifier.weight(1f), onOpenTourists)
                     SummaryCard("⚠️", hazards.size, R.string.staff_sum_hazards, MaterialTheme.colorScheme.surfaceContainerLowest, Modifier.weight(1f)) {
                         onOpenTool(th.ac.kmutnb.prachin.map.ui.Routes.HAZARDS)
                     }
@@ -211,7 +210,7 @@ private fun StaffDashboard(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             ) {
                 Text(
-                    stringResource(R.string.staff_sync_pending, unsyncedPositions, unsyncedSos),
+                    stringResource(R.string.staff_sync_pending, unsyncedSos),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(12.dp),
                 )

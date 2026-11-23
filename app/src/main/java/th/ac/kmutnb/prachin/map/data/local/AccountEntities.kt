@@ -9,9 +9,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.model.Permission
-import th.ac.kmutnb.prachin.map.data.model.TouristPosition
 import th.ac.kmutnb.prachin.map.data.model.UserAccount
 import th.ac.kmutnb.prachin.map.data.model.UserRole
 
@@ -81,9 +79,11 @@ interface UserAccountDao {
 }
 
 /**
- * Where a tourist was, every half minute or so while walking a trail (§2.3.1.2). The
- * newest row per person is their "latest position"; the rest is the walked history.
- * [synced] is for the backend to come: rows not yet sent stay false.
+ * Was: where a tourist walked, recorded every half minute. Live tracking was dropped - only
+ * an SOS call carries a position now - so nothing writes or reads this table.
+ *
+ * shortcut: the table stays so the database needs no migration; drop it in the next
+ * migration that is written for another reason.
  */
 @Entity(
     tableName = "tourist_position",
@@ -145,12 +145,4 @@ fun UserAccountEntity.toAccount() = UserAccount(
     createdAt = createdAt,
     isActive = isActive,
     isDemo = isDemo,
-)
-
-fun TouristPositionEntity.toPosition() = TouristPosition(
-    userId = userId,
-    trailId = trailId,
-    point = GeoPoint(lat = lat, lon = lon),
-    accuracyMeters = accuracyMeters,
-    recordedAt = recordedAt,
 )

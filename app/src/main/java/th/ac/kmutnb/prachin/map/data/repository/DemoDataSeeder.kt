@@ -3,7 +3,6 @@ package th.ac.kmutnb.prachin.map.data.repository
 import kotlinx.coroutines.flow.first
 import th.ac.kmutnb.prachin.map.core.geo.GeoPoint
 import th.ac.kmutnb.prachin.map.data.khaoyai.KhaoYaiContentRepository
-import th.ac.kmutnb.prachin.map.data.local.TouristPositionEntity
 import th.ac.kmutnb.prachin.map.data.model.AccountForm
 import th.ac.kmutnb.prachin.map.data.model.SosCategory
 import th.ac.kmutnb.prachin.map.data.model.SosReport
@@ -23,7 +22,6 @@ import kotlin.random.Random
  */
 class DemoDataSeeder(
     private val accounts: AccountRepository,
-    private val tracking: TrackingRepository,
     private val sos: SosRepository,
     private val content: KhaoYaiContentRepository,
     private val preferences: AppPreferences,
@@ -35,7 +33,6 @@ class DemoDataSeeder(
     }
 
     suspend fun clear() {
-        accounts.accounts.first().filter { it.isDemo }.forEach { tracking.deleteFor(it.id) }
         sos.deleteDemo()
         accounts.deleteDemo()
     }
@@ -53,27 +50,6 @@ class DemoDataSeeder(
             )
             (result as? RegisterResult.Success)?.account
         }
-
-        // Each walks part of a trail: positions along its line, a minute apart, ending recently.
-        val positions = people.flatMapIndexed { i, person ->
-            val trail = trails[i % trails.size]
-            val steps = 12 + random.nextInt(20)
-            val start = random.nextInt((trail.path.size - steps).coerceAtLeast(1))
-            val end = now - (i * 7 + random.nextInt(5)) * 60_000L
-            (0 until steps).mapNotNull { s ->
-                val p = trail.path.getOrNull(start + s) ?: return@mapNotNull null
-                TouristPositionEntity(
-                    userId = person.id,
-                    trailId = trail.id,
-                    lat = p.lat + (random.nextDouble() - 0.5) * 0.00006,
-                    lon = p.lon + (random.nextDouble() - 0.5) * 0.00006,
-                    accuracyMeters = 4f + random.nextFloat() * 8f,
-                    recordedAt = end - (steps - s) * 60_000L,
-                    synced = false,
-                )
-            }
-        }
-        tracking.insertDemo(positions)
 
         // Calls spread over 90 days, weighted the way a park's calls tend to fall.
         val weights = listOf(

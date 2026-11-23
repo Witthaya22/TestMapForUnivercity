@@ -9,20 +9,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,79 +38,72 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import th.ac.kmutnb.prachin.map.MapApplication
 import th.ac.kmutnb.prachin.map.R
-import th.ac.kmutnb.prachin.map.data.model.TouristPosition
-import th.ac.kmutnb.prachin.map.data.model.TrackedTourist
+import th.ac.kmutnb.prachin.map.data.model.UserAccount
+import th.ac.kmutnb.prachin.map.data.model.UserRole
+import th.ac.kmutnb.prachin.map.ui.khaoyai.EmojiBadge
 import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiTopBar
 import th.ac.kmutnb.prachin.map.ui.khaoyai.NotFound
 import th.ac.kmutnb.prachin.map.ui.khaoyai.Pill
-import th.ac.kmutnb.prachin.map.ui.khaoyai.openLink
+import th.ac.kmutnb.prachin.map.ui.khaoyai.SearchField
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** A tourist last seen this recently is drawn as on a trail now. */
-private const val RECENT_MS = 3 * 60 * 60 * 1000L
-
-/** Search by name, Tourist ID, username or phone, with everyone's last position on the map. */
+/**
+ * Find a tourist by typing (§2.3.2.2). No map of everyone: a park with ten thousand
+ * visitors would bury it, and positions are not tracked live - only an SOS call carries one.
+ */
 @Composable
 fun TouristSearchTab(onOpenTourist: (String) -> Unit) {
     val context = LocalContext.current
     val container = remember { (context.applicationContext as MapApplication).container }
-    val tourists by container.trackingRepository.trackedTourists.collectAsStateWithLifecycle(initialValue = emptyList())
-    val content by container.khaoYaiContentRepository.content.collectAsStateWithLifecycle()
+    val accounts by container.accountRepository.accounts.collectAsStateWithLifecycle(initialValue = emptyList())
+    val tourists = accounts.filter { it.role == UserRole.TOURIST }
     var query by rememberSaveable { mutableStateOf("") }
-    var onlyOnTrail by rememberSaveable { mutableStateOf(false) }
-    val now = System.currentTimeMillis()
-    val shown = tourists.filter { it.matches(query) && (!onlyOnTrail || it.isRecent(now)) }
+    val found = if (query.isBlank()) emptyList() else tourists.filter { it.matches(query) }
 
     Column(Modifier.fillMaxSize()) {
         KhaoYaiTopBar(title = stringResource(R.string.tourists_title))
-        StaffMap(
-            markers = shown.mapNotNull { t ->
-                t.latest?.let { MapMarker(t.account.id, it.point, if (t.isRecent(now)) COLOUR_RECENT else COLOUR_OLD) }
-            },
-            onMarkerTapped = onOpenTourist,
-            modifier = Modifier.fillMaxWidth().height(220.dp),
-        )
-        OutlinedTextField(
+        SearchField(
             value = query,
             onValueChange = { query = it },
-            placeholder = { Text(stringResource(R.string.tourists_search)) },
-            leadingIcon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
-            singleLine = true,
-            shape = RoundedCornerShape(50),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = stringResource(R.string.tourists_search),
         )
-        Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            FilterChip(selected = onlyOnTrail, onClick = { onlyOnTrail = !onlyOnTrail }, label = { Text(stringResource(R.string.tourists_only_on_trail)) })
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.tourists_count, shown.size), style = MaterialTheme.typography.labelMedium)
-        }
-        LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (shown.isEmpty()) item { Text(stringResource(R.string.tourists_empty)) }
-            items(shown, key = { it.account.id }) { t ->
-                val trailName = t.latest?.let { p -> content.trail(p.trailId)?.name }
+        LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            item {
+                Text(
+                    when {
+                        query.isBlank() -> stringResource(R.string.tourists_type_to_search, tourists.size)
+                        found.isEmpty() -> stringResource(R.string.tourists_empty)
+                        found.size > MAX_SHOWN -> stringResource(R.string.tourists_more, MAX_SHOWN, found.size)
+                        else -> stringResource(R.string.tourists_count, found.size)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            items(found.take(MAX_SHOWN), key = { it.id }) { t ->
                 Card(
-                    onClick = { onOpenTourist(t.account.id) },
-                    shape = RoundedCornerShape(16.dp),
+                    onClick = { onOpenTourist(t.id) },
+                    shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Column(Modifier.padding(12.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(t.account.fullName, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                            if (t.isRecent(now)) Pill(stringResource(R.string.tourists_on_trail), MaterialTheme.colorScheme.primary)
-                            if (t.account.isDemo) Pill(stringResource(R.string.demo_badge), MaterialTheme.colorScheme.tertiary)
+                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        EmojiBadge("🧑", size = 44.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(t.fullName, fontWeight = FontWeight.Bold)
+                            Text(
+                                stringResource(R.string.tourists_row, t.memberId, t.nationality, t.phone),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
-                        Text(
-                            stringResource(R.string.tourists_row, t.account.memberId, t.account.nationality, t.account.phone),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                        Text(
-                            t.latest?.let { lastSeen(it, trailName, now) } ?: stringResource(R.string.tourists_never_seen),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        if (t.isDemo) Pill(stringResource(R.string.demo_badge), MaterialTheme.colorScheme.tertiary)
                     }
                 }
             }
@@ -120,51 +111,56 @@ fun TouristSearchTab(onOpenTourist: (String) -> Unit) {
     }
 }
 
-/** One tourist: who, how to reach them, where they walked, and their calls for help. */
+/**
+ * One tourist: who, how to reach them, and their calls for help. Officers look and call;
+ * only an administrator changes the account (§2.3.3.2) - [onEdit] is null for everyone else.
+ */
 @Composable
-fun TouristDetailScreen(userId: String, onBack: () -> Unit) {
+fun TouristDetailScreen(userId: String, onBack: () -> Unit, onEdit: (() -> Unit)?) {
     val context = LocalContext.current
     val container = remember { (context.applicationContext as MapApplication).container }
-    val tourists by container.trackingRepository.trackedTourists.collectAsStateWithLifecycle(initialValue = null)
-    val history by remember(userId) { container.trackingRepository.history(userId) }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val accounts by container.accountRepository.accounts.collectAsStateWithLifecycle(initialValue = null)
     val reports by container.sosRepository.reports.collectAsStateWithLifecycle(initialValue = emptyList())
-    val content by container.khaoYaiContentRepository.content.collectAsStateWithLifecycle()
-    val tourist = tourists?.firstOrNull { it.account.id == userId }
-    if (tourists != null && tourist == null) {
+    val account = accounts?.firstOrNull { it.id == userId }
+    if (accounts != null && account == null) {
         NotFound(stringResource(R.string.tourists_not_found), onBack)
         return
     }
-    val account = tourist?.account ?: return
-    val now = System.currentTimeMillis()
+    account ?: return
     val calls = reports.filter { it.userId == userId }
 
     Column(Modifier.fillMaxSize()) {
         KhaoYaiTopBar(title = account.fullName, onBack = onBack)
-        StaffMap(
-            markers = listOfNotNull(tourist.latest?.let { MapMarker(account.id, it.point, COLOUR_RECENT) }) +
-                calls.mapNotNull { c -> c.point?.let { MapMarker(c.id, it, COLOUR_SOS) } },
-            line = history.reversed().map { it.point },
-            modifier = Modifier.fillMaxWidth().height(260.dp),
-        )
-        LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
-                Text(stringResource(R.string.tourists_detail_ids, account.memberId, account.username), fontWeight = FontWeight.Bold)
-                Text(stringResource(R.string.tourists_detail_contact, account.phone, account.email, account.nationality), style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    tourist.latest?.let { lastSeen(it, content.trail(it.trailId)?.name, now) } ?: stringResource(R.string.tourists_never_seen),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(stringResource(R.string.tourists_detail_history, history.size), style = MaterialTheme.typography.bodySmall)
-            }
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = {
-                        runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${account.phone}"))) }
-                    }) { Text(stringResource(R.string.tourists_call)) }
-                    tourist.latest?.let { p ->
-                        OutlinedButton(onClick = {
-                            openLink(context, String.format(Locale.US, "https://maps.google.com/?q=%.6f,%.6f", p.point.lat, p.point.lon))
-                        }) { Text(stringResource(R.string.sos_admin_open_map)) }
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            EmojiBadge("🧑", size = 52.dp)
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(account.fullName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.tourists_detail_ids, account.memberId, account.username), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                        Text(stringResource(R.string.tourists_detail_contact, account.phone, account.email, account.nationality), style = MaterialTheme.typography.bodyMedium)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = { dial(context, account) }) {
+                                Icon(painterResource(R.drawable.ic_call), contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text(stringResource(R.string.tourists_call))
+                            }
+                            if (onEdit != null) {
+                                OutlinedButton(onClick = onEdit) { Text(stringResource(R.string.tourists_edit)) }
+                            }
+                        }
+                        if (onEdit == null) {
+                            Text(stringResource(R.string.tourists_view_only), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 }
             }
@@ -181,20 +177,10 @@ fun TouristDetailScreen(userId: String, onBack: () -> Unit) {
     }
 }
 
-private fun TrackedTourist.isRecent(now: Long) = latest?.let { now - it.recordedAt <= RECENT_MS } == true
-
-@Composable
-private fun lastSeen(p: TouristPosition, trailName: String?, now: Long): String {
-    val minutes = ((now - p.recordedAt) / 60_000L).coerceAtLeast(0)
-    val ago = when {
-        minutes < 60 -> stringResource(R.string.ago_minutes, minutes.toInt())
-        minutes < 60 * 24 -> stringResource(R.string.ago_hours, (minutes / 60).toInt())
-        else -> stringResource(R.string.ago_days, (minutes / (60 * 24)).toInt())
-    }
-    return stringResource(R.string.tourists_last_seen, ago, trailName ?: "-", p.accuracyMeters)
+private fun dial(context: android.content.Context, account: UserAccount) {
+    runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${account.phone}"))) }
 }
 
+/** Typing narrows quickly; drawing thousands of rows for one letter helps no one. */
+private const val MAX_SHOWN = 100
 private val TIME = SimpleDateFormat("d/M/yyyy HH:mm", Locale.getDefault())
-private const val COLOUR_RECENT = 0xFF1E88E5.toInt()
-private const val COLOUR_OLD = 0xFF9E9E9E.toInt()
-private const val COLOUR_SOS = 0xFFD32F2F.toInt()

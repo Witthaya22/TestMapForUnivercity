@@ -67,10 +67,6 @@ object Reports {
     fun usersByRole(accounts: List<UserAccount>): Map<UserRole, Int> =
         UserRole.entries.associateWith { r -> accounts.count { it.role == r } }
 
-    /** Tourists whose last position is newer than [withinMs]: on a trail now, as far as the phone knows. */
-    fun onTrailNow(tourists: List<TrackedTourist>, now: Long, withinMs: Long = 3 * 60 * 60 * 1000L): Int =
-        tourists.count { t -> t.latest?.let { now - it.recordedAt <= withinMs } == true }
-
     /** CSV of the calls, for passing on to whoever writes the park's reports. */
     fun csv(reports: List<SosReport>, label: (SosCategory) -> String, statusLabel: (SosStatus) -> String): String =
         buildString {

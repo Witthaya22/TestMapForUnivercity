@@ -55,6 +55,16 @@ data class UserAccount(
         UserRole.OFFICER -> permission in permissions
         UserRole.TOURIST -> false
     }
+
+    /** What an officer types to find someone: name, Tourist ID, username or phone. */
+    fun matches(query: String): Boolean {
+        val q = query.trim()
+        if (q.isEmpty()) return true
+        return fullName.contains(q, ignoreCase = true) ||
+            memberId.contains(q, ignoreCase = true) ||
+            username.contains(q, ignoreCase = true) ||
+            phone.contains(q)
+    }
 }
 
 /** What a registration or profile form holds, as typed. */

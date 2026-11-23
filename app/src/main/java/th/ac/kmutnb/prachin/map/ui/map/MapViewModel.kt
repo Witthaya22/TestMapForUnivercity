@@ -450,8 +450,6 @@ class MapViewModel(
             }
             null -> Unit
         }
-        val user = container.accountRepository.currentUser.value ?: return
-        viewModelScope.launch { container.trackingRepository.record(user.id, trail.id, fix) }
     }
 
     fun showStation(id: String) = _uiState.update { state ->

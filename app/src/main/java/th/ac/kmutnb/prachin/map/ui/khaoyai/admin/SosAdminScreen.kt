@@ -41,11 +41,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import th.ac.kmutnb.prachin.map.MapApplication
 import th.ac.kmutnb.prachin.map.R
-import th.ac.kmutnb.prachin.map.core.geo.GeoUtils
 import th.ac.kmutnb.prachin.map.data.model.SosReport
 import th.ac.kmutnb.prachin.map.data.model.SosRules
 import th.ac.kmutnb.prachin.map.data.model.SosStatus
-import th.ac.kmutnb.prachin.map.data.model.TouristPosition
 import th.ac.kmutnb.prachin.map.ui.khaoyai.KhaoYaiTopBar
 import th.ac.kmutnb.prachin.map.ui.khaoyai.Pill
 import th.ac.kmutnb.prachin.map.ui.khaoyai.openLink
@@ -56,18 +54,18 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Emergency calls (§2.3.2.2): where on the map, the caller's latest known position, the
- * time and type, and the handling status - received, in progress, help completed.
+ * Emergency calls (§2.3.2.2): the only things on the staff map. Each point is where the
+ * phone was when the call was sent - not a live position - with the time, type and
+ * handling status: received, in progress, help completed.
  *
  * @param onBack null when shown as a tab, which has no back.
+ * @param canDelete the administrator only; officers handle calls but keep the record.
  */
 @Composable
-fun SosAdminScreen(onBack: (() -> Unit)?, onOpenTourist: (String) -> Unit) {
+fun SosAdminScreen(onBack: (() -> Unit)?, onOpenTourist: (String) -> Unit, canDelete: Boolean) {
     val context = LocalContext.current
     val container = remember { (context.applicationContext as MapApplication).container }
     val reports by container.sosRepository.reports.collectAsStateWithLifecycle(initialValue = emptyList())
-    val tourists by container.trackingRepository.trackedTourists.collectAsStateWithLifecycle(initialValue = emptyList())
-    val latestByUser = tourists.associate { it.account.id to it.latest }
     var filter by rememberSaveable { mutableStateOf<SosStatus?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
     val ordered = SosRules.triage(reports).filter { r ->
@@ -109,14 +107,13 @@ fun SosAdminScreen(onBack: (() -> Unit)?, onOpenTourist: (String) -> Unit) {
             items(ordered, key = { it.id }) { report ->
                 ReportCard(
                     report = report,
-                    latest = latestByUser[report.userId],
                     onAdvance = { next -> scope.launch { container.sosRepository.setStatus(report.id, next) } },
                     onOpenTourist = report.userId.takeIf { it.isNotBlank() }?.let { id -> { onOpenTourist(id) } },
-                    onDelete = { confirmDelete = report.id },
+                    onDelete = if (canDelete) ({ confirmDelete = report.id }) else null,
                     onOpenMap = { link -> openLink(context, link) },
                 )
             }
-            if (reports.any { it.status == SosStatus.RESOLVED }) {
+            if (canDelete && reports.any { it.status == SosStatus.RESOLVED }) {
                 item {
                     TextButton(onClick = { confirmClear = true }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.sos_admin_clear_resolved), color = MaterialTheme.colorScheme.error)
@@ -157,10 +154,9 @@ fun SosAdminScreen(onBack: (() -> Unit)?, onOpenTourist: (String) -> Unit) {
 @Composable
 private fun ReportCard(
     report: SosReport,
-    latest: TouristPosition?,
     onAdvance: (SosStatus) -> Unit,
     onOpenTourist: (() -> Unit)?,
-    onDelete: () -> Unit,
+    onDelete: (() -> Unit)?,
     onOpenMap: (String) -> Unit,
 ) {
     Card(
@@ -192,21 +188,12 @@ private fun ReportCard(
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
             )
-            // Where the caller has been seen since the call: what a rescuer walks to.
-            if (latest != null && latest.recordedAt > report.createdAt) {
-                val moved = point?.let { GeoUtils.haversineMeters(it, latest.point) }
-                Text(
-                    stringResource(R.string.sos_admin_latest, TIME_FORMAT.format(Date(latest.recordedAt)), moved ?: 0.0),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 report.status.next?.let { next ->
                     Button(onClick = { onAdvance(next) }) { Text(stringResource(R.string.sos_admin_mark, stringResource(next.labelRes))) }
                 }
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = onDelete) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) }
+                onDelete?.let { TextButton(onClick = it) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) } }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
                 report.mapLink?.let { link -> TextButton(onClick = { onOpenMap(link) }) { Text(stringResource(R.string.sos_admin_open_map)) } }

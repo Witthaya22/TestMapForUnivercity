@@ -223,8 +223,13 @@ private fun KhaoYaiNavHost(
         }
 
         composable(KhaoYaiRoutes.TOURIST, arguments = idArgument) { entry ->
-            StaffGate(account, navController, Permission.VIEW_TOURISTS) {
-                TouristDetailScreen(userId = entry.id(), onBack = { navController.popBackStack() })
+            StaffGate(account, navController, Permission.VIEW_TOURISTS) { user ->
+                TouristDetailScreen(
+                    userId = entry.id(),
+                    onBack = { navController.popBackStack() },
+                    // Officers look and call; changing an account is the administrator's (§2.3.3.2).
+                    onEdit = if (user.isAdmin) ({ navController.navigate(KhaoYaiRoutes.userEdit(entry.id())) }) else null,
+                )
             }
         }
 

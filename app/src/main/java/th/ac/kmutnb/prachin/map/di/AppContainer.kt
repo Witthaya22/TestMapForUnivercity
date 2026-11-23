@@ -21,7 +21,6 @@ import th.ac.kmutnb.prachin.map.data.model.EmergencyPlaces
 import th.ac.kmutnb.prachin.map.data.repository.AccountRepository
 import th.ac.kmutnb.prachin.map.data.repository.DemoDataSeeder
 import th.ac.kmutnb.prachin.map.data.repository.SosRepository
-import th.ac.kmutnb.prachin.map.data.repository.TrackingRepository
 import th.ac.kmutnb.prachin.map.data.repository.TrackLogRepository
 import th.ac.kmutnb.prachin.map.core.sound.HazardSoundPlayer
 import th.ac.kmutnb.prachin.map.core.speech.SpeechAnnouncer
@@ -62,11 +61,8 @@ class AppContainer(context: Context) {
 
     val accountRepository = AccountRepository(database.userAccountDao(), preferences, applicationScope)
 
-    val trackingRepository = TrackingRepository(database.touristPositionDao(), accountRepository)
-
     val demoDataSeeder = DemoDataSeeder(
         accounts = accountRepository,
-        tracking = trackingRepository,
         sos = sosRepository,
         content = khaoYaiContentRepository,
         preferences = preferences,
